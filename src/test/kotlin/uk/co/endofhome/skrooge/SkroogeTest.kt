@@ -41,12 +41,23 @@ class SkroogeTest {
     }
 
     @Test
-    fun `successful POST with empty csv produces empty output file`() {
+    fun `POST with empty csv produces empty output file`() {
         val request = Request(POST, "/statements").body("2017,September,Tom,src/test/resources/empty-file.csv")
         skrooge(request)
 
         val decisionFile = File("output/decisions/2017-9-Tom-decisions-empty-file.csv")
         val fileContents = decisionFile.readLines()
         assertThat(fileContents.size, equalTo(0))
+    }
+
+    @Test
+    fun `POST with one entry produces output file with one entry when recognised transaction`() {
+        val request = Request(POST, "/statements").body("2017,September,Tom,src/test/resources/one-known-transaction.csv")
+        skrooge(request)
+
+        val decisionFile = File("output/decisions/2017-9-Tom-decisions-one-known-transaction.csv")
+        val fileContents = decisionFile.readLines()
+        assertThat(fileContents.size, equalTo(1))
+        assertThat(fileContents[0], equalTo("2017-09-17,Pizza Union,5.50,Eats and drinks,Meals at work"))
     }
 }

@@ -12,8 +12,7 @@ import org.http4k.routing.routes
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import java.io.File
-import java.time.Month
-import java.time.Year
+import java.time.*
 
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
@@ -66,9 +65,22 @@ class DecisionWriter {
 }
 
 class StatementDecider {
+    val mappingLines = File("category-mappings/category-mappings.csv").readLines()
+    val mappings = mappingLines.map {
+        val mappingStrings = it.split(",")
+        Mapping(mappingStrings[0], mappingStrings[1], mappingStrings[2])
+    }
+
     fun process(statementData: List<String>): List<String> = statementData.map { decide(it) }
 
-    private fun decide(it: String): String = it
+    private fun decide(lineString: String): String {
+        val lineEntries = lineString.split(",")
+        val dateValues = lineEntries[0].split("-").map { it.toInt() }
+        val line = Line(LocalDate.of(dateValues[0], dateValues[1], dateValues[2]), lineEntries[1], lineEntries[2].toDouble())
+
+        val match = mappings.find { it.purchase.contains(line.purchase) }
+        return lineString + ",${match?.mainCatgeory},${match?.subCategory}"
+    }
 }
 
 class PretendFormParser {
@@ -83,3 +95,5 @@ class PretendFormParser {
 }
 
 data class StatementData(val year: Year, val month: Month, val username: String, val files: List<File>)
+data class Mapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
+data class Line(val date: LocalDate, val purchase: String, val amount: Double)
