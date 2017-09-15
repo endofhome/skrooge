@@ -3,6 +3,7 @@ package uk.co.endofhome.skrooge
 import org.http4k.core.Body
 import org.http4k.core.Method.POST
 import org.http4k.core.Response
+import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.bind
 import org.http4k.routing.routes
@@ -20,5 +21,5 @@ class App {
 }
 
 class Statements {
-    fun uploadStatements(body: Body) = Response(OK)
+    fun uploadStatements(body: Body) = Response(NOT_FOUND)
 }
