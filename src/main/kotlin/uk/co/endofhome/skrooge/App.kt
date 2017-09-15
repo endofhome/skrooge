@@ -1,5 +1,6 @@
 package uk.co.endofhome.skrooge
 
+import org.http4k.asString
 import org.http4k.core.Body
 import org.http4k.core.Method.POST
 import org.http4k.core.Response
@@ -21,5 +22,11 @@ class App {
 }
 
 class Statements {
-    fun uploadStatements(body: Body) = Response(NOT_FOUND)
+    fun uploadStatements(body: Body): Response {
+      return if (body.payload.asString().isEmpty()) {
+          Response(NOT_FOUND)
+      } else {
+          Response(OK)
+      }
+    }
 }
