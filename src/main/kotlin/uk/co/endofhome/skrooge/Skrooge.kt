@@ -1,18 +1,22 @@
 package uk.co.endofhome.skrooge
 
 import org.http4k.asString
-import org.http4k.core.Body
-import org.http4k.core.Method.POST
 import org.http4k.core.Response
+import org.http4k.core.Body
+import org.http4k.core.Method.GET
+import org.http4k.core.Method.POST
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
+import org.http4k.core.Status.Companion.SEE_OTHER
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import java.io.File
-import java.time.*
+import java.time.Year
+import java.time.Month
+import java.time.LocalDate
 
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
@@ -21,7 +25,10 @@ fun main(args: Array<String>) {
 }
 
 class Skrooge {
-    fun routes() = routes("/statements" bind POST to { request -> Statements().uploadStatements(request.body) } )
+    fun routes() = routes(
+            "/statements" bind POST to { request -> Statements().uploadStatements(request.body) },
+            "/unknown-transactions" bind GET to { _ -> Response(OK).body("You need to categorise some transactions.") }
+    )
 }
 
 class Statements {
@@ -34,8 +41,17 @@ class Statements {
           try {
               val statementData: StatementData = parser.parse(body)
               statementData.files.forEach {
-                  val decisions = StatementDecider().process(it.readLines())
-                  DecisionWriter().write(statementData, decisions)
+                  val processedLines = StatementDecider().process(it.readLines())
+                  val anyUnsuccessful: ProcessedLine? = processedLines.find { it.unsuccessfullyProcessed }
+                  when (anyUnsuccessful != null) {
+                      true -> {
+                          return Response(SEE_OTHER).header("Location", "/unknown-transactions")
+                      }
+                      false -> {
+                          val decisions = processedLines.map { it.line }
+                          DecisionWriter().write(statementData, decisions)
+                      }
+                  }
               }
           } catch (e: Exception) {
               return Response(BAD_REQUEST)
@@ -68,18 +84,21 @@ class StatementDecider {
     val mappingLines = File("category-mappings/category-mappings.csv").readLines()
     val mappings = mappingLines.map {
         val mappingStrings = it.split(",")
-        Mapping(mappingStrings[0], mappingStrings[1], mappingStrings[2])
+        CategoryMapping(mappingStrings[0], mappingStrings[1], mappingStrings[2])
     }
 
-    fun process(statementData: List<String>): List<String> = statementData.map { decide(it) }
+    fun process(statementData: List<String>) = statementData.map { decide(it) }
 
-    private fun decide(lineString: String): String {
+    private fun decide(lineString: String): ProcessedLine {
         val lineEntries = lineString.split(",")
         val dateValues = lineEntries[0].split("-").map { it.toInt() }
         val line = Line(LocalDate.of(dateValues[0], dateValues[1], dateValues[2]), lineEntries[1], lineEntries[2].toDouble())
 
         val match = mappings.find { it.purchase.contains(line.purchase) }
-        return lineString + ",${match?.mainCatgeory},${match?.subCategory}"
+        return when (match) {
+            null -> { ProcessedLine(true) }
+            else -> { ProcessedLine(false, lineString + ",${match?.mainCatgeory},${match?.subCategory}") }
+        }
     }
 }
 
@@ -95,5 +114,6 @@ class PretendFormParser {
 }
 
 data class StatementData(val year: Year, val month: Month, val username: String, val files: List<File>)
-data class Mapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
+data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
 data class Line(val date: LocalDate, val purchase: String, val amount: Double)
+data class ProcessedLine(val unsuccessfullyProcessed: Boolean, val line: String = "")
