@@ -37,6 +37,6 @@ dependencies {
     testCompile "com.natpryce:hamkrest:1.4.2.0"
 }
 
-mainClassName = 'uk.co.endofhome.skrooge.App.kt'
+mainClassName = 'uk.co.endofhome.skrooge.Skrooge.kt'
 
 task stage(dependsOn: ['installDist'])

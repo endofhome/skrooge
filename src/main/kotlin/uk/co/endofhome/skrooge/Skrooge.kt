@@ -17,11 +17,11 @@ import java.time.Year
 
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
-    val app = App().routes()
+    val app = Skrooge().routes()
     app.asServer(Jetty(port)).startAndBlock()
 }
 
-class App {
+class Skrooge {
     fun routes() = routes("/statements" bind POST to { request -> Statements().uploadStatements(request.body) } )
 }
 
@@ -35,8 +35,8 @@ class Statements {
           try {
               val statementData: StatementData = parser.parse(body)
               statementData.files.forEach {
-                  val fileData = it.readLines()
-                  println(fileData)
+                  val decisions = StatementDecider().process(it.readLines())
+                  DecisionWriter().write(statementData, decisions)
               }
           } catch (e: Exception) {
               return Response(BAD_REQUEST)
@@ -44,6 +44,31 @@ class Statements {
           Response(OK)
       }
     }
+}
+
+class DecisionWriter {
+    val decisionFilePath = "output/decisions"
+    fun write(statementData: StatementData, decisions: List<String>) {
+        val year = statementData.year.toString()
+        val month = statementData.month.value
+        val username = statementData.username
+        val institution = statementData.files[0].toString().split("/").last()
+        File("$decisionFilePath/$year-$month-$username-decisions-$institution").printWriter().use { out ->
+            decisions.forEach {
+                out.print(it)
+            }
+        }
+    }
+
+    fun cleanDecisions() = {
+        //TODO
+    }
+}
+
+class StatementDecider {
+    fun process(statementData: List<String>): List<String> = statementData.map { decide(it) }
+
+    private fun decide(it: String): String = it
 }
 
 class PretendFormParser {
