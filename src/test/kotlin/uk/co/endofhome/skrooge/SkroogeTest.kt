@@ -68,10 +68,8 @@ class SkroogeTest {
     fun `POST with one entry returns HTTP See Other when unrecognised transaction`() {
         val requestWithMcDonalds = Request(POST, "/statements").body("2017,September,Tom,src/test/resources/unknown-transaction.csv")
         val response = skrooge(requestWithMcDonalds)
-        val unrecognisedTransactions = Jackson.asJsonObject(UnknownTransaction(listOf(ProcessedLine(true, "McDonalds", ""))))
         response shouldMatch hasStatus(SEE_OTHER)
-        response shouldMatch hasHeader("Location", "/unknown-transaction")
-        response shouldMatch hasBody(unrecognisedTransactions.toString())
+        response shouldMatch hasHeader("Location", "/unknown-transaction?transactions=McDonalds")
 
         val followedResponse = followRedirectResponse(response)
         followedResponse shouldMatch hasBody(containsSubstring("You need to categorise some transactions."))
@@ -87,7 +85,7 @@ class SkroogeTest {
 
     private fun followRedirectResponse(response: Response): Response {
         val location = response.headerValues("location").first()
-        return skrooge(Request(Method.GET, location!!).body(response.body))
+        return skrooge(Request(Method.GET, location!!))
     }
 
 }
