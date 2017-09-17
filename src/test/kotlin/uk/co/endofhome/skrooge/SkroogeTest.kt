@@ -1,13 +1,16 @@
 package uk.co.endofhome.skrooge
 
-import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.containsSubstring
+import com.natpryce.hamkrest.assertion.assertThat
+import org.http4k.asString
 import org.http4k.core.*
 import org.http4k.core.Method.POST
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.SEE_OTHER
+import org.http4k.format.Jackson
 import org.junit.Before
 import org.junit.Test
 import java.io.File
@@ -62,7 +65,26 @@ class SkroogeTest {
 
     @Test
     fun `POST with one entry returns HTTP See Other when unrecognised transaction`() {
-        val request = Request(POST, "/statements").body("2017,September,Tom,src/test/resources/unknown-transaction.csv")
-        assertThat(skrooge(request), equalTo(Response(SEE_OTHER).header("Location", "/unknown-transactions")))
+        val requestWithMcDonalds = Request(POST, "/statements").body("2017,September,Tom,src/test/resources/unknown-transaction.csv")
+        val response = skrooge(requestWithMcDonalds)
+        val unrecognisedTransactions = Jackson.asJsonObject(UnknownTransaction(listOf(ProcessedLine(true, "McDonalds", ""))))
+        assertThat(response, equalTo(Response(SEE_OTHER).header("Location", "/unknown-transaction").body(unrecognisedTransactions.toString())))
+
+        val followedResponse = followRedirectResponse(response)
+        assertThat(followedResponse.body.payload.asString(), containsSubstring("You need to categorise some transactions."))
     }
+
+    @Test
+    fun `redirect when unrecognised transaction shows correct unrecognised transaction`() {
+        val requestWithMcDonalds = Request(POST, "/statements").body("2017,September,Tom,src/test/resources/unknown-transaction.csv")
+        val followedResponse = followRedirectResponse(skrooge(requestWithMcDonalds))
+
+        assertThat(followedResponse.body.payload.asString(), containsSubstring("McDonalds"))
+    }
+
+    private fun followRedirectResponse(response: Response): Response {
+        val location = response.headerValues("location").first()
+        return skrooge(Request(Method.GET, location!!).body(response.body))
+    }
+
 }

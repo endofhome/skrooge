@@ -1,18 +1,20 @@
 package uk.co.endofhome.skrooge
 
 import org.http4k.asString
-import org.http4k.core.Response
-import org.http4k.core.Body
+import org.http4k.core.*
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
-import org.http4k.routing.bind
-import org.http4k.routing.routes
+import org.http4k.filter.DebuggingFilters
+import org.http4k.format.Jackson
+import org.http4k.format.Jackson.auto
+import org.http4k.routing.*
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
+import org.http4k.template.*
 import java.io.File
 import java.time.Year
 import java.time.Month
@@ -20,14 +22,24 @@ import java.time.LocalDate
 
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
-    val app = Skrooge().routes()
+    val app = Skrooge()
+                .routes()
+                .withFilter(DebuggingFilters.PrintRequestAndResponse())
     app.asServer(Jetty(port)).startAndBlock()
 }
 
 class Skrooge {
+    private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
+
     fun routes() = routes(
             "/statements" bind POST to { request -> Statements().uploadStatements(request.body) },
-            "/unknown-transactions" bind GET to { _ -> Response(OK).body("You need to categorise some transactions.") }
+            "/unknown-transaction" bind GET to { request ->
+                val lens = Body.auto<UnknownTransaction>().toLens()
+
+                val unknownTransactions: UnknownTransaction = lens.extract(request)
+                val view = Body.view(renderer, ContentType.TEXT_HTML)
+                Response(OK).with(view of unknownTransactions)
+            }
     )
 }
 
@@ -45,7 +57,8 @@ class Statements {
                   val anyUnsuccessful: ProcessedLine? = processedLines.find { it.unsuccessfullyProcessed }
                   when (anyUnsuccessful != null) {
                       true -> {
-                          return Response(SEE_OTHER).header("Location", "/unknown-transactions")
+                          val unrecognisedTransactions = Jackson.asJsonObject(UnknownTransaction(processedLines.filter { it.unsuccessfullyProcessed == true }))
+                          return Response(SEE_OTHER).header("Location", "/unknown-transaction").body(unrecognisedTransactions.toString())
                       }
                       false -> {
                           val decisions = processedLines.map { it.line }
@@ -67,8 +80,8 @@ class DecisionWriter {
         val year = statementData.year.toString()
         val month = statementData.month.value
         val username = statementData.username
-        val institution = statementData.files[0].toString().split("/").last()
-        File("$decisionFilePath/$year-$month-$username-decisions-$institution").printWriter().use { out ->
+        val vendor = statementData.files[0].toString().split("/").last()
+        File("$decisionFilePath/$year-$month-$username-decisions-$vendor").printWriter().use { out ->
             decisions.forEach {
                 out.print(it)
             }
@@ -96,8 +109,8 @@ class StatementDecider {
 
         val match = mappings.find { it.purchase.contains(line.purchase) }
         return when (match) {
-            null -> { ProcessedLine(true) }
-            else -> { ProcessedLine(false, lineString + ",${match?.mainCatgeory},${match?.subCategory}") }
+            null -> { ProcessedLine(true, line.purchase, "") }
+            else -> { ProcessedLine(false, line.purchase, lineString + ",${match.mainCatgeory},${match.subCategory}") }
         }
     }
 }
@@ -116,4 +129,5 @@ class PretendFormParser {
 data class StatementData(val year: Year, val month: Month, val username: String, val files: List<File>)
 data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
 data class Line(val date: LocalDate, val purchase: String, val amount: Double)
-data class ProcessedLine(val unsuccessfullyProcessed: Boolean, val line: String = "")
+data class ProcessedLine(val unsuccessfullyProcessed: Boolean, val vendor: String, val line: String)
+data class UnknownTransaction(val processedLines: List<ProcessedLine>) : ViewModel
