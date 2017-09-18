@@ -90,7 +90,16 @@ class SkroogeTest {
         val requestWithMcDonalds = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/unknown-transaction.csv]")
         val followedResponse = followRedirectResponse(skrooge(requestWithMcDonalds))
 
-        followedResponse shouldMatch hasBody(containsSubstring("McDonalds"))
+        followedResponse shouldMatch hasBody(containsSubstring("<p>McDonalds</p>"))
+    }
+
+    @Test
+    fun `redirect when multiple unrecognised transactions shows correct unrecognised transactions`() {
+        val requestWithMcDonaldsAndEdgeworld = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/two-unknown-transactions.csv]")
+        val followedResponse = followRedirectResponse(skrooge(requestWithMcDonaldsAndEdgeworld))
+
+        followedResponse shouldMatch hasBody(containsSubstring("<p>McDonalds</p>"))
+        followedResponse shouldMatch hasBody(containsSubstring("<p>Edgeworld Records</p>"))
     }
 
     private fun followRedirectResponse(response: Response): Response {

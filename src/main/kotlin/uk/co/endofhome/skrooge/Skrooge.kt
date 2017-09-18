@@ -44,8 +44,8 @@ class Skrooge {
             "/statements" bind POST to { request -> Statements().uploadStatements(request.body) },
             "/unknown-transaction" bind GET to { request ->
                 val transactionsLens: BiDiLens<Request, List<String>> = Query.multi.required("transactions")
-                val unknownTransactions = UnknownTransactions(transactionsLens(request))
                 val view = Body.view(renderer, ContentType.TEXT_HTML)
+                val unknownTransactions = UnknownTransactions(transactionsLens(request).flatMap { it.split(",") })
                 Response(OK).with(view of unknownTransactions)
             }
     )
