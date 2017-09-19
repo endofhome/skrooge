@@ -60,19 +60,19 @@ class Statements {
       } else {
           try {
               val statementData: StatementData = parser.parse(body)
-              statementData.files.forEach {
-                  val processedLines = StatementDecider().process(it.readLines())
-                  val anyUnsuccessful: ProcessedLine? = processedLines.find { it.unsuccessfullyProcessed }
-                  when (anyUnsuccessful != null) {
-                      true -> {
-                          val unrecognisedTransactions = UnknownTransactions(processedLines.filter { it.unsuccessfullyProcessed }.map { it.vendor })
-                          val uri = Uri.of("/unknown-transaction").query("transactions", unrecognisedTransactions.vendors.joinToString(","))
-                          return Response(SEE_OTHER).header("Location", uri.toString())
-                      }
-                      false -> {
-                          val decisions = processedLines.map { it.line }
-                          DecisionWriter().write(statementData, decisions)
-                      }
+              val processedLines = statementData.files.flatMap {
+                  StatementDecider().process(it.readLines())
+              }
+              val anyUnsuccessful: ProcessedLine? = processedLines.find { it.unsuccessfullyProcessed }
+              when (anyUnsuccessful != null) {
+                  true -> {
+                      val unrecognisedTransactions = UnknownTransactions(processedLines.filter { it.unsuccessfullyProcessed }.map { it.vendor })
+                      val uri = Uri.of("/unknown-transaction").query("transactions", unrecognisedTransactions.vendors.joinToString(","))
+                      return Response(SEE_OTHER).header("Location", uri.toString())
+                  }
+                  false -> {
+                      val decisions = processedLines.map { it.line }
+                      DecisionWriter().write(statementData, decisions)
                   }
               }
           } catch (e: Exception) {
