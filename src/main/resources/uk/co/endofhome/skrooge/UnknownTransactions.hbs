@@ -8,5 +8,15 @@
     <p>You need to categorise some transactions.</p>
     {{#each vendors}}<p>{{this}}</p>
     {{/each}}
+
+    <select>
+    {{#each categories}}
+        <optgroup label="{{title}}">
+            {{#each data}}
+            <option value="{{title}},{{name}}">{{name}}</option>
+            {{/each}}
+        </optgroup>
+    {{/each}}
+    </select>
 </body>
 </html>

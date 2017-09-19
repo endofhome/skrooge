@@ -24,6 +24,7 @@ import org.http4k.template.HandlebarsTemplates
 import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
 import org.http4k.template.view
+import uk.co.endofhome.skrooge.Categories.categories
 import java.io.File
 import java.time.LocalDate
 import java.time.Month
@@ -55,7 +56,6 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
                         }
                     }
                 }
-
             }
     )
 }
@@ -72,7 +72,7 @@ class Statements(val categoryMappings: List<String>) {
             val anyUnsuccessful: ProcessedLine? = processedLines.find { it.unsuccessfullyProcessed }
             when (anyUnsuccessful != null) {
                 true -> {
-                    val unrecognisedTransactions = UnknownTransactions(processedLines.filter { it.unsuccessfullyProcessed }.map { it.vendor })
+                    val unrecognisedTransactions = UnknownTransactions(processedLines.filter { it.unsuccessfullyProcessed }.map { it.vendor }, categories())
                     val uri = Uri.of("/unknown-transaction").query("transactions", unrecognisedTransactions.vendors.joinToString(","))
                     return Response(SEE_OTHER).header("Location", uri.toString())
                 }
@@ -92,9 +92,18 @@ class UnknownTransactionHandler(private val renderer: TemplateRenderer) {
     fun handle(request: Request): Response {
         val transactionsLens: BiDiLens<Request, List<String>> = Query.multi.required("transactions")
         val view = Body.view(renderer, ContentType.TEXT_HTML)
-        val unknownTransactions = UnknownTransactions(transactionsLens(request).flatMap { it.split(",") })
+        val vendors = transactionsLens(request).flatMap { it.split(",") }
+        val unknownTransactions = UnknownTransactions(vendors, categories())
+
         return Response(OK).with(view of unknownTransactions)
     }
+}
+
+object Categories {
+    fun categories() = listOf(
+            Category("In your home", listOf(DataItem("Mortgage"), DataItem("Building insurance"))),
+            Category("Insurance", listOf(DataItem("Travel insurance"), DataItem("Income protection")))
+    )
 }
 
 class DecisionWriter {
@@ -177,4 +186,6 @@ data class StatementData(val year: Year, val month: Month, val username: String,
 data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
 data class Line(val date: LocalDate, val purchase: String, val amount: Double)
 data class ProcessedLine(val unsuccessfullyProcessed: Boolean, val vendor: String, val line: String)
-data class UnknownTransactions(val vendors: List<String>) : ViewModel
+data class UnknownTransactions(val vendors: List<String>, val categories: List<Category>) : ViewModel
+data class Category(val title: String, val data: List<DataItem>)
+data class DataItem(val name: String)
