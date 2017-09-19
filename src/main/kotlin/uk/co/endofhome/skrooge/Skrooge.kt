@@ -43,8 +43,8 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
 
     fun routes() = routes(
             "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body) },
-            "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request)
-            }
+            "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request) },
+            "category-mapping" bind POST to { _ -> Response(BAD_REQUEST) }
     )
 }
 
