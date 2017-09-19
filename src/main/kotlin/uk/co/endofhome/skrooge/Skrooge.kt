@@ -52,31 +52,27 @@ class Statements(val categoryMappings: List<String>) {
     private val parser = PretendFormParser()
 
     fun uploadStatements(body: Body): Response {
-      return if (body.payload.asString().isEmpty()) {
-          Response(NOT_FOUND)
-      } else {
-          try {
-              val statementData: StatementData = parser.parse(body)
-              val processedLines = statementData.files.flatMap {
-                  StatementDecider(categoryMappings).process(it.readLines())
-              }
-              val anyUnsuccessful: ProcessedLine? = processedLines.find { it.unsuccessfullyProcessed }
-              when (anyUnsuccessful != null) {
-                  true -> {
-                      val unrecognisedTransactions = UnknownTransactions(processedLines.filter { it.unsuccessfullyProcessed }.map { it.vendor })
-                      val uri = Uri.of("/unknown-transaction").query("transactions", unrecognisedTransactions.vendors.joinToString(","))
-                      return Response(SEE_OTHER).header("Location", uri.toString())
-                  }
-                  false -> {
-                      val decisions = processedLines.map { it.line }
-                      DecisionWriter().write(statementData, decisions)
-                  }
-              }
-          } catch (e: Exception) {
-              return Response(BAD_REQUEST)
-          }
-          Response(OK)
-      }
+        try {
+            val statementData: StatementData = parser.parse(body)
+            val processedLines = statementData.files.flatMap {
+                StatementDecider(categoryMappings).process(it.readLines())
+            }
+            val anyUnsuccessful: ProcessedLine? = processedLines.find { it.unsuccessfullyProcessed }
+            when (anyUnsuccessful != null) {
+                true -> {
+                    val unrecognisedTransactions = UnknownTransactions(processedLines.filter { it.unsuccessfullyProcessed }.map { it.vendor })
+                    val uri = Uri.of("/unknown-transaction").query("transactions", unrecognisedTransactions.vendors.joinToString(","))
+                    return Response(SEE_OTHER).header("Location", uri.toString())
+                }
+                false -> {
+                    val decisions = processedLines.map { it.line }
+                    DecisionWriter().write(statementData, decisions)
+                    return Response(OK)
+                }
+            }
+        } catch (e: Exception) {
+            return Response(BAD_REQUEST)
+        }
     }
 }
 
@@ -101,10 +97,6 @@ class DecisionWriter {
                 out.print(it)
             }
         }
-    }
-
-    fun cleanDecisions() = {
-        //TODO
     }
 }
 

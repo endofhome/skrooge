@@ -20,18 +20,13 @@ import org.junit.Before
 import org.junit.Test
 import java.io.File
 
-class SkroogeTest {
+class StatementsAcceptanceTest {
     val skrooge = Skrooge().routes()
 
-    @Before
-    fun `setup`() {
-        DecisionWriter().cleanDecisions()
-    }
-
     @Test
-    fun `POST to statements endpoint with empty body returns HTTP Not Found`() {
+    fun `POST to statements endpoint with empty body returns HTTP Bad Request`() {
         val request = Request(POST, "/statements").body(Body.EMPTY)
-        skrooge(request) shouldMatch hasStatus(NOT_FOUND)
+        skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
     }
 
     @Test
