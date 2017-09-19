@@ -8,7 +8,6 @@ import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
-import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
 import org.http4k.core.Uri
@@ -38,7 +37,8 @@ fun main(args: Array<String>) {
     app.asServer(Jetty(port)).startAndBlock()
 }
 
-class Skrooge(val categoryMappings: List<String> = File("category-mappings/category-mappings.csv").readLines()) {
+class Skrooge(val categoryMappings: List<String> = File("category-mappings/category-mappings.csv").readLines(),
+              val mappingWriter: MappingWriter = FileSystemMappingWriter()) {
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
 
     fun routes() = routes(
@@ -49,7 +49,10 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
                 bodyList.size.let {
                     when {
                         it < 3 -> Response(BAD_REQUEST)
-                        else -> Response(OK)
+                        else -> {
+                            mappingWriter.write(bodyList.joinToString(","))
+                            Response(OK)
+                        }
                     }
                 }
 
@@ -141,6 +144,33 @@ class PretendFormParser {
         val files: List<File> = fileStrings.map { File(it) }
         return StatementData(year, month, username, files)
     }
+}
+
+interface MappingWriter {
+    fun write(line: String): Boolean
+    fun read(): List<String>
+}
+
+class FileSystemMappingWriter : MappingWriter{
+    val categoryMappingsFileOutputPath = "category-mappings/category-mappings.csv"
+    override fun write(line: String): Boolean {
+        try {
+            File(categoryMappingsFileOutputPath).printWriter().use { out ->
+                out.print(line)
+            }
+            return true
+        } catch (e: Exception) {
+            return false
+        }
+    }
+    override fun read(): List<String> = File(categoryMappingsFileOutputPath).readLines()
+}
+
+class MockMappingWriter : MappingWriter {
+    private val file: MutableList<String> = mutableListOf()
+
+    override fun write(line: String) = file.add(line)
+    override fun read() = file
 }
 
 data class StatementData(val year: Year, val month: Month, val username: String, val files: List<File>)

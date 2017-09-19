@@ -1,5 +1,7 @@
 package uk.co.endofhome.skrooge
 
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.should.shouldMatch
 import org.http4k.core.Body
 import org.http4k.core.Method.POST
@@ -9,9 +11,10 @@ import org.http4k.core.Status.Companion.OK
 import org.http4k.hamkrest.hasStatus
 import org.junit.Test
 
-class CategoryMappingAcceptanceTest {
+class CategoryMappingNotQuiteAcceptanceTest {
     val categoryMappings = listOf("Edgeworld Records,Fun,Tom fun budget")
-    val skrooge = Skrooge(categoryMappings).routes()
+    val mappingWriter = MockMappingWriter()
+    val skrooge = Skrooge(categoryMappings, mappingWriter).routes()
 
     @Test
     fun `POST to category-mapping endpoint with empty body returns HTTP Bad Request`() {
@@ -26,8 +29,9 @@ class CategoryMappingAcceptanceTest {
     }
 
     @Test
-    fun `POST to category-mapping endpoint with good CSV content returns HTTP OK`() {
+    fun `POST to category-mapping endpoint with good CSV content returns HTTP OK and writes new mapping`() {
         val request = Request(POST, "/category-mapping").body("Casbah Records,Fun,Tom fun budget")
         skrooge(request) shouldMatch hasStatus(OK)
+        assertThat(mappingWriter.read().last(), equalTo("Casbah Records,Fun,Tom fun budget"))
     }
 }
