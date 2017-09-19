@@ -22,6 +22,7 @@ import org.http4k.routing.routes
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import org.http4k.template.HandlebarsTemplates
+import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
 import org.http4k.template.view
 import java.io.File
@@ -42,11 +43,7 @@ class Skrooge {
 
     fun routes() = routes(
             "/statements" bind POST to { request -> Statements().uploadStatements(request.body) },
-            "/unknown-transaction" bind GET to { request ->
-                val transactionsLens: BiDiLens<Request, List<String>> = Query.multi.required("transactions")
-                val view = Body.view(renderer, ContentType.TEXT_HTML)
-                val unknownTransactions = UnknownTransactions(transactionsLens(request).flatMap { it.split(",") })
-                Response(OK).with(view of unknownTransactions)
+            "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request)
             }
     )
 }
@@ -80,6 +77,15 @@ class Statements {
           }
           Response(OK)
       }
+    }
+}
+
+class UnknownTransactionHandler(private val renderer: TemplateRenderer) {
+    fun handle(request: Request): Response {
+        val transactionsLens: BiDiLens<Request, List<String>> = Query.multi.required("transactions")
+        val view = Body.view(renderer, ContentType.TEXT_HTML)
+        val unknownTransactions = UnknownTransactions(transactionsLens(request).flatMap { it.split(",") })
+        return Response(OK).with(view of unknownTransactions)
     }
 }
 
