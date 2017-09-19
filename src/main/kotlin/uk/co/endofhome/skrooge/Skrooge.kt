@@ -38,17 +38,17 @@ fun main(args: Array<String>) {
     app.asServer(Jetty(port)).startAndBlock()
 }
 
-class Skrooge {
+class Skrooge(val categoryMappings: List<String> = File("category-mappings/category-mappings.csv").readLines()) {
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
 
     fun routes() = routes(
-            "/statements" bind POST to { request -> Statements().uploadStatements(request.body) },
+            "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body) },
             "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request)
             }
     )
 }
 
-class Statements {
+class Statements(val categoryMappings: List<String>) {
     private val parser = PretendFormParser()
 
     fun uploadStatements(body: Body): Response {
@@ -58,7 +58,7 @@ class Statements {
           try {
               val statementData: StatementData = parser.parse(body)
               val processedLines = statementData.files.flatMap {
-                  StatementDecider().process(it.readLines())
+                  StatementDecider(categoryMappings).process(it.readLines())
               }
               val anyUnsuccessful: ProcessedLine? = processedLines.find { it.unsuccessfullyProcessed }
               when (anyUnsuccessful != null) {
@@ -108,9 +108,8 @@ class DecisionWriter {
     }
 }
 
-class StatementDecider {
-    val mappingLines = File("category-mappings/category-mappings.csv").readLines()
-    val mappings = mappingLines.map {
+class StatementDecider(val categoryMappings: List<String>) {
+    val mappings = categoryMappings.map {
         val mappingStrings = it.split(",")
         CategoryMapping(mappingStrings[0], mappingStrings[1], mappingStrings[2])
     }
