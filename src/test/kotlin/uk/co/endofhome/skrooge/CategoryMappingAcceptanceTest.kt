@@ -22,8 +22,14 @@ class CategoryMappingAcceptanceTest {
     val skrooge = Skrooge(categoryMappings).routes()
 
     @Test
-    fun `POST to category-mapping endpoint with empty body returns HTTP Not Found`() {
+    fun `POST to category-mapping endpoint with empty body returns HTTP Bad Request`() {
         val request = Request(POST, "/category-mapping").body(Body.EMPTY)
+        skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
+    }
+
+    @Test
+    fun `POST to category-mapping endpoint with non-CSV content returns HTTP Bad Request`() {
+        val request = Request(POST, "/category-mapping").body("Casbah Records;Established 1967 in our minds")
         skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
     }
 }
