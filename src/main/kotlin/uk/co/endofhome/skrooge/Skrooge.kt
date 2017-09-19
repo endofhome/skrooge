@@ -44,7 +44,16 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
     fun routes() = routes(
             "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body) },
             "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request) },
-            "category-mapping" bind POST to { _ -> Response(BAD_REQUEST) }
+            "category-mapping" bind POST to { request ->
+                val bodyList = request.body.payload.asString().split(",")
+                bodyList.size.let {
+                    when {
+                        it < 3 -> Response(BAD_REQUEST)
+                        else -> Response(OK)
+                    }
+                }
+
+            }
     )
 }
 
