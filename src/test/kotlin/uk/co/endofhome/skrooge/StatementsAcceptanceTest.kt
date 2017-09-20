@@ -85,7 +85,7 @@ class StatementsAcceptanceTest {
         val requestWithMcDonalds = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/unknown-transaction.csv]")
         val followedResponse = followRedirectResponse(skrooge(requestWithMcDonalds))
 
-        followedResponse shouldMatch hasBody(containsSubstring("<p>McDonalds</p>"))
+        followedResponse shouldMatch hasBody(containsSubstring("<h3>McDonalds</h3>"))
     }
 
     @Test
@@ -93,8 +93,8 @@ class StatementsAcceptanceTest {
         val requestWithTwoRecordShops = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/two-unknown-transactions.csv]")
         val followedResponse = followRedirectResponse(skrooge(requestWithTwoRecordShops))
 
-        followedResponse shouldMatch hasBody(containsSubstring("<p>Rounder Records</p>"))
-        followedResponse shouldMatch hasBody(containsSubstring("<p>Edgeworld Records</p>"))
+        followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
+        followedResponse shouldMatch hasBody(containsSubstring("<h3>Edgeworld Records</h3>"))
     }
 
     @Test
@@ -102,9 +102,9 @@ class StatementsAcceptanceTest {
         val requestWithTwoFilesOfUnknownTransactions = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/two-unknown-transactions.csv,src/test/resources/unknown-transaction.csv]")
         val followedResponse = followRedirectResponse(skrooge(requestWithTwoFilesOfUnknownTransactions))
 
-        followedResponse shouldMatch hasBody(containsSubstring("<p>Rounder Records</p>"))
-        followedResponse shouldMatch hasBody(containsSubstring("<p>Edgeworld Records</p>"))
-        followedResponse shouldMatch hasBody(containsSubstring("<p>McDonalds</p>"))
+        followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
+        followedResponse shouldMatch hasBody(containsSubstring("<h3>Edgeworld Records</h3>"))
+        followedResponse shouldMatch hasBody(containsSubstring("<h3>McDonalds</h3>"))
     }
 
     private fun followRedirectResponse(response: Response): Response {
