@@ -8,16 +8,22 @@
 <body>
     <h1>You need to categorise some transactions.</h1>
     {{#each vendors}}<h3>{{this}}</h3>
-    {{/each}}
+        <form action="/category-mapping" method="post">
+            <select>
+                {{#each categories}}
+                <optgroup label="{{title}}">
+                    {{#each data}}
+                    <option value="{{title}},{{name}}">{{name}}</option>
+                    {{/each}}
+                </optgroup>
+                {{/each}}
+            </select>
+            <input type="hidden" name="vendors" value="{{vendors}}">
 
-    <select>
-    {{#each categories}}
-        <optgroup label="{{title}}">
-            {{#each data}}
-            <option value="{{title}},{{name}}">{{name}}</option>
-            {{/each}}
-        </optgroup>
+            <div class="button">
+                <button type="submit">Update category</button>
+            </div>
+        </form>
     {{/each}}
-    </select>
 </body>
 </html>

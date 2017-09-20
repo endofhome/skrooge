@@ -102,7 +102,9 @@ class UnknownTransactionHandler(private val renderer: TemplateRenderer) {
 object Categories {
     fun categories() = listOf(
             Category("In your home", listOf(DataItem("Mortgage"), DataItem("Building insurance"))),
-            Category("Insurance", listOf(DataItem("Travel insurance"), DataItem("Income protection")))
+            Category("Insurance", listOf(DataItem("Travel insurance"), DataItem("Income protection"))),
+            Category("Eats and drinks", listOf(DataItem("Food"), DataItem("Meals at work"))),
+            Category("Fun", listOf(DataItem("Tom fun budget"), DataItem("Someone else's fun budget")))
     )
 }
 
