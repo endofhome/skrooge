@@ -59,16 +59,20 @@ class Statements(val categoryMappings: List<String>) {
                 StatementDecider(categoryMappings).process(it.readLines())
             }
             val anyUnsuccessful: ProcessedLine? = processedLines.find { it.unsuccessfullyProcessed }
-            when (anyUnsuccessful != null) {
+            return when (anyUnsuccessful != null) {
                 true -> {
-                    val unrecognisedTransactions = UnknownTransactions(processedLines.filter { it.unsuccessfullyProcessed }.map { it.vendor }, categories())
-                    val uri = Uri.of("/unknown-transaction").query("transactions", unrecognisedTransactions.vendors.joinToString(","))
-                    return Response(SEE_OTHER).header("Location", uri.toString())
+                    val unknownTransactions = processedLines.filter { it.unsuccessfullyProcessed }
+                    val currentTransaction: ProcessedLine = unknownTransactions.first()
+                    val outstandingVendors = unknownTransactions.filterIndexed { index, _ -> index != 0 }.map { it.vendor }
+                    val uri = Uri.of("/unknown-transaction")
+                            .query("currentTransaction", currentTransaction.vendor)
+                            .query("outstandingVendors", outstandingVendors.joinToString(","))
+                    Response(SEE_OTHER).header("Location", uri.toString())
                 }
                 false -> {
                     val decisions = processedLines.map { it.line }
                     DecisionWriter().write(statementData, decisions)
-                    return Response(OK)
+                    Response(OK)
                 }
             }
         } catch (e: Exception) {
@@ -79,10 +83,12 @@ class Statements(val categoryMappings: List<String>) {
 
 class UnknownTransactionHandler(private val renderer: TemplateRenderer) {
     fun handle(request: Request): Response {
-        val transactionsLens: BiDiLens<Request, List<String>> = Query.multi.required("transactions")
+        val vendorLens: BiDiLens<Request, String> = Query.required("currentTransaction")
+        val transactionsLens: BiDiLens<Request, List<String>> = Query.multi.required("outstandingVendors")
         val view = Body.view(renderer, ContentType.TEXT_HTML)
-        val vendors = transactionsLens(request).flatMap { it.split(",") }
-        val unknownTransactions = UnknownTransactions(vendors, categories())
+        val currentTransaction = Transaction(vendorLens(request), categories())
+        val vendors: List<String> = transactionsLens(request).flatMap { it.split(",") }
+        val unknownTransactions = UnknownTransactions(currentTransaction, vendors)
 
         return Response(OK).with(view of unknownTransactions)
     }
@@ -192,6 +198,7 @@ data class StatementData(val year: Year, val month: Month, val username: String,
 data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
 data class Line(val date: LocalDate, val purchase: String, val amount: Double)
 data class ProcessedLine(val unsuccessfullyProcessed: Boolean, val vendor: String, val line: String)
-data class UnknownTransactions(val vendors: List<String>, val categories: List<Category>) : ViewModel
+data class UnknownTransactions(val currentTransaction: Transaction, val outstandingVendors: List<String>) : ViewModel
+data class Transaction (val vendorName: String, val categories: List<Category>)
 data class Category(val title: String, val data: List<DataItem>)
 data class DataItem(val name: String)

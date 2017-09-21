@@ -10,13 +10,11 @@ import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
-import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
 import org.http4k.hamkrest.hasBody
 import org.http4k.hamkrest.hasHeader
 import org.http4k.hamkrest.hasStatus
-import org.junit.Before
 import org.junit.Test
 import java.io.File
 
@@ -74,7 +72,7 @@ class StatementsAcceptanceTest {
         val requestWithMcDonalds = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/unknown-transaction.csv]")
         val response = skrooge(requestWithMcDonalds)
         response shouldMatch hasStatus(SEE_OTHER)
-        response shouldMatch hasHeader("Location", "/unknown-transaction?transactions=McDonalds")
+        response shouldMatch hasHeader("Location", "/unknown-transaction?currentTransaction=McDonalds&outstandingVendors=")
 
         val followedResponse = followRedirectResponse(response)
         followedResponse shouldMatch hasBody(containsSubstring("You need to categorise some transactions."))
@@ -94,7 +92,7 @@ class StatementsAcceptanceTest {
         val followedResponse = followRedirectResponse(skrooge(requestWithTwoRecordShops))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
-        followedResponse shouldMatch hasBody(containsSubstring("<h3>Edgeworld Records</h3>"))
+        followedResponse shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"remaining-vendors\" value=\"[Edgeworld Records]\">"))
     }
 
     @Test
@@ -103,8 +101,7 @@ class StatementsAcceptanceTest {
         val followedResponse = followRedirectResponse(skrooge(requestWithTwoFilesOfUnknownTransactions))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
-        followedResponse shouldMatch hasBody(containsSubstring("<h3>Edgeworld Records</h3>"))
-        followedResponse shouldMatch hasBody(containsSubstring("<h3>McDonalds</h3>"))
+        followedResponse shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"remaining-vendors\" value=\"[Edgeworld Records, McDonalds]\">"))
     }
 
     private fun followRedirectResponse(response: Response): Response {
