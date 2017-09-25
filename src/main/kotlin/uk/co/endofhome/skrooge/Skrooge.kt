@@ -196,9 +196,7 @@ class FileSystemMappingWriter : MappingWriter{
     val categoryMappingsFileOutputPath = "category-mappings/category-mappings.csv"
     override fun write(line: String): Boolean {
         try {
-            File(categoryMappingsFileOutputPath).printWriter().use { out ->
-                out.print(line)
-            }
+            File(categoryMappingsFileOutputPath).appendText(line + "\n")
             return true
         } catch (e: Exception) {
             return false
