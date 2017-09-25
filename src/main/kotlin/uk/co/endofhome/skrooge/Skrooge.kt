@@ -93,7 +93,7 @@ class UnknownTransactionHandler(private val renderer: TemplateRenderer) {
         val view = Body.view(renderer, ContentType.TEXT_HTML)
         val currentTransaction = Transaction(vendorLens(request), categories())
         val vendors: List<String> = transactionsLens(request).flatMap { it.split(",") }
-        val unknownTransactions = UnknownTransactions(currentTransaction, vendors)
+        val unknownTransactions = UnknownTransactions(currentTransaction, vendors.joinToString(","))
 
         return Response(OK).with(view of unknownTransactions)
     }
@@ -216,7 +216,7 @@ data class StatementData(val year: Year, val month: Month, val username: String,
 data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
 data class Line(val date: LocalDate, val purchase: String, val amount: Double)
 data class ProcessedLine(val unsuccessfullyProcessed: Boolean, val vendor: String, val line: String)
-data class UnknownTransactions(val currentTransaction: Transaction, val outstandingVendors: List<String>) : ViewModel
+data class UnknownTransactions(val currentTransaction: Transaction, val outstandingVendors: String) : ViewModel
 data class Transaction (val vendorName: String, val categories: List<Category>)
 data class Category(val title: String, val data: List<DataItem>)
 data class DataItem(val name: String)
