@@ -15,11 +15,14 @@ import org.http4k.core.Status.Companion.SEE_OTHER
 import org.http4k.hamkrest.hasBody
 import org.http4k.hamkrest.hasHeader
 import org.http4k.hamkrest.hasStatus
+import org.http4k.routing.RoutingHttpHandler
+import org.junit.Before
 import org.junit.Test
 import java.io.File
 
 class StatementsAcceptanceTest {
     val skrooge = Skrooge().routes()
+    val helpers = TestHelpers(skrooge)
 
     @Test
     fun `POST to statements endpoint with empty body returns HTTP Bad Request`() {
@@ -74,14 +77,14 @@ class StatementsAcceptanceTest {
         response shouldMatch hasStatus(SEE_OTHER)
         response shouldMatch hasHeader("Location", "/unknown-transaction?currentTransaction=McDonalds&outstandingVendors=")
 
-        val followedResponse = followRedirectResponse(response)
+        val followedResponse = helpers.followRedirectResponse(response)
         followedResponse shouldMatch hasBody(containsSubstring("You need to categorise some transactions."))
     }
 
     @Test
     fun `redirect when unrecognised transaction shows correct unrecognised transaction`() {
         val requestWithMcDonalds = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/unknown-transaction.csv]")
-        val followedResponse = followRedirectResponse(skrooge(requestWithMcDonalds))
+        val followedResponse = helpers.followRedirectResponse(skrooge(requestWithMcDonalds))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>McDonalds</h3>"))
     }
@@ -89,7 +92,7 @@ class StatementsAcceptanceTest {
     @Test
     fun `redirect when multiple unrecognised transactions shows correct unrecognised transactions`() {
         val requestWithTwoRecordShops = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/two-unknown-transactions.csv]")
-        val followedResponse = followRedirectResponse(skrooge(requestWithTwoRecordShops))
+        val followedResponse = helpers.followRedirectResponse(skrooge(requestWithTwoRecordShops))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
         followedResponse shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"remaining-vendors\" value=\"[Edgeworld Records]\">"))
@@ -98,15 +101,16 @@ class StatementsAcceptanceTest {
     @Test
     fun `redirect when multiple unrecognised transactions and multiple input files`() {
         val requestWithTwoFilesOfUnknownTransactions = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/two-unknown-transactions.csv,src/test/resources/unknown-transaction.csv]")
-        val followedResponse = followRedirectResponse(skrooge(requestWithTwoFilesOfUnknownTransactions))
+        val followedResponse = helpers.followRedirectResponse(skrooge(requestWithTwoFilesOfUnknownTransactions))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
         followedResponse shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"remaining-vendors\" value=\"[Edgeworld Records, McDonalds]\">"))
     }
+}
 
-    private fun followRedirectResponse(response: Response): Response {
+class TestHelpers(val skrooge: RoutingHttpHandler) {
+    fun followRedirectResponse(response: Response): Response {
         val location = response.headerValues("location").first()
         return skrooge(Request(Method.GET, location!!))
     }
-
 }

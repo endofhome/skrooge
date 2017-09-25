@@ -1,6 +1,7 @@
 package uk.co.endofhome.skrooge
 
 import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.should.shouldMatch
 import org.http4k.core.ContentType
@@ -8,8 +9,10 @@ import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
+import org.http4k.core.Status.Companion.SEE_OTHER
 import org.http4k.core.body.form
 import org.http4k.core.with
+import org.http4k.hamkrest.hasBody
 import org.http4k.hamkrest.hasStatus
 import org.http4k.lens.Header
 import org.junit.Test
@@ -18,12 +21,14 @@ class CategoryMappingNotQuiteAcceptanceTest {
     val categoryMappings = listOf("Edgeworld Records,Fun,Tom fun budget")
     val mappingWriter = MockMappingWriter()
     val skrooge = Skrooge(categoryMappings, mappingWriter).routes()
+    val helpers = TestHelpers(skrooge)
 
     @Test
     fun `POST to category-mapping endpoint with empty new-mapping field returns HTTP Bad Request`() {
         val request = Request(POST, "/category-mapping")
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("new-mapping", "")
+                .form("remaining-vendors", "")
         skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
     }
 
@@ -44,5 +49,21 @@ class CategoryMappingNotQuiteAcceptanceTest {
                 .form("remaining-vendors", "")
         skrooge(request) shouldMatch hasStatus(OK)
         assertThat(mappingWriter.read().last(), equalTo("Casbah Records,Fun,Tom fun budget"))
+    }
+
+    @Test
+    fun `succesful POST to category-mapping redirects back to continue categorisation if necessary`() {
+        val request = Request(POST, "/category-mapping")
+                .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+                .form("new-mapping", "DIY Space for London,Fun,Tom fun budget")
+                .form("remaining-vendors", "Another vendor")
+
+        val followedResponse = helpers.followRedirectResponse(skrooge(request))
+
+        assertThat(mappingWriter.read().last(), equalTo("DIY Space for London,Fun,Tom fun budget"))
+        followedResponse shouldMatch hasStatus(OK)
+        followedResponse shouldMatch hasBody(containsSubstring("You need to categorise some transactions."))
+        followedResponse shouldMatch hasBody(containsSubstring("<h3>Another vendor</h3>"))
+
     }
 }

@@ -147,16 +147,27 @@ class StatementDecider(categoryMappings: List<String>) {
 class CategoryMappings(private val mappingWriter: MappingWriter) {
     fun addCategoryMapping(request: Request): Response {
         val newMappingLens = FormField.required("new-mapping")
-        val remainingVendorsLens = FormField.optional("remainingVendors")
-        val webForm: BiDiBodyLens<WebForm> = Body.webForm(FormValidator.Strict, newMappingLens).toLens()
-        val newMapping: List<String> =  webForm(request).fields["new-mapping"]!!.first().split(",")
+        val remainingVendorsLens = FormField.required("remaining-vendors")
+        val webForm: BiDiBodyLens<WebForm> = Body.webForm(FormValidator.Strict, newMappingLens, remainingVendorsLens).toLens()
+        val newMapping = newMappingLens.extract(webForm(request)).split(",")
+        val remainingVendors: List<String> = remainingVendorsLens.extract(webForm(request)).split(",").filter { it.isNotBlank() }
 
         return newMapping.size.let {
             when {
                 it < 3 -> Response(BAD_REQUEST)
                 else -> {
                     mappingWriter.write(newMapping.joinToString(","))
-                    Response(OK)
+                    when (remainingVendors.isEmpty()) {
+                        true -> Response(OK)
+                        false -> {
+                            val nextVendor = remainingVendors.first()
+                            val carriedForwardVendors = remainingVendors.filterIndexed { index, _ -> index != 0 }
+                            val uri = Uri.of("/unknown-transaction")
+                                    .query("currentTransaction", nextVendor)
+                                    .query("outstandingVendors", carriedForwardVendors.joinToString(","))
+                            Response(SEE_OTHER).header("Location", uri.toString())
+                        }
+                    }
                 }
             }
         }
