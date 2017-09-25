@@ -95,7 +95,7 @@ class StatementsAcceptanceTest {
         val followedResponse = helpers.followRedirectResponse(skrooge(requestWithTwoRecordShops))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
-        followedResponse shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"remaining-vendors\" value=\"[Edgeworld Records]\">"))
+        followedResponse shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"remaining-vendors\" value=\"Edgeworld Records\">"))
     }
 
     @Test
@@ -104,7 +104,7 @@ class StatementsAcceptanceTest {
         val followedResponse = helpers.followRedirectResponse(skrooge(requestWithTwoFilesOfUnknownTransactions))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
-        followedResponse shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"remaining-vendors\" value=\"[Edgeworld Records, McDonalds]\">"))
+        followedResponse shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"remaining-vendors\" value=\"Edgeworld Records,McDonalds\">"))
     }
 }
 
