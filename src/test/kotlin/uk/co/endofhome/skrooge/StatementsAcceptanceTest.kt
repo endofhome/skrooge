@@ -42,7 +42,7 @@ class StatementsAcceptanceTest {
 
     @Test
     fun `POST to statements with multiple dummy files returns HTTP OK`() {
-        val request = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/empty-file.csv,src/test/resources/one-known-transaction.csv]")
+        val request = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/empty-file.csv,src/test/resources/empty-file.csv]")
         skrooge(request) shouldMatch hasStatus(OK)
     }
 

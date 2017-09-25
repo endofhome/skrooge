@@ -9,7 +9,7 @@
     <h1>You need to categorise some transactions.</h1>
     <h3>{{currentTransaction.vendorName}}</h3>
     <form action="/category-mapping" method="post">
-        <select>
+        <select name="new-mapping">
             {{#each currentTransaction.categories}}
             <optgroup label="{{title}}">
                 {{#each data}}

@@ -14,8 +14,13 @@ import org.http4k.core.Uri
 import org.http4k.core.query
 import org.http4k.core.with
 import org.http4k.filter.DebuggingFilters
+import org.http4k.lens.BiDiBodyLens
 import org.http4k.lens.BiDiLens
+import org.http4k.lens.FormField
+import org.http4k.lens.FormValidator
 import org.http4k.lens.Query
+import org.http4k.lens.WebForm
+import org.http4k.lens.webForm
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.server.Jetty
@@ -118,7 +123,7 @@ class DecisionWriter {
     }
 }
 
-class StatementDecider(val categoryMappings: List<String>) {
+class StatementDecider(categoryMappings: List<String>) {
     val mappings = categoryMappings.map {
         val mappingStrings = it.split(",")
         CategoryMapping(mappingStrings[0], mappingStrings[1], mappingStrings[2])
@@ -141,12 +146,16 @@ class StatementDecider(val categoryMappings: List<String>) {
 
 class CategoryMappings(private val mappingWriter: MappingWriter) {
     fun addCategoryMapping(request: Request): Response {
-        val bodyList = request.body.payload.asString().split(",")
-        return bodyList.size.let {
+        val newMappingLens = FormField.required("new-mapping")
+        val remainingVendorsLens = FormField.optional("remainingVendors")
+        val webForm: BiDiBodyLens<WebForm> = Body.webForm(FormValidator.Strict, newMappingLens).toLens()
+        val newMapping: List<String> =  webForm(request).fields["new-mapping"]!!.first().split(",")
+
+        return newMapping.size.let {
             when {
                 it < 3 -> Response(BAD_REQUEST)
                 else -> {
-                    mappingWriter.write(bodyList.joinToString(","))
+                    mappingWriter.write(newMapping.joinToString(","))
                     Response(OK)
                 }
             }
