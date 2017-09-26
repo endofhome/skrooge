@@ -1,39 +1,22 @@
 package uk.co.endofhome.skrooge
 
 import org.http4k.asString
-import org.http4k.core.Body
-import org.http4k.core.ContentType
+import org.http4k.core.*
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
-import org.http4k.core.Request
-import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
-import org.http4k.core.Uri
-import org.http4k.core.query
-import org.http4k.core.with
 import org.http4k.filter.DebuggingFilters
-import org.http4k.lens.BiDiBodyLens
-import org.http4k.lens.BiDiLens
-import org.http4k.lens.FormField
-import org.http4k.lens.FormValidator
-import org.http4k.lens.Query
-import org.http4k.lens.WebForm
-import org.http4k.lens.webForm
+import org.http4k.lens.*
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
-import org.http4k.template.HandlebarsTemplates
-import org.http4k.template.TemplateRenderer
-import org.http4k.template.ViewModel
-import org.http4k.template.view
+import org.http4k.template.*
 import uk.co.endofhome.skrooge.Categories.categories
 import java.io.File
-import java.time.LocalDate
-import java.time.Month
-import java.time.Year
+import java.time.*
 
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
@@ -50,7 +33,14 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
     fun routes() = routes(
             "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body) },
             "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request) },
-            "category-mapping" bind POST to { request -> CategoryMappings(mappingWriter).addCategoryMapping(request) }
+            "category-mapping" bind POST to { request -> CategoryMappings(mappingWriter).addCategoryMapping(request) },
+            "report/categorisations" bind GET to { request ->
+                val banksLens: BiDiLens<Request, String> = Query.required("currentBank")
+                val banks = banksLens.extract(request).split(".")
+                val view = Body.view(renderer, ContentType.TEXT_HTML)
+                val bankReport = BankReport(banks.first(), banks.filterIndexed { index, _ -> index != 0 })
+                Response(OK).with(view of bankReport)
+            }
     )
 }
 
@@ -77,7 +67,9 @@ class Statements(val categoryMappings: List<String>) {
                 false -> {
                     val decisions = processedLines.map { it.line }
                     DecisionWriter().write(statementData, decisions)
-                    Response(OK)
+                    val firstFile = statementData.files.first().name.split("_").get(2).substringBefore(".csv")
+                    val uri = Uri.of("/report/categorisations").query("currentBank", firstFile)
+                    Response(SEE_OTHER).header("Location", uri.toString())
                 }
             }
         } catch (e: Exception) {
@@ -220,3 +212,4 @@ data class UnknownTransactions(val currentTransaction: Transaction, val outstand
 data class Transaction (val vendorName: String, val categories: List<Category>)
 data class Category(val title: String, val data: List<DataItem>)
 data class DataItem(val name: String)
+data class BankReport(val currentBank: String, val outstandingBanks: List<String>) : ViewModel
