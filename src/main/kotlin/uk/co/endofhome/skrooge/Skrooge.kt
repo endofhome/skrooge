@@ -158,7 +158,7 @@ class CategoryMappings(private val mappingWriter: MappingWriter) {
                 else -> {
                     mappingWriter.write(newMapping.joinToString(","))
                     when (remainingVendors.isEmpty()) {
-                        true -> Response(OK)
+                        true -> Response(OK).body("All new categories mapped. Please POST your data once again.")
                         false -> {
                             val nextVendor = remainingVendors.first()
                             val carriedForwardVendors = remainingVendors.filterIndexed { index, _ -> index != 0 }

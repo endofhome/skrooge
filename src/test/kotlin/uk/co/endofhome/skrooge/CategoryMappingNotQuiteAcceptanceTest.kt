@@ -15,6 +15,7 @@ import org.http4k.core.body.form
 import org.http4k.hamkrest.hasBody
 import org.http4k.hamkrest.hasStatus
 import org.http4k.lens.Header
+import org.junit.Ignore
 import org.junit.Test
 
 class CategoryMappingNotQuiteAcceptanceTest {
@@ -64,5 +65,33 @@ class CategoryMappingNotQuiteAcceptanceTest {
         followedResponse shouldMatch hasStatus(OK)
         followedResponse shouldMatch hasBody(containsSubstring("You need to categorise some transactions."))
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Another vendor</h3>"))
+    }
+
+    @Ignore("TODO but not important enough yet")
+    @Test
+    fun `when all categories have been mapped a monthly report is available for review`() {
+        val request = Request(POST, "/category-mapping")
+                .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+                .form("new-mapping", "Last new mapping,Fun,Tom fun budget")
+                .form("remaining-vendors", "")
+
+        val followedResponse = helpers.followRedirectResponse(skrooge(request))
+
+        followedResponse shouldMatch hasStatus(OK)
+        followedResponse shouldMatch hasBody(containsSubstring("Please review the categories chosen."))
+        followedResponse shouldMatch hasBody(containsSubstring("<h3>Last new mapping</h3>"))
+    }
+
+    @Test
+    fun `temporarily, when all categories have been mapped a confirmation page is shown`() {
+        val request = Request(POST, "/category-mapping")
+                .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+                .form("new-mapping", "Last new mapping,Fun,Tom fun budget")
+                .form("remaining-vendors", "")
+
+        val response = skrooge(request)
+
+        response shouldMatch hasStatus(OK)
+        response shouldMatch hasBody(containsSubstring("All new categories mapped. Please POST your data once again."))
     }
 }

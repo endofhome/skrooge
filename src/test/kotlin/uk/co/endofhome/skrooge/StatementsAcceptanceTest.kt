@@ -16,7 +16,6 @@ import org.http4k.hamkrest.hasBody
 import org.http4k.hamkrest.hasHeader
 import org.http4k.hamkrest.hasStatus
 import org.http4k.routing.RoutingHttpHandler
-import org.junit.Before
 import org.junit.Test
 import java.io.File
 
