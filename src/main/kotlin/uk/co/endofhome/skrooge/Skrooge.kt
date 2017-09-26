@@ -34,12 +34,7 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
             "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body) },
             "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(mappingWriter).addCategoryMapping(request) },
-            "report/categorisations" bind GET to { request ->
-                val banksLens: BiDiLens<Request, String> = Query.required("currentBank")
-                val banks = banksLens.extract(request).split(".")
-                val view = Body.view(renderer, ContentType.TEXT_HTML)
-                val bankReport = BankReport(banks.first(), banks.filterIndexed { index, _ -> index != 0 })
-                Response(OK).with(view of bankReport)
+            "report/categorisations" bind GET to { request -> BankReports(renderer).report(request)
             }
     )
 }
@@ -163,6 +158,16 @@ class CategoryMappings(private val mappingWriter: MappingWriter) {
                 }
             }
         }
+    }
+}
+
+class BankReports(val renderer: TemplateRenderer) {
+    fun report(request: Request): Response {
+        val banksLens: BiDiLens<Request, String> = Query.required("currentBank")
+        val banks = banksLens.extract(request).split(".")
+        val view = Body.view(renderer, ContentType.TEXT_HTML)
+        val bankReport = BankReport(banks.first(), banks.filterIndexed { index, _ -> index != 0 })
+        return Response(OK).with(view of bankReport)
     }
 }
 
