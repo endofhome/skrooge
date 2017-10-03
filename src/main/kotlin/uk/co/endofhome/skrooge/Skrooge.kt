@@ -1,22 +1,39 @@
 package uk.co.endofhome.skrooge
 
 import org.http4k.asString
-import org.http4k.core.*
+import org.http4k.core.Body
+import org.http4k.core.ContentType
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
+import org.http4k.core.Request
+import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
+import org.http4k.core.Uri
+import org.http4k.core.query
+import org.http4k.core.with
 import org.http4k.filter.DebuggingFilters
-import org.http4k.lens.*
+import org.http4k.lens.BiDiBodyLens
+import org.http4k.lens.BiDiLens
+import org.http4k.lens.FormField
+import org.http4k.lens.FormValidator
+import org.http4k.lens.Query
+import org.http4k.lens.WebForm
+import org.http4k.lens.webForm
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
-import org.http4k.template.*
+import org.http4k.template.HandlebarsTemplates
+import org.http4k.template.TemplateRenderer
+import org.http4k.template.ViewModel
+import org.http4k.template.view
 import uk.co.endofhome.skrooge.Categories.categories
 import java.io.File
-import java.time.*
+import java.time.LocalDate
+import java.time.Month
+import java.time.Year
 
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
@@ -45,25 +62,29 @@ class Statements(val categoryMappings: List<String>) {
     fun uploadStatements(body: Body): Response {
         try {
             val statementData: StatementData = parser.parse(body)
-            val processedLines = statementData.files.flatMap {
-                StatementDecider(categoryMappings).process(it.readLines())
+            val processedLines: List<BankStatement> = statementData.files.map {
+                BankStatement(
+                        it.name.split("_")[2].substringBefore(".csv"),
+                        StatementDecider(categoryMappings).process(it.readLines())
+                )
             }
-            val anyUnsuccessful: ProcessedLine? = processedLines.find { it.unsuccessfullyProcessed }
-            return when (anyUnsuccessful != null) {
+            val statementsWithUnknownTransactions = processedLines.filter { it.decisions.map { it.category }.contains(null) }
+
+            return when (statementsWithUnknownTransactions.isNotEmpty()) {
                 true -> {
-                    val unknownTransactions = processedLines.filter { it.unsuccessfullyProcessed }
-                    val currentTransaction: ProcessedLine = unknownTransactions.first()
-                    val outstandingVendors = unknownTransactions.filterIndexed { index, _ -> index != 0 }.map { it.vendor }
+                    val unknownTransactions = statementsWithUnknownTransactions.flatMap { it.decisions }.filter { it.category == null }
+                    val currentTransaction: Decision = unknownTransactions.first()
+                    val outstandingTransactions = unknownTransactions.filterIndexed { index, _ -> index != 0 }
                     val uri = Uri.of("/unknown-transaction")
-                            .query("currentTransaction", currentTransaction.vendor)
-                            .query("outstandingVendors", outstandingVendors.joinToString(","))
+                            .query("currentTransaction", currentTransaction.line.purchase)
+                            .query("outstandingTransactions", outstandingTransactions.map { it.line.purchase }.joinToString(","))
                     Response(SEE_OTHER).header("Location", uri.toString())
                 }
                 false -> {
-                    val decisions = processedLines.map { it.line }
+                    val decisions = processedLines.map { it.toString() }
                     DecisionWriter().write(statementData, decisions)
-                    val firstFile = statementData.files.first().name.split("_").get(2).substringBefore(".csv")
-                    val uri = Uri.of("/report/categorisations").query("currentBank", firstFile)
+                    val uri = Uri.of("/report/categorisations")
+                            .query("currentBank", processedLines.first().bankName)
                     Response(SEE_OTHER).header("Location", uri.toString())
                 }
             }
@@ -76,9 +97,9 @@ class Statements(val categoryMappings: List<String>) {
 class UnknownTransactionHandler(private val renderer: TemplateRenderer) {
     fun handle(request: Request): Response {
         val vendorLens: BiDiLens<Request, String> = Query.required("currentTransaction")
-        val transactionsLens: BiDiLens<Request, List<String>> = Query.multi.required("outstandingVendors")
+        val transactionsLens: BiDiLens<Request, List<String>> = Query.multi.required("outstandingTransactions")
         val view = Body.view(renderer, ContentType.TEXT_HTML)
-        val currentTransaction = Transaction(vendorLens(request), categories())
+        val currentTransaction: Transaction = Transaction(vendorLens(request), categories())
         val vendors: List<String> = transactionsLens(request).flatMap { it.split(",") }
         val unknownTransactions = UnknownTransactions(currentTransaction, vendors.joinToString(","))
 
@@ -118,15 +139,15 @@ class StatementDecider(categoryMappings: List<String>) {
 
     fun process(statementData: List<String>) = statementData.map { decide(it) }
 
-    private fun decide(lineString: String): ProcessedLine {
+    private fun decide(lineString: String): Decision {
         val lineEntries = lineString.split(",")
         val dateValues = lineEntries[0].split("-").map { it.toInt() }
         val line = Line(LocalDate.of(dateValues[0], dateValues[1], dateValues[2]), lineEntries[1], lineEntries[2].toDouble())
 
         val match = mappings.find { it.purchase.contains(line.purchase) }
         return when (match) {
-            null -> { ProcessedLine(true, line.purchase, "") }
-            else -> { ProcessedLine(false, line.purchase, lineString + ",${match.mainCatgeory},${match.subCategory}") }
+            null -> { Decision(line, null, null) }
+            else -> { Decision(line, Category(match.mainCatgeory, emptyList()), DataItem(match.subCategory)) }
         }
     }
 }
@@ -151,7 +172,7 @@ class CategoryMappings(private val mappingWriter: MappingWriter) {
                             val carriedForwardVendors = remainingVendors.filterIndexed { index, _ -> index != 0 }
                             val uri = Uri.of("/unknown-transaction")
                                     .query("currentTransaction", nextVendor)
-                                    .query("outstandingVendors", carriedForwardVendors.joinToString(","))
+                                    .query("outstandingTransactions", carriedForwardVendors.joinToString(","))
                             Response(SEE_OTHER).header("Location", uri.toString())
                         }
                     }
@@ -212,9 +233,10 @@ class MockMappingWriter : MappingWriter {
 data class StatementData(val year: Year, val month: Month, val username: String, val files: List<File>)
 data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
 data class Line(val date: LocalDate, val purchase: String, val amount: Double)
-data class ProcessedLine(val unsuccessfullyProcessed: Boolean, val vendor: String, val line: String)
-data class UnknownTransactions(val currentTransaction: Transaction, val outstandingVendors: String) : ViewModel
-data class Transaction (val vendorName: String, val categories: List<Category>)
+data class UnknownTransactions(val currentTransaction: Transaction, val outstandingTransactions: String) : ViewModel
+data class Transaction (val vendorName: String, val categories: List<Category>?)
 data class Category(val title: String, val data: List<DataItem>)
 data class DataItem(val name: String)
-data class BankReport(val currentBank: String, val outstandingBanks: List<String>) : ViewModel
+data class BankStatement(val bankName: String, val decisions: List<Decision>)
+data class Decision(val line: Line, val category: Category?, val dataItem: DataItem?)
+data class BankReport(val currentBank: String, val outstandingBanks: List<String>, val transactions: List<Transaction> = emptyList()) : ViewModel
