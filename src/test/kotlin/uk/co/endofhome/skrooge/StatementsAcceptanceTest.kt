@@ -4,19 +4,13 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.should.shouldMatch
-import org.http4k.core.Body
-import org.http4k.core.Method
+import org.http4k.core.*
 import org.http4k.core.Method.POST
-import org.http4k.core.Request
-import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
-import org.http4k.hamkrest.hasBody
-import org.http4k.hamkrest.hasHeader
-import org.http4k.hamkrest.hasStatus
+import org.http4k.hamkrest.*
 import org.http4k.routing.RoutingHttpHandler
-import org.junit.Ignore
 import org.junit.Test
 import java.io.File
 
@@ -70,7 +64,6 @@ class StatementsAcceptanceTest {
         assertThat(fileContents[0], equalTo("2017-09-17,Pizza Union,5.50,Eats and drinks,Meals at work"))
     }
 
-    @Ignore("Ignoring so I can commit a smaller set of changes")
     @Test
     fun `POST with one entry redirects to monthly report when recognised transaction`() {
         val requestWithPizzaUnion = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/2017-02_Someone_one-known-transaction.csv]")
@@ -124,6 +117,6 @@ class StatementsAcceptanceTest {
 class TestHelpers(val skrooge: RoutingHttpHandler) {
     fun followRedirectResponse(response: Response): Response {
         val location = response.headerValues("location").first()
-        return skrooge(Request(Method.GET, location!!))
+        return skrooge(Request(Method.GET, location!!).body(response.body))
     }
 }

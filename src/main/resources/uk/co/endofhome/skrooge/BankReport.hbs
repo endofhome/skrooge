@@ -8,10 +8,10 @@
 <body>
     <h1>Please review your monthly categorisations for {{currentBank}}</h1>
     <form action="/reports/categorisations" method="post">
-        {{#each transactions}}
-            <h3>{{vendorName}}</h3>
+        {{#each decisions}}
+            <h3>{{line.purchase}}</h3>
         {{/each}}
-        <input type="hidden" name="outstanding-banks" value="{{outstandingBanks}}">
+        <input type="hidden" name="outstanding-banks" value="{{outstandingStatements}}">
         <div class="button">
             <button type="submit">Next bank</button>
         </div>
