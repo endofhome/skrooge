@@ -2,8 +2,8 @@ group 'uk.co.endofhome'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.1.4'
-    ext.http4k_version = '2.27.2'
+    ext.kotlin_version = '1.1.50'
+    ext.http4k_version = '2.29.3'
 
     repositories {
         mavenCentral()
