@@ -73,7 +73,7 @@ class StatementsAcceptanceTest {
         val followedResponse = helpers.followRedirectResponse(response)
         followedResponse shouldMatch hasStatus(OK)
         followedResponse shouldMatch hasBody(containsSubstring("<h1>Please review your monthly categorisations for one-known-transaction</h1>"))
-        followedResponse shouldMatch hasBody(containsSubstring("<h3>2017-09-17, Pizza Union</h3>"))
+        followedResponse shouldMatch hasBody(containsSubstring("<h3>2017-09-17, Pizza Union: £5.5</h3>"))
     }
 
     @Test
