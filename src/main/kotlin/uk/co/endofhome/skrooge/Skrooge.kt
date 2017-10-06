@@ -8,7 +8,6 @@ import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
 import org.http4k.filter.DebuggingFilters
-import org.http4k.format.Gson.auto
 import org.http4k.lens.*
 import org.http4k.routing.bind
 import org.http4k.routing.routes
@@ -32,17 +31,16 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
 
     fun routes() = routes(
-            "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body) },
+            "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body, renderer) },
             "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request) },
-            "category-mapping" bind POST to { request -> CategoryMappings(mappingWriter).addCategoryMapping(request) },
-            "report/categorisations" bind GET to { request -> BankReports(renderer).report(request) }
+            "category-mapping" bind POST to { request -> CategoryMappings(mappingWriter).addCategoryMapping(request) }
     )
 }
 
 class Statements(val categoryMappings: List<String>) {
     private val parser = PretendFormParser()
 
-    fun uploadStatements(body: Body): Response {
+    fun uploadStatements(body: Body, renderer: TemplateRenderer): Response {
         try {
             val statementData: StatementData = parser.parse(body)
             val processedLines: List<BankStatement> = statementData.files.map {
@@ -66,12 +64,13 @@ class Statements(val categoryMappings: List<String>) {
                 false -> {
                     val decisions = processedLines.map { it.toString() }
                     DecisionWriter().write(statementData, decisions)
-
-                    val bankStatementsLens = Body.auto<BankStatements>().toLens()
-                    return bankStatementsLens.inject(
-                            BankStatements(processedLines),
-                            Response(SEE_OTHER).header("Location", "/report/categorisations")
+                    val bankStatements = BankStatements(processedLines)
+                    val bankReport = BankReport(
+                            bankStatements.statements.first().bankName,
+                            bankStatements.statements.first().decisions,
+                            bankStatements.statements.filterIndexed { index, _ -> index != 0 }
                     )
+                    return BankReports(renderer).report(bankReport)
                 }
             }
         } catch (e: Exception) {
@@ -168,16 +167,9 @@ class CategoryMappings(private val mappingWriter: MappingWriter) {
     }
 }
 
-class BankReports(val renderer: TemplateRenderer) {
-    fun report(request: Request): Response {
-        val bankStatementsLens = Body.auto<BankStatements>().toLens()
-        val bankStatements = bankStatementsLens.extract(request)
+class BankReports(private val renderer: TemplateRenderer) {
+    fun report(bankReport: BankReport): Response {
         val view = Body.view(renderer, ContentType.TEXT_HTML)
-        val bankReport = BankReport(
-                bankStatements.statements.first().bankName,
-                bankStatements.statements.first().decisions,
-                bankStatements.statements.filterIndexed { index, _ -> index != 0 }
-        )
         return Response(OK).with(view of bankReport)
     }
 }

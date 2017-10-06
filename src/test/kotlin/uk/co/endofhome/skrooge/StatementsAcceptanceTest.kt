@@ -34,13 +34,13 @@ class StatementsAcceptanceTest {
     @Test
     fun `POST to statements with a dummy string instead of form data returns HTTP OK`() {
         val request = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/2017-01_Someone_empty-file.csv]")
-        skrooge(request) shouldMatch hasStatus(SEE_OTHER)
+        skrooge(request) shouldMatch hasStatus(OK)
     }
 
     @Test
-    fun `POST to statements with multiple dummy files returns HTTP SEE OTHER`() {
+    fun `POST to statements with multiple dummy files returns HTTP OK`() {
         val request = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/2017-01_Someone_empty-file.csv,src/test/resources/2017-01_Someone_empty-file.csv]")
-        skrooge(request) shouldMatch hasStatus(SEE_OTHER)
+        skrooge(request) shouldMatch hasStatus(OK)
     }
 
     @Test
@@ -65,15 +65,13 @@ class StatementsAcceptanceTest {
     }
 
     @Test
-    fun `POST with one entry redirects to monthly report when recognised transaction`() {
+    fun `POST with one entry returns a monthly report when recognised transaction`() {
         val requestWithPizzaUnion = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/2017-02_Someone_one-known-transaction.csv]")
         val response = skrooge(requestWithPizzaUnion)
-        response shouldMatch hasStatus(SEE_OTHER)
 
-        val followedResponse = helpers.followRedirectResponse(response)
-        followedResponse shouldMatch hasStatus(OK)
-        followedResponse shouldMatch hasBody(containsSubstring("<h1>Please review your monthly categorisations for one-known-transaction</h1>"))
-        followedResponse shouldMatch hasBody(containsSubstring("<h3>2017-09-17, Pizza Union: £5.5</h3>"))
+        response shouldMatch hasStatus(OK)
+        response shouldMatch hasBody(containsSubstring("<h1>Please review your monthly categorisations for one-known-transaction</h1>"))
+        response shouldMatch hasBody(containsSubstring("<h3>2017-09-17, Pizza Union: £5.5</h3>"))
     }
 
     @Test
@@ -117,6 +115,6 @@ class StatementsAcceptanceTest {
 class TestHelpers(val skrooge: RoutingHttpHandler) {
     fun followRedirectResponse(response: Response): Response {
         val location = response.headerValues("location").first()
-        return skrooge(Request(Method.GET, location!!).body(response.body))
+        return skrooge(Request(Method.GET, location!!))
     }
 }
