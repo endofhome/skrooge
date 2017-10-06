@@ -17,6 +17,7 @@ import org.http4k.template.*
 import uk.co.endofhome.skrooge.Categories.categories
 import java.io.File
 import java.time.*
+import java.time.format.DateTimeFormatter
 
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
@@ -64,10 +65,14 @@ class Statements(val categoryMappings: List<String>) {
                 false -> {
                     val decisions = processedLines.map { it.toString() }
                     DecisionWriter().write(statementData, decisions)
-                    val bankStatements = BankStatements(processedLines)
+                    val bankStatements = BankStatements(processedLines.map { bankStatement ->
+                        FormattedBankStatement(bankStatement.bankName, bankStatement.decisions.map { decision ->
+                            FormattedDecision(LineFormatter.format(decision.line), decision.category, decision.dataItem)
+                        })
+                    })
                     val bankReport = BankReport(
                             bankStatements.statements.first().bankName,
-                            bankStatements.statements.first().decisions,
+                            bankStatements.statements.first().formattedDecisions,
                             bankStatements.statements.filterIndexed { index, _ -> index != 0 }
                     )
                     return BankReports(renderer).report(bankReport)
@@ -79,12 +84,20 @@ class Statements(val categoryMappings: List<String>) {
     }
 }
 
+object LineFormatter {
+    fun format(line: Line) = FormattedLine(
+                line.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                line.purchase,
+                line.amount
+        )
+}
+
 class UnknownTransactionHandler(private val renderer: TemplateRenderer) {
     fun handle(request: Request): Response {
         val vendorLens: BiDiLens<Request, String> = Query.required("currentTransaction")
         val transactionsLens: BiDiLens<Request, List<String>> = Query.multi.required("outstandingTransactions")
         val view = Body.view(renderer, ContentType.TEXT_HTML)
-        val currentTransaction: Transaction = Transaction(vendorLens(request), categories())
+        val currentTransaction = Transaction(vendorLens(request), categories())
         val vendors: List<String> = transactionsLens(request).flatMap { it.split(",") }
         val unknownTransactions = UnknownTransactions(currentTransaction, vendors.joinToString(","))
 
@@ -215,11 +228,14 @@ class MockMappingWriter : MappingWriter {
 data class StatementData(val year: Year, val month: Month, val username: String, val files: List<File>)
 data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
 data class Line(val date: LocalDate, val purchase: String, val amount: Double)
+data class FormattedLine(val date: String, val purchase: String, val amount: Double)
 data class UnknownTransactions(val currentTransaction: Transaction, val outstandingTransactions: String) : ViewModel
 data class Transaction (val vendorName: String, val categories: List<Category>?)
 data class Category(val title: String, val data: List<DataItem>)
 data class DataItem(val name: String)
 data class BankStatement(val bankName: String, val decisions: List<Decision>)
-data class BankStatements(val statements: List<BankStatement>)
+data class FormattedBankStatement(val bankName: String, val formattedDecisions: List<FormattedDecision>)
+data class BankStatements(val statements: List<FormattedBankStatement>)
 data class Decision(val line: Line, val category: Category?, val dataItem: DataItem?)
-data class BankReport(val currentBank: String, val decisions: List<Decision>, val outstandingStatements: List<BankStatement>) : ViewModel
+data class FormattedDecision(val line: FormattedLine, val category: Category?, val dataItem: DataItem?)
+data class BankReport(val currentBank: String, val decisions: List<FormattedDecision>, val outstandingStatements: List<FormattedBankStatement>) : ViewModel
