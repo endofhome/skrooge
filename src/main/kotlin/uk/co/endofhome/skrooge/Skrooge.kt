@@ -68,7 +68,7 @@ class Statements(val categoryMappings: List<String>) {
                     DecisionWriter().write(statementData, decisions)
                     val bankStatements = BankStatements(processedLines.map { bankStatement ->
                         FormattedBankStatement(bankStatement.bankName, bankStatement.decisions.map { decision ->
-                            FormattedDecision(LineFormatter.format(decision.line), decision.category, decision.dataItem)
+                            FormattedDecision(LineFormatter.format(decision.line), decision.category, decision.subCategory)
                         })
                     })
                     val bankReport = BankReport(
@@ -111,10 +111,10 @@ class UnknownTransactionHandler(private val renderer: TemplateRenderer) {
 
 object Categories {
     fun categories() = listOf(
-            Category("In your home", listOf(DataItem("Mortgage"), DataItem("Building insurance"))),
-            Category("Insurance", listOf(DataItem("Travel insurance"), DataItem("Income protection"))),
-            Category("Eats and drinks", listOf(DataItem("Food"), DataItem("Meals at work"))),
-            Category("Fun", listOf(DataItem("Tom fun budget"), DataItem("Someone else's fun budget")))
+            Category("In your home", listOf(SubCategory("Mortgage"), SubCategory("Building insurance"))),
+            Category("Insurance", listOf(SubCategory("Travel insurance"), SubCategory("Income protection"))),
+            Category("Eats and drinks", listOf(SubCategory("Food"), SubCategory("Meals at work"))),
+            Category("Fun", listOf(SubCategory("Tom fun budget"), SubCategory("Someone else's fun budget")))
     )
 }
 
@@ -149,7 +149,7 @@ class StatementDecider(categoryMappings: List<String>) {
         val match = mappings.find { it.purchase.contains(line.purchase) }
         return when (match) {
             null -> { Decision(line, null, null) }
-            else -> { Decision(line, Category(match.mainCatgeory, emptyList()), DataItem(match.subCategory)) }
+            else -> { Decision(line, Category(match.mainCatgeory, emptyList()), SubCategory(match.subCategory)) }
         }
     }
 }
@@ -235,11 +235,11 @@ data class Line(val date: LocalDate, val purchase: String, val amount: Double)
 data class FormattedLine(val date: String, val purchase: String, val amount: String)
 data class UnknownTransactions(val currentTransaction: Transaction, val outstandingTransactions: String) : ViewModel
 data class Transaction (val vendorName: String, val categories: List<Category>?)
-data class Category(val title: String, val data: List<DataItem>)
-data class DataItem(val name: String)
+data class Category(val title: String, val data: List<SubCategory>)
+data class SubCategory(val name: String)
 data class BankStatement(val bankName: String, val decisions: List<Decision>)
 data class FormattedBankStatement(val bankName: String, val formattedDecisions: List<FormattedDecision>)
 data class BankStatements(val statements: List<FormattedBankStatement>)
-data class Decision(val line: Line, val category: Category?, val dataItem: DataItem?)
-data class FormattedDecision(val line: FormattedLine, val category: Category?, val dataItem: DataItem?)
+data class Decision(val line: Line, val category: Category?, val subCategory: SubCategory?)
+data class FormattedDecision(val line: FormattedLine, val category: Category?, val subCategory: SubCategory?)
 data class BankReport(val currentBank: String, val decisions: List<FormattedDecision>, val outstandingStatements: List<FormattedBankStatement>) : ViewModel
