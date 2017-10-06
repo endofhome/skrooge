@@ -68,7 +68,12 @@ class Statements(val categoryMappings: List<String>) {
                     DecisionWriter().write(statementData, decisions)
                     val bankStatements = BankStatements(processedLines.map { bankStatement ->
                         FormattedBankStatement(bankStatement.bankName, bankStatement.decisions.map { decision ->
-                            FormattedDecision(LineFormatter.format(decision.line), decision.category, decision.subCategory)
+                            FormattedDecision(
+                                    LineFormatter.format(decision.line),
+                                    decision.category,
+                                    decision.subCategory,
+                                    Categories.categoriesWithSelection(decision.subCategory)
+                            )
                         })
                     })
                     val bankReport = BankReport(
@@ -116,6 +121,25 @@ object Categories {
             Category("Eats and drinks", listOf(SubCategory("Food"), SubCategory("Meals at work"))),
             Category("Fun", listOf(SubCategory("Tom fun budget"), SubCategory("Someone else's fun budget")))
     )
+
+    fun categoriesWithSelection(subCategory: SubCategory?): CategoriesWithSelection {
+        val titles = categories().map { it.title }
+        val subCategories: List<List<SubCategoryWithSelection>> = categories().map { cat ->
+            cat.subCategories.map { subCat ->
+                SubCategoryWithSelection(subCat, selectedString(subCat, subCategory))
+            }
+        }
+        val catsWithSelection = titles.zip(subCategories).map { CategoryWithSelection(it.first, it.second) }
+        return CategoriesWithSelection(catsWithSelection)
+    }
+
+    private fun selectedString(subCategory: SubCategory, anotherSubCategory: SubCategory?): String {
+        return when (subCategory == anotherSubCategory) {
+            true -> " selected"
+            false -> ""
+        }
+
+    }
 }
 
 class DecisionWriter {
@@ -235,11 +259,14 @@ data class Line(val date: LocalDate, val purchase: String, val amount: Double)
 data class FormattedLine(val date: String, val purchase: String, val amount: String)
 data class UnknownTransactions(val currentTransaction: Transaction, val outstandingTransactions: String) : ViewModel
 data class Transaction (val vendorName: String, val categories: List<Category>?)
-data class Category(val title: String, val data: List<SubCategory>)
+data class Category(val title: String, val subCategories: List<SubCategory>)
+data class CategoryWithSelection(val title: String, val subCategories: List<SubCategoryWithSelection>)
+data class CategoriesWithSelection(val categories: List<CategoryWithSelection>)
 data class SubCategory(val name: String)
+data class SubCategoryWithSelection(val subCategory: SubCategory, val selector: String)
 data class BankStatement(val bankName: String, val decisions: List<Decision>)
 data class FormattedBankStatement(val bankName: String, val formattedDecisions: List<FormattedDecision>)
 data class BankStatements(val statements: List<FormattedBankStatement>)
 data class Decision(val line: Line, val category: Category?, val subCategory: SubCategory?)
-data class FormattedDecision(val line: FormattedLine, val category: Category?, val subCategory: SubCategory?)
+data class FormattedDecision(val line: FormattedLine, val category: Category?, val subCategory: SubCategory?, val categoriesWithSelection: CategoriesWithSelection)
 data class BankReport(val currentBank: String, val decisions: List<FormattedDecision>, val outstandingStatements: List<FormattedBankStatement>) : ViewModel

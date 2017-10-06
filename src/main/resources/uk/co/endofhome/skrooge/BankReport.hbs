@@ -9,7 +9,17 @@
     <h1>Please review your monthly categorisations for {{currentBank}}</h1>
     <form action="/reports/categorisations" method="post">
         {{#each decisions}}
-            <h3>{{line.date}}, {{line.purchase}}: £{{line.amount}}</h3>
+            <h3>{{line.date}}, {{line.purchase}}: £{{line.amount}}
+            <select name=bank-report>
+                {{#each categoriesWithSelection.categories}}
+                    <optgroup label="{{title}}">
+                        {{#each subCategories}}
+                            <option value="{{line.purchase}},{{title}},{{subCategory.name}}"{{selector}}>{{subCategory.name}}</option>
+                        {{/each}}
+                    </optgroup>
+                {{/each}}
+            </select>
+            </h3>
         {{/each}}
         <input type="hidden" name="outstanding-banks" value="{{outstandingStatements}}">
         <div class="button">
