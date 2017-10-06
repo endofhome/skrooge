@@ -16,6 +16,7 @@ import org.http4k.server.asServer
 import org.http4k.template.*
 import uk.co.endofhome.skrooge.Categories.categories
 import java.io.File
+import java.math.BigDecimal
 import java.time.*
 import java.time.format.DateTimeFormatter
 
@@ -88,8 +89,11 @@ object LineFormatter {
     fun format(line: Line) = FormattedLine(
                 line.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
                 line.purchase,
-                line.amount
+                line.amount.roundTo2DecimalPlaces()
         )
+
+    private fun Double.roundTo2DecimalPlaces() =
+            BigDecimal(this).setScale(2, BigDecimal.ROUND_HALF_UP).toString()
 }
 
 class UnknownTransactionHandler(private val renderer: TemplateRenderer) {
@@ -228,7 +232,7 @@ class MockMappingWriter : MappingWriter {
 data class StatementData(val year: Year, val month: Month, val username: String, val files: List<File>)
 data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
 data class Line(val date: LocalDate, val purchase: String, val amount: Double)
-data class FormattedLine(val date: String, val purchase: String, val amount: Double)
+data class FormattedLine(val date: String, val purchase: String, val amount: String)
 data class UnknownTransactions(val currentTransaction: Transaction, val outstandingTransactions: String) : ViewModel
 data class Transaction (val vendorName: String, val categories: List<Category>?)
 data class Category(val title: String, val data: List<DataItem>)

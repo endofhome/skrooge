@@ -71,7 +71,7 @@ class StatementsAcceptanceTest {
 
         response shouldMatch hasStatus(OK)
         response shouldMatch hasBody(containsSubstring("<h1>Please review your monthly categorisations for one-known-transaction</h1>"))
-        response shouldMatch hasBody(containsSubstring("<h3>17/09/2017, Pizza Union: £5.5</h3>"))
+        response shouldMatch hasBody(containsSubstring("<h3>17/09/2017, Pizza Union: £5.50</h3>"))
     }
 
     @Test
