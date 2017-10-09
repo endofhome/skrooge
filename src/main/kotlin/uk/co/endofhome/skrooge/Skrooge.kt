@@ -1,23 +1,42 @@
 package uk.co.endofhome.skrooge
 
 import org.http4k.asString
-import org.http4k.core.*
+import org.http4k.core.Body
+import org.http4k.core.ContentType
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
+import org.http4k.core.Request
+import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
+import org.http4k.core.Uri
+import org.http4k.core.query
+import org.http4k.core.with
 import org.http4k.filter.DebuggingFilters
-import org.http4k.lens.*
+import org.http4k.lens.BiDiBodyLens
+import org.http4k.lens.BiDiLens
+import org.http4k.lens.FormField
+import org.http4k.lens.FormValidator
+import org.http4k.lens.Query
+import org.http4k.lens.WebForm
+import org.http4k.lens.webForm
+import org.http4k.routing.ResourceLoader
 import org.http4k.routing.bind
 import org.http4k.routing.routes
+import org.http4k.routing.static
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
-import org.http4k.template.*
+import org.http4k.template.HandlebarsTemplates
+import org.http4k.template.TemplateRenderer
+import org.http4k.template.ViewModel
+import org.http4k.template.view
 import uk.co.endofhome.skrooge.Categories.categories
 import java.io.File
 import java.math.BigDecimal
-import java.time.*
+import java.time.LocalDate
+import java.time.Month
+import java.time.Year
 import java.time.format.DateTimeFormatter
 
 fun main(args: Array<String>) {
@@ -31,8 +50,12 @@ fun main(args: Array<String>) {
 class Skrooge(val categoryMappings: List<String> = File("category-mappings/category-mappings.csv").readLines(),
               val mappingWriter: MappingWriter = FileSystemMappingWriter()) {
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
+    private val publicDirectory = static(ResourceLoader.Directory("public"))
+
 
     fun routes() = routes(
+            "/public" bind publicDirectory,
+            "/" bind GET to { _ -> Statements(categoryMappings).index(renderer) },
             "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body, renderer) },
             "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(mappingWriter).addCategoryMapping(request) }
@@ -87,6 +110,12 @@ class Statements(val categoryMappings: List<String>) {
         } catch (e: Exception) {
             return Response(BAD_REQUEST)
         }
+    }
+
+    fun index(renderer: TemplateRenderer): Response {
+        val main = Main("unncessary")
+        val view = Body.view(renderer, ContentType.TEXT_HTML)
+        return Response(OK).with(view of main)
     }
 }
 
@@ -270,3 +299,5 @@ data class BankStatements(val statements: List<FormattedBankStatement>)
 data class Decision(val line: Line, val category: Category?, val subCategory: SubCategory?)
 data class FormattedDecision(val line: FormattedLine, val category: Category?, val subCategory: SubCategory?, val categoriesWithSelection: CategoriesWithSelection)
 data class BankReport(val currentBank: String, val decisions: List<FormattedDecision>, val outstandingStatements: List<FormattedBankStatement>) : ViewModel
+
+data class Main(val unnecessary: String) : ViewModel
