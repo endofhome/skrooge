@@ -87,8 +87,7 @@ class Statements(val categoryMappings: List<String>) {
                     Response(SEE_OTHER).header("Location", uri.toString())
                 }
                 false -> {
-                    val decisions = processedLines.map { it.toString() }
-                    DecisionWriter().write(statementData, decisions)
+                    processedLines.forEach { DecisionWriter().write(statementData, it.decisions) }
                     val bankStatements = BankStatements(processedLines.map { bankStatement ->
                         FormattedBankStatement(bankStatement.bankName, bankStatement.decisions.map { decision ->
                             FormattedDecision(
@@ -173,14 +172,14 @@ object Categories {
 
 class DecisionWriter {
     val decisionFilePath = "output/decisions"
-    fun write(statementData: StatementData, decisions: List<String>) {
+    fun write(statementData: StatementData, decisions: List<Decision>) {
         val year = statementData.year.toString()
         val month = statementData.month.value
         val username = statementData.username
-        val vendor = statementData.files[0].toString().split("/").last()
+        val vendor = statementData.files[0].toString().split("_").last()
         File("$decisionFilePath/$year-$month-$username-decisions-$vendor").printWriter().use { out ->
             decisions.forEach {
-                out.print(it)
+                out.print("${it.line.date},${it.line.purchase},${it.line.amount},${it.category?.title},${it.subCategory?.name}")
             }
         }
     }

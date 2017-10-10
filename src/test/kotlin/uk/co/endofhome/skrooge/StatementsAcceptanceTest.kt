@@ -61,7 +61,7 @@ class StatementsAcceptanceTest {
         val decisionFile = File("output/decisions/2017-9-Tom-decisions-one-known-transaction.csv")
         val fileContents = decisionFile.readLines()
         assertThat(fileContents.size, equalTo(1))
-        assertThat(fileContents[0], equalTo("2017-09-17,Pizza Union,5.50,Eats and drinks,Meals at work"))
+        assertThat(fileContents[0], equalTo("2017-09-17,Pizza Union,5.5,Eats and drinks,Meals at work"))
     }
 
     @Test
