@@ -7,6 +7,7 @@ import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Response
+import org.http4k.core.Status
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
@@ -37,6 +38,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.Month
 import java.time.Year
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 fun main(args: Array<String>) {
@@ -52,14 +54,20 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
     private val publicDirectory = static(ResourceLoader.Directory("public"))
 
-
     fun routes() = routes(
             "/public" bind publicDirectory,
             "/" bind GET to { _ -> Statements(categoryMappings).index(renderer) },
             "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body, renderer) },
             "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request) },
-            "category-mapping" bind POST to { request -> CategoryMappings(mappingWriter).addCategoryMapping(request) }
+            "category-mapping" bind POST to { request -> CategoryMappings(mappingWriter).addCategoryMapping(request) },
+            "reports/categorisations" bind POST to { request -> ReportCategorisations(mappingWriter).confirm(request) }
     )
+}
+
+class ReportCategorisations(mappingWriter: MappingWriter) {
+    fun confirm(request: Request): Response {
+        return Response(Status.CREATED)
+    }
 }
 
 class Statements(val categoryMappings: List<String>) {
@@ -69,8 +77,13 @@ class Statements(val categoryMappings: List<String>) {
         try {
             val statementData: StatementData = parser.parse(body)
             val processedLines: List<BankStatement> = statementData.files.map {
+                val filenameParts = it.name.split("_")
+                val splitName = filenameParts[2]
+                val splitYear = Integer.valueOf(filenameParts[0].split("-")[0])
+                val splitMonth = Integer.valueOf(filenameParts[0].split("-")[1])
                 BankStatement(
-                        it.name.split("_")[2].substringBefore(".csv"),
+                        splitName.substringBefore(".csv"),
+                        YearMonth.of(splitYear, splitMonth),
                         StatementDecider(categoryMappings).process(it.readLines())
                 )
             }
@@ -99,8 +112,7 @@ class Statements(val categoryMappings: List<String>) {
                         })
                     })
                     val bankReport = BankReport(
-                            bankStatements.statements.first().bankName,
-                            bankStatements.statements.first().formattedDecisions,
+                            bankStatements.statements.first(),
                             bankStatements.statements.filterIndexed { index, _ -> index != 0 }
                     )
                     return BankReports(renderer).report(bankReport)
@@ -171,13 +183,13 @@ object Categories {
 }
 
 class DecisionWriter {
-    val decisionFilePath = "output/decisions"
+    private val decisionFilePath = "output/decisions"
     fun write(statementData: StatementData, decisions: List<Decision>) {
         val year = statementData.year.toString()
         val month = statementData.month.value
         val username = statementData.username
-        val vendor = statementData.files[0].toString().split("_").last()
-        File("$decisionFilePath/$year-$month-$username-decisions-$vendor").printWriter().use { out ->
+        val bank = statementData.files[0].toString().split("_").last()
+        File("$decisionFilePath/$year-$month-$username-decisions-$bank").printWriter().use { out ->
             decisions.forEach {
                 out.print("${it.line.date},${it.line.purchase},${it.line.amount},${it.category?.title},${it.subCategory?.name}")
             }
@@ -292,11 +304,11 @@ data class CategoryWithSelection(val title: String, val subCategories: List<SubC
 data class CategoriesWithSelection(val categories: List<CategoryWithSelection>)
 data class SubCategory(val name: String)
 data class SubCategoryWithSelection(val subCategory: SubCategory, val selector: String)
-data class BankStatement(val bankName: String, val decisions: List<Decision>)
+data class BankStatement(val bankName: String, val month: YearMonth, val decisions: List<Decision>)
 data class FormattedBankStatement(val bankName: String, val formattedDecisions: List<FormattedDecision>)
 data class BankStatements(val statements: List<FormattedBankStatement>)
 data class Decision(val line: Line, val category: Category?, val subCategory: SubCategory?)
 data class FormattedDecision(val line: FormattedLine, val category: Category?, val subCategory: SubCategory?, val categoriesWithSelection: CategoriesWithSelection)
-data class BankReport(val currentBank: String, val decisions: List<FormattedDecision>, val outstandingStatements: List<FormattedBankStatement>) : ViewModel
+data class BankReport(val bankStatement: FormattedBankStatement, val outstandingStatements: List<FormattedBankStatement>) : ViewModel
 
 data class Main(val unnecessary: String) : ViewModel

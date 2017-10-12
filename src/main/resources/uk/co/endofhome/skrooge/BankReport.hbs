@@ -6,11 +6,11 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
 </head>
 <body>
-    <h1>Please review your monthly categorisations for {{currentBank}}</h1>
+    <h1>Please review your monthly categorisations for {{bankStatement.bankName}}</h1>
     <form action="reports/categorisations" method="post">
-        {{#each decisions}}
+        {{#each bankStatement.formattedDecisions}}
             <h3>{{line.date}}, {{line.purchase}}: £{{line.amount}}
-            <select name=bank-report>
+            <select name="decisions">
                 {{#each categoriesWithSelection.categories}}
                     <optgroup label="{{title}}">
                         {{#each subCategories}}
@@ -21,10 +21,11 @@
             </select>
             </h3>
         {{/each}}
-        <input type="hidden" name="outstanding-banks" value="{{outstandingStatements}}">
-        <div class="button">
-            <button type="submit">Next bank</button>
-        </div>
-    </form>
+
+    <input type="hidden" name="outstanding-banks" value="{{outstandingStatements}}">
+    <div class="button">
+        <button type="submit">Next bank</button>
+    </div>
+</form>
 </body>
 </html>
