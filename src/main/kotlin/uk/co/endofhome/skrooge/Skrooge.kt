@@ -50,22 +50,45 @@ fun main(args: Array<String>) {
 }
 
 class Skrooge(val categoryMappings: List<String> = File("category-mappings/category-mappings.csv").readLines(),
-              val mappingWriter: MappingWriter = FileSystemMappingWriter()) {
+              val mappingWriter: MappingWriter = FileSystemMappingWriter(),
+              val decisionWriter: DecisionWriter = FileSystemDecisionWriter()) {
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
     private val publicDirectory = static(ResourceLoader.Directory("public"))
 
     fun routes() = routes(
             "/public" bind publicDirectory,
             "/" bind GET to { _ -> Statements(categoryMappings).index(renderer) },
-            "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body, renderer) },
+            "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body, renderer, decisionWriter) },
             "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(mappingWriter).addCategoryMapping(request) },
-            "reports/categorisations" bind POST to { request -> ReportCategorisations(mappingWriter).confirm(request) }
+            "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionWriter).confirm(request) }
     )
 }
 
-class ReportCategorisations(mappingWriter: MappingWriter) {
+class ReportCategorisations(val decisionWriter: DecisionWriter) {
     fun confirm(request: Request): Response {
+        val webForm = Body.webForm(FormValidator.Strict)
+        val form = webForm.toLens().extract(request)
+        val decisionsStrings: List<String>? = form.fields["decisions"]
+        val decisionsSplit: List<List<String>>? = decisionsStrings?.map { it.substring(1, it.lastIndex).split(", ") }
+        val decisions: List<Decision> = decisionsSplit!!.flatMap { decisionLine ->
+            decisionLine.map { it.split(",") }.map {
+                val dateParts = it[0].split("/")
+                val day = Integer.valueOf(dateParts[0])
+                val month = Month.of(Integer.valueOf(dateParts[1]))
+                val year = Integer.valueOf(dateParts[2])
+                val date = LocalDate.of(year, month, day)
+                val merchant = it[1]
+                val amount = it[2].toDouble()
+                val category = it[3]
+                val subCategory = it[4]
+                Decision(Line(date, merchant, amount), Category(category, categories().find { it.title == category }!!.subCategories), SubCategory(subCategory))
+            }
+        }
+
+        val statementDataString: List<String> = form.fields["statement-data"]!![0].split(";")
+        val statementData = StatementData.fromFormParts(statementDataString)
+        decisionWriter.write(statementData, decisions)
         return Response(Status.CREATED)
     }
 }
@@ -73,7 +96,7 @@ class ReportCategorisations(mappingWriter: MappingWriter) {
 class Statements(val categoryMappings: List<String>) {
     private val parser = PretendFormParser()
 
-    fun uploadStatements(body: Body, renderer: TemplateRenderer): Response {
+    fun uploadStatements(body: Body, renderer: TemplateRenderer, decisionWriter: DecisionWriter): Response {
         try {
             val statementData: StatementData = parser.parse(body)
             val processedLines: List<BankStatement> = statementData.files.map {
@@ -100,7 +123,7 @@ class Statements(val categoryMappings: List<String>) {
                     Response(SEE_OTHER).header("Location", uri.toString())
                 }
                 false -> {
-                    processedLines.forEach { DecisionWriter().write(statementData, it.decisions) }
+                    processedLines.forEach { decisionWriter.write(statementData, it.decisions) }
                     val bankStatements = BankStatements(processedLines.map { bankStatement ->
                         FormattedBankStatement(bankStatement.bankName, bankStatement.decisions.map { decision ->
                             FormattedDecision(
@@ -178,23 +201,30 @@ object Categories {
             true -> " selected"
             false -> ""
         }
-
     }
 }
 
-class DecisionWriter {
+interface DecisionWriter {
+    fun write(statementData: StatementData, decisions: List<Decision>)
+    fun read(): List<Decision>
+}
+
+class FileSystemDecisionWriter : DecisionWriter {
     private val decisionFilePath = "output/decisions"
-    fun write(statementData: StatementData, decisions: List<Decision>) {
+
+    override fun write(statementData: StatementData, decisions: List<Decision>) {
         val year = statementData.year.toString()
         val month = statementData.month.value
         val username = statementData.username
-        val bank = statementData.files[0].toString().split("_").last()
-        File("$decisionFilePath/$year-$month-$username-decisions-$bank").printWriter().use { out ->
+        val bank = statementData.files[0].toString().split("_").last().substringBefore(".csv")
+        File("$decisionFilePath/$year-$month-$username-decisions-$bank.csv").printWriter().use { out ->
             decisions.forEach {
-                out.print("${it.line.date},${it.line.purchase},${it.line.amount},${it.category?.title},${it.subCategory?.name}")
+                out.print("${it.line.date},${it.line.purchase},${it.line.amount},${it.category?.title},${it.subCategory?.name}\n")
             }
         }
     }
+
+    override fun read(): List<Decision> = emptyList()
 }
 
 class StatementDecider(categoryMappings: List<String>) {
@@ -216,6 +246,19 @@ class StatementDecider(categoryMappings: List<String>) {
             else -> { Decision(line, Category(match.mainCatgeory, emptyList()), SubCategory(match.subCategory)) }
         }
     }
+}
+
+class MockDecisionWriter : DecisionWriter {
+    private val file: MutableList<Decision> = mutableListOf()
+
+    override fun write(statementData: StatementData, decisions: List<Decision>) {
+        file.clear()
+        decisions.forEach {
+            file.add(it)
+        }
+    }
+
+    override fun read() = file.toList()
 }
 
 class CategoryMappings(private val mappingWriter: MappingWriter) {
@@ -259,12 +302,7 @@ class PretendFormParser {
     fun parse(body: Body): StatementData {
         // delimiting with semi-colons for now as I want a list in the last 'field'
         val params = body.payload.asString().split(";")
-        val year = Year.parse(params[0])
-        val month = Month.valueOf(params[1].toUpperCase())
-        val username = params[2]
-        val fileStrings: List<String> = params[3].substring(1, params[3].lastIndex).split(",")
-        val files: List<File> = fileStrings.map { File(it) }
-        return StatementData(year, month, username, files)
+        return StatementData.fromFormParts(params)
     }
 }
 
@@ -293,7 +331,19 @@ class MockMappingWriter : MappingWriter {
     override fun read() = file
 }
 
-data class StatementData(val year: Year, val month: Month, val username: String, val files: List<File>)
+data class StatementData(val year: Year, val month: Month, val username: String, val files: List<File>) {
+    companion object {
+        fun fromFormParts(formParts: List<String>): StatementData {
+            val year = Year.parse(formParts[0])
+            val month = Month.valueOf(formParts[1].toUpperCase())
+            val username = formParts[2]
+            val fileStrings: List<String> = formParts[3].substring(1, formParts[3].lastIndex).split(",")
+            val files: List<File> = fileStrings.map { File(it) }
+            return StatementData(year, month, username, files)
+        }
+    }
+}
+
 data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
 data class Line(val date: LocalDate, val purchase: String, val amount: Double)
 data class FormattedLine(val date: String, val purchase: String, val amount: String)

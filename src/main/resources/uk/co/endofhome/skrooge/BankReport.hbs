@@ -14,18 +14,18 @@
                 {{#each categoriesWithSelection.categories}}
                     <optgroup label="{{title}}">
                         {{#each subCategories}}
-                            <option value="{{line.purchase}},{{title}},{{subCategory.name}}"{{selector}}>{{subCategory.name}}</option>
+                            <option value="[{{line.date}},{{line.purchase}},{{line.amount}},{{title}},{{subCategory.name}}]"{{selector}}>{{subCategory.name}}</option>
                         {{/each}}
                     </optgroup>
                 {{/each}}
             </select>
             </h3>
         {{/each}}
-
-    <input type="hidden" name="outstanding-banks" value="{{outstandingStatements}}">
-    <div class="button">
-        <button type="submit">Next bank</button>
-    </div>
-</form>
+        <input type="hidden" name="statement-data" value="2017;September;Tom;[{{bankStatement.bankName}}.csv]">
+        <input type="hidden" name="outstanding-banks" value="{{outstandingStatements}}">
+        <div class="button">
+            <button type="submit">Next bank</button>
+        </div>
+    </form>
 </body>
 </html>
