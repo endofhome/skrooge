@@ -61,7 +61,8 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
             "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body, renderer, decisionWriter) },
             "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(mappingWriter).addCategoryMapping(request) },
-            "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionWriter).confirm(request) }
+            "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionWriter).confirm(request) },
+            "generate/json" bind POST to { Response(BAD_REQUEST) }
     )
 }
 
