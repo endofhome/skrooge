@@ -36,7 +36,7 @@ class ReportCategorisationAcceptanceTest {
         val request = Request(POST, "/reports/categorisations")
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("statement-data", "2017;October;Tom;[blah]")
-                .form("decisions", "[2017/10/18,Edgeworld Records,14.99,Fun,Tom fun budget]")
+                .form("decisions", "[18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget]")
 
         skrooge(request) shouldMatch hasStatus(CREATED)
         assertThat(decisionWriter.read(), equalTo(listOf(originalDecision)))
@@ -47,7 +47,7 @@ class ReportCategorisationAcceptanceTest {
         val request = Request(POST, "/reports/categorisations")
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("statement-data", "2017;October;Tom;[blah]")
-                .form("decisions", "[2017/10/18,Edgeworld Records,14.99,Eats and drinks,Food]")
+                .form("decisions", "[18/10/2017,Edgeworld Records,14.99,Eats and drinks,Food]")
 
         val expectedCategory = "Eats and drinks"
         val expectedSubCategories = Categories.categories().find { it.title == expectedCategory }!!.subCategories
