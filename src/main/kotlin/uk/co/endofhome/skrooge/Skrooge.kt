@@ -9,6 +9,7 @@ import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.core.Status.Companion.BAD_REQUEST
+import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
 import org.http4k.core.Uri
@@ -62,9 +63,22 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
             "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionWriter).confirm(request) },
-            "generate/json" bind POST to { Response(BAD_REQUEST) }
+            "generate/json" bind POST to { request -> GenerateJson(decisionWriter).handle(request) }
     )
 }
+class GenerateJson(val decisionWriter: DecisionWriter) {
+    fun handle(request: Request): Response {
+        val year = Year.of(request.query("year")!!.toInt())
+        val month = Month.of(request.query("month")!!.toInt())
+        val decisions = decisionWriter.read()
+        return decisions.let { when {
+                it.isNotEmpty() -> Response(CREATED).body("{}")
+                else -> Response(BAD_REQUEST)
+            }
+        }
+    }
+}
+
 
 class ReportCategorisations(val decisionWriter: DecisionWriter) {
     fun confirm(request: Request): Response {
