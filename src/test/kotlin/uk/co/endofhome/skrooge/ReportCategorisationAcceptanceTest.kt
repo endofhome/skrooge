@@ -19,7 +19,7 @@ import java.time.Month
 import java.time.Year
 
 class ReportCategorisationAcceptanceTest {
-    val decisionWriter = MockDecisionWriter()
+    val decisionWriter = StubbedDecisionWriter()
     val skrooge = Skrooge(decisionWriter = decisionWriter).routes()
 
     val originalDecision = Decision(Line(LocalDate.of(2017, 10, 18), "Edgeworld Records", 14.99), Category("Fun", Categories.categories().find { it.title == "Fun" }?.subCategories!!), SubCategory("Tom fun budget"))

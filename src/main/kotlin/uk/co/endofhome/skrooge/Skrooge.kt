@@ -53,8 +53,8 @@ fun main(args: Array<String>) {
 
 class Skrooge(val categoryMappings: List<String> = File("category-mappings/category-mappings.csv").readLines(),
               val mappingWriter: MappingWriter = FileSystemMappingWriter(),
-              val decisionWriter: DecisionWriter = FileSystemDecisionWriter(),
-              val jsonReportReader: FileSystemJsonReportReader = FileSystemJsonReportReader()) {
+              val decisionWriter: DecisionWriter = FileSystemDecisionWriter()) {
+
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
     private val publicDirectory = static(ResourceLoader.Directory("public"))
 
@@ -67,16 +67,6 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionWriter).confirm(request) },
             "generate/json" bind POST to { request -> GenerateJson(decisionWriter).handle(request) }
     )
-}
-
-class FileSystemJsonReportReader {
-    private val decisionFilePath = "output/decisions"
-
-    val categoryTitle = "In your home"
-    val subCategories = subcategoriesFor(categoryTitle)
-    val categoryReportDataItem = CategoryReportDataItem(subCategories.first().name, 250.toDouble())
-
-    fun read(year: Int, month: Int) = JsonReport.jsonReport(2017, 10, listOf(CategoryReport(categoryTitle, listOf(categoryReportDataItem))))
 }
 
 class GenerateJson(val decisionWriter: DecisionWriter) {
@@ -279,7 +269,7 @@ class StatementDecider(categoryMappings: List<String>) {
     }
 }
 
-class MockDecisionWriter : DecisionWriter {
+class StubbedDecisionWriter : DecisionWriter {
     private val file: MutableList<Decision> = mutableListOf()
 
     override fun write(statementData: StatementData, decisions: List<Decision>) {

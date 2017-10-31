@@ -11,15 +11,13 @@ import org.http4k.hamkrest.hasStatus
 import org.junit.Before
 import org.junit.Test
 import uk.co.endofhome.skrooge.Categories.subcategoriesFor
-import uk.co.endofhome.skrooge.JsonReport.Companion.jsonReport
 import java.io.File
 import java.time.LocalDate
 import java.time.Month.OCTOBER
 import java.time.Year
 
 class JsonGenerationTest {
-    val decisionWriter = MockDecisionWriter()
-    val jsonReportReader = FileSystemJsonReportReader()
+    val decisionWriter = StubbedDecisionWriter()
     val skrooge = Skrooge(decisionWriter = decisionWriter).routes()
 
 //    val originalDecision = Decision(Line(LocalDate.of(2017, 10, 18), "Edgeworld Records", 14.99), Category("Fun", Categories.categories().find { it.title == "Fun" }?.subCategories!!), SubCategory("Tom fun budget"))
@@ -49,11 +47,6 @@ class JsonGenerationTest {
 
         val response = skrooge(request)
         response shouldMatch hasStatus(CREATED)
-
-        val jsonReport = jsonReportReader.read(2017, 10)
-        val categoryReportDataItem = CategoryReportDataItem(subCategories.first().name, 250.toDouble())
-        val categoryReport = CategoryReport(categoryTitle, listOf(categoryReportDataItem))
-        val expectedJsonReport = JsonReport.jsonReport(2017, 10, listOf(categoryReport))
-        jsonReport shouldMatch equalTo(expectedJsonReport)
+        response shouldMatch hasBody("{}")
     }
 }
