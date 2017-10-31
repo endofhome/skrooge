@@ -34,6 +34,7 @@ import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
 import org.http4k.template.view
 import uk.co.endofhome.skrooge.Categories.categories
+import uk.co.endofhome.skrooge.Categories.subcategoriesFor
 import java.io.File
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -52,7 +53,8 @@ fun main(args: Array<String>) {
 
 class Skrooge(val categoryMappings: List<String> = File("category-mappings/category-mappings.csv").readLines(),
               val mappingWriter: MappingWriter = FileSystemMappingWriter(),
-              val decisionWriter: DecisionWriter = FileSystemDecisionWriter()) {
+              val decisionWriter: DecisionWriter = FileSystemDecisionWriter(),
+              val jsonReportReader: FileSystemJsonReportReader = FileSystemJsonReportReader()) {
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
     private val publicDirectory = static(ResourceLoader.Directory("public"))
 
@@ -66,6 +68,17 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
             "generate/json" bind POST to { request -> GenerateJson(decisionWriter).handle(request) }
     )
 }
+
+class FileSystemJsonReportReader {
+    private val decisionFilePath = "output/decisions"
+
+    val categoryTitle = "In your home"
+    val subCategories = subcategoriesFor(categoryTitle)
+    val categoryReportDataItem = CategoryReportDataItem(subCategories.first().name, 250.toDouble())
+
+    fun read(year: Int, month: Int) = JsonReport.jsonReport(2017, 10, listOf(CategoryReport(categoryTitle, listOf(categoryReportDataItem))))
+}
+
 class GenerateJson(val decisionWriter: DecisionWriter) {
     fun handle(request: Request): Response {
         val year = Year.of(request.query("year")!!.toInt())
@@ -78,7 +91,6 @@ class GenerateJson(val decisionWriter: DecisionWriter) {
         }
     }
 }
-
 
 class ReportCategorisations(val decisionWriter: DecisionWriter) {
     fun confirm(request: Request): Response {
@@ -209,6 +221,10 @@ object Categories {
         }
         val catsWithSelection = titles.zip(subCategories).map { CategoryWithSelection(it.first, it.second) }
         return CategoriesWithSelection(catsWithSelection)
+    }
+
+    fun subcategoriesFor(category: String): List<SubCategory> {
+        return Categories.categories().filter { it.title == category }.flatMap { it.subCategories }
     }
 
     private fun selectedString(subCategory: SubCategory, anotherSubCategory: SubCategory?): String {
@@ -375,5 +391,15 @@ data class BankStatements(val statements: List<FormattedBankStatement>)
 data class Decision(val line: Line, val category: Category?, val subCategory: SubCategory?)
 data class FormattedDecision(val line: FormattedLine, val category: Category?, val subCategory: SubCategory?, val categoriesWithSelection: CategoriesWithSelection)
 data class BankReport(val bankStatement: FormattedBankStatement, val outstandingStatements: List<FormattedBankStatement>) : ViewModel
+
+data class CategoryReportDataItem(val name: String, val actual: Double)
+data class CategoryReport(val title: String, val data: List<CategoryReportDataItem>)
+data class JsonReport(val year: Int, val month: Month, val monthNumber: Int, val categories: List<CategoryReport>) {
+    companion object {
+        fun jsonReport(year: Int, month: Int, categories: List<CategoryReport>): JsonReport {
+            return JsonReport(year, Month.of(month), month, categories)
+        }
+    }
+}
 
 data class Main(val unnecessary: String) : ViewModel

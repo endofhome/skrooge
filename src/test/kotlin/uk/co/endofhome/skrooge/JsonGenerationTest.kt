@@ -1,5 +1,6 @@
 package uk.co.endofhome.skrooge
 
+import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.should.shouldMatch
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
@@ -9,6 +10,8 @@ import org.http4k.hamkrest.hasBody
 import org.http4k.hamkrest.hasStatus
 import org.junit.Before
 import org.junit.Test
+import uk.co.endofhome.skrooge.Categories.subcategoriesFor
+import uk.co.endofhome.skrooge.JsonReport.Companion.jsonReport
 import java.io.File
 import java.time.LocalDate
 import java.time.Month.OCTOBER
@@ -16,6 +19,7 @@ import java.time.Year
 
 class JsonGenerationTest {
     val decisionWriter = MockDecisionWriter()
+    val jsonReportReader = FileSystemJsonReportReader()
     val skrooge = Skrooge(decisionWriter = decisionWriter).routes()
 
 //    val originalDecision = Decision(Line(LocalDate.of(2017, 10, 18), "Edgeworld Records", 14.99), Category("Fun", Categories.categories().find { it.title == "Fun" }?.subCategories!!), SubCategory("Tom fun budget"))
@@ -44,12 +48,12 @@ class JsonGenerationTest {
         val request = Request(POST, "/generate/json").query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
-
         response shouldMatch hasStatus(CREATED)
-        response shouldMatch hasBody("{}")
-    }
 
-    private fun subcategoriesFor(category: String): List<SubCategory> {
-        return Categories.categories().filter { it.title == category }.flatMap { it.subCategories }
+        val jsonReport = jsonReportReader.read(2017, 10)
+        val categoryReportDataItem = CategoryReportDataItem(subCategories.first().name, 250.toDouble())
+        val categoryReport = CategoryReport(categoryTitle, listOf(categoryReportDataItem))
+        val expectedJsonReport = JsonReport.jsonReport(2017, 10, listOf(categoryReport))
+        jsonReport shouldMatch equalTo(expectedJsonReport)
     }
 }
