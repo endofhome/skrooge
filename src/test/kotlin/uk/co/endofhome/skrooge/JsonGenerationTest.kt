@@ -1,8 +1,7 @@
 package uk.co.endofhome.skrooge
 
-import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.should.shouldMatch
-import org.http4k.core.Method.POST
+import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.CREATED
@@ -31,7 +30,7 @@ class JsonGenerationTest {
 
     @Test
     fun `POST to generate - json endpoint with no monthly data returns BAD REQUEST`() {
-        val request = Request(POST, "/generate/json").query("year", "2006").query("month", "10")
+        val request = Request(GET, "/generate/json").query("year", "2006").query("month", "10")
 
         skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
     }
@@ -43,10 +42,10 @@ class JsonGenerationTest {
         val decision = Decision(Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 250.00), Category(categoryTitle, subCategories), subCategories.first())
         val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", emptyList())
         decisionWriter.write(statementData, listOf(decision))
-        val request = Request(POST, "/generate/json").query("year", "2017").query("month", "10")
+        val request = Request(GET, "/generate/json").query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
         response shouldMatch hasStatus(CREATED)
-        response shouldMatch hasBody("{}")
+        response shouldMatch hasBody("{\"year\":2017,\"month\":\"October\",\"monthNumber\":10,\"categories\":[{\"title\":\"In your home\",\"data\":[{\"name\":\"Building\",\"actual\":250.0}]}]}")
     }
 }

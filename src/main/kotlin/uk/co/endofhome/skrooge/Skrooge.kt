@@ -1,47 +1,27 @@
 package uk.co.endofhome.skrooge
 
 import org.http4k.asString
-import org.http4k.core.Body
-import org.http4k.core.ContentType
+import org.http4k.core.*
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
-import org.http4k.core.Request
-import org.http4k.core.Response
-import org.http4k.core.Status
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
-import org.http4k.core.Uri
-import org.http4k.core.query
-import org.http4k.core.with
 import org.http4k.filter.DebuggingFilters
-import org.http4k.lens.BiDiBodyLens
-import org.http4k.lens.BiDiLens
-import org.http4k.lens.FormField
-import org.http4k.lens.FormValidator
-import org.http4k.lens.Query
-import org.http4k.lens.WebForm
-import org.http4k.lens.webForm
-import org.http4k.routing.ResourceLoader
-import org.http4k.routing.bind
-import org.http4k.routing.routes
-import org.http4k.routing.static
+import org.http4k.format.Gson
+import org.http4k.lens.*
+import org.http4k.routing.*
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
-import org.http4k.template.HandlebarsTemplates
-import org.http4k.template.TemplateRenderer
-import org.http4k.template.ViewModel
-import org.http4k.template.view
+import org.http4k.template.*
 import uk.co.endofhome.skrooge.Categories.categories
-import uk.co.endofhome.skrooge.Categories.subcategoriesFor
 import java.io.File
 import java.math.BigDecimal
-import java.time.LocalDate
-import java.time.Month
-import java.time.Year
-import java.time.YearMonth
+import java.time.*
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.*
 
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
@@ -55,6 +35,7 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
               val mappingWriter: MappingWriter = FileSystemMappingWriter(),
               val decisionWriter: DecisionWriter = FileSystemDecisionWriter()) {
 
+    private val gson = Gson
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
     private val publicDirectory = static(ResourceLoader.Directory("public"))
 
@@ -65,17 +46,23 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
             "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionWriter).confirm(request) },
-            "generate/json" bind POST to { request -> GenerateJson(decisionWriter).handle(request) }
+            "generate/json" bind GET to { request -> GenerateJson(gson, decisionWriter).handle(request) }
     )
 }
 
-class GenerateJson(val decisionWriter: DecisionWriter) {
+class GenerateJson(val gson: Gson, val decisionWriter: DecisionWriter) {
     fun handle(request: Request): Response {
-        val year = Year.of(request.query("year")!!.toInt())
+        val year = request.query("year")!!.toInt()
         val month = Month.of(request.query("month")!!.toInt())
         val decisions = decisionWriter.read()
+
+        val catReportDataItem = CategoryReportDataItem("Building", 250.00)
+        val catReport = CategoryReport("In your home", listOf(catReportDataItem))
+        val jsonReport = JsonReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, listOf(catReport))
+        val jsonReportJson = gson.asJsonObject(jsonReport)
+
         return decisions.let { when {
-                it.isNotEmpty() -> Response(CREATED).body("{}")
+                it.isNotEmpty() -> Response(CREATED).body(jsonReportJson.toString())
                 else -> Response(BAD_REQUEST)
             }
         }
@@ -384,12 +371,6 @@ data class BankReport(val bankStatement: FormattedBankStatement, val outstanding
 
 data class CategoryReportDataItem(val name: String, val actual: Double)
 data class CategoryReport(val title: String, val data: List<CategoryReportDataItem>)
-data class JsonReport(val year: Int, val month: Month, val monthNumber: Int, val categories: List<CategoryReport>) {
-    companion object {
-        fun jsonReport(year: Int, month: Int, categories: List<CategoryReport>): JsonReport {
-            return JsonReport(year, Month.of(month), month, categories)
-        }
-    }
-}
+data class JsonReport(val year: Int, val month: String, val monthNumber: Int, val categories: List<CategoryReport>)
 
 data class Main(val unnecessary: String) : ViewModel
