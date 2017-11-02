@@ -16,6 +16,7 @@ import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import org.http4k.template.*
 import uk.co.endofhome.skrooge.Categories.categories
+import uk.co.endofhome.skrooge.Categories.subcategoriesFor
 import java.io.File
 import java.math.BigDecimal
 import java.time.*
@@ -54,15 +55,21 @@ class GenerateJson(val gson: Gson, val decisionWriter: DecisionWriter) {
     fun handle(request: Request): Response {
         val year = request.query("year")!!.toInt()
         val month = Month.of(request.query("month")!!.toInt())
-        val decisions = decisionWriter.read()
-
-        val catReportDataItem = CategoryReportDataItem("Building", 250.00)
-        val catReport = CategoryReport("In your home", listOf(catReportDataItem))
-        val jsonReport = JsonReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, listOf(catReport))
-        val jsonReportJson = gson.asJsonObject(jsonReport)
+        val decisions = decisionWriter.read(year, month)
 
         return decisions.let { when {
-                it.isNotEmpty() -> Response(CREATED).body(jsonReportJson.toString())
+                it.isNotEmpty() -> {
+                    val catReportDataItems = decisions.map {
+                        CategoryReportDataItem(it.subCategory!!.name, it.line.amount)
+                    }
+
+                    val catReport = CategoryReport(decisions.first().category!!.title, catReportDataItems)
+                    val jsonReport = JsonReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, listOf(catReport))
+                    val jsonReportJson = gson.asJsonObject(jsonReport)
+
+
+                    Response(CREATED).body(jsonReportJson.toString())
+                }
                 else -> Response(BAD_REQUEST)
             }
         }
@@ -214,7 +221,7 @@ object Categories {
 
 interface DecisionWriter {
     fun write(statementData: StatementData, decisions: List<Decision>)
-    fun read(): List<Decision>
+    fun read(year: Int, month: Month): List<Decision>
 }
 
 class FileSystemDecisionWriter : DecisionWriter {
@@ -232,7 +239,19 @@ class FileSystemDecisionWriter : DecisionWriter {
         }
     }
 
-    override fun read(): List<Decision> = emptyList()
+    override fun read(year: Int, month: Month): List<Decision> {
+        val monthFiles = File(decisionFilePath).listFiles().filter { it.name.startsWith("$year-${month.value}") }
+        return monthFiles.flatMap {
+            it.readLines().map {
+                val split = it.split(",")
+                val dateValues = split[0].split("-").map { it.toInt() }
+                val line = Line(LocalDate.of(dateValues[0], dateValues[1], dateValues[2]), split[1], split[2].toDouble())
+
+                val category = Categories.categories().find { it.title == split[3] }!!
+                Decision(line, category, subcategoriesFor(category.title).find { it.name == split[4] })
+            }
+        }
+    }
 }
 
 class StatementDecider(categoryMappings: List<String>) {
@@ -266,7 +285,7 @@ class StubbedDecisionWriter : DecisionWriter {
         }
     }
 
-    override fun read() = file.toList()
+    override fun read(year: Int, month: Month) = file.toList()
 }
 
 class CategoryMappings(private val mappingWriter: MappingWriter) {

@@ -39,13 +39,13 @@ class JsonGenerationTest {
     fun `POST to generate - json endpoint with one decision in one monthly decisions file returns correct JSON file`() {
         val categoryTitle = "In your home"
         val subCategories = subcategoriesFor(categoryTitle)
-        val decision = Decision(Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 250.00), Category(categoryTitle, subCategories), subCategories.first())
+        val decision = Decision(Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 250.00), Category(categoryTitle, subCategories), subCategories.find { it.name == "Building insurance" })
         val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", emptyList())
         decisionWriter.write(statementData, listOf(decision))
         val request = Request(GET, "/generate/json").query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
         response shouldMatch hasStatus(CREATED)
-        response shouldMatch hasBody("{\"year\":2017,\"month\":\"October\",\"monthNumber\":10,\"categories\":[{\"title\":\"In your home\",\"data\":[{\"name\":\"Building\",\"actual\":250.0}]}]}")
+        response shouldMatch hasBody("{\"year\":2017,\"month\":\"October\",\"monthNumber\":10,\"categories\":[{\"title\":\"In your home\",\"data\":[{\"name\":\"Building insurance\",\"actual\":250.0}]}]}")
     }
 }

@@ -3,20 +3,16 @@ package uk.co.endofhome.skrooge
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.should.shouldMatch
-import org.http4k.core.ContentType
+import org.http4k.core.*
 import org.http4k.core.Method.POST
-import org.http4k.core.Request
 import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.body.form
-import org.http4k.core.with
 import org.http4k.hamkrest.hasStatus
 import org.http4k.lens.Header
 import org.junit.Before
 import org.junit.Test
 import java.io.File
-import java.time.LocalDate
-import java.time.Month
-import java.time.Year
+import java.time.*
 
 class ReportCategorisationAcceptanceTest {
     val decisionWriter = StubbedDecisionWriter()
@@ -39,7 +35,7 @@ class ReportCategorisationAcceptanceTest {
                 .form("decisions", "[18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget]")
 
         skrooge(request) shouldMatch hasStatus(CREATED)
-        assertThat(decisionWriter.read(), equalTo(listOf(originalDecision)))
+        assertThat(decisionWriter.read(2017, Month.of(10)), equalTo(listOf(originalDecision)))
     }
 
     @Test
@@ -57,6 +53,6 @@ class ReportCategorisationAcceptanceTest {
         )
 
         skrooge(request) shouldMatch hasStatus(CREATED)
-        assertThat(decisionWriter.read(), equalTo(listOf(expectedDecision)))
+        assertThat(decisionWriter.read(2017, Month.of(10)), equalTo(listOf(expectedDecision)))
     }
 }
