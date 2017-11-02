@@ -63,4 +63,19 @@ class JsonGenerationTest {
         response shouldMatch hasStatus(CREATED)
         response shouldMatch hasBody("{\"year\":2017,\"month\":\"October\",\"monthNumber\":10,\"categories\":[{\"title\":\"In your home\",\"data\":[{\"name\":\"Building insurance\",\"actual\":750.0}]}]}")
     }
+
+    @Test
+    fun `POST to generate - json endpoint with two decisions of different subcategory in one monthly decisions file returns correct JSON`() {
+        val categoryTitle = "In your home"
+        val subCategories = subcategoriesFor(categoryTitle)
+        val decision1 = Decision(Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 250.00), Category(categoryTitle, subCategories), subCategories.find { it.name == "Building insurance" })
+        val decision2 = Decision(Line(LocalDate.of(2017, 10, 10), "Some Bank", 300.00), Category(categoryTitle, subCategories), subCategories.find { it.name == "Mortgage" })
+        val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", emptyList())
+        decisionWriter.write(statementData, listOf(decision1, decision2))
+        val request = Request(GET, "/generate/json").query("year", "2017").query("month", "10")
+
+        val response = skrooge(request)
+        response shouldMatch hasStatus(CREATED)
+        response shouldMatch hasBody("{\"year\":2017,\"month\":\"October\",\"monthNumber\":10,\"categories\":[{\"title\":\"In your home\",\"data\":[{\"name\":\"Building insurance\",\"actual\":250.0},{\"name\":\"Mortgage\",\"actual\":300.0}]}]}")
+    }
 }
