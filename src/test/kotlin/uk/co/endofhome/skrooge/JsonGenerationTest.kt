@@ -78,4 +78,22 @@ class JsonGenerationTest {
         response shouldMatch hasStatus(CREATED)
         response shouldMatch hasBody("{\"year\":2017,\"month\":\"October\",\"monthNumber\":10,\"categories\":[{\"title\":\"In your home\",\"data\":[{\"name\":\"Building insurance\",\"actual\":250.0},{\"name\":\"Mortgage\",\"actual\":300.0}]}]}")
     }
+
+    @Test
+    fun `POST to generate - json endpoint with three decisions, two categories and two subcategories in one monthly decisions file returns correct JSON`() {
+        val inYourHome = "In your home"
+        val eatsAndDrinks = "Eats and drinks"
+        val subCategoriesInYourHome = subcategoriesFor(inYourHome)
+        val subCategoriesEatsAndDrinks = subcategoriesFor(eatsAndDrinks)
+        val decision1 = Decision(Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 200.00), Category(inYourHome, subCategoriesInYourHome), subCategoriesInYourHome.find { it.name == "Building insurance" })
+        val decision2 = Decision(Line(LocalDate.of(2017, 10, 10), "Some Bank", 100.00), Category(eatsAndDrinks, subCategoriesInYourHome), subCategoriesInYourHome.find { it.name == "Mortgage" })
+        val decision3 = Decision(Line(LocalDate.of(2017, 10, 17), "Something in a totally different category", 400.00), Category(eatsAndDrinks, subCategoriesEatsAndDrinks), subCategoriesEatsAndDrinks.find { it.name == "Food" })
+        val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", emptyList())
+        decisionWriter.write(statementData, listOf(decision1, decision2, decision3))
+        val request = Request(GET, "/generate/json").query("year", "2017").query("month", "10")
+
+        val response = skrooge(request)
+        response shouldMatch hasStatus(CREATED)
+        response shouldMatch hasBody("{\"year\":2017,\"month\":\"October\",\"monthNumber\":10,\"categories\":[{\"title\":\"In your home\",\"data\":[{\"name\":\"Building insurance\",\"actual\":200.0},{\"name\":\"Mortgage\",\"actual\":100.0}]},{\"title\":\"Eats and drinks\",\"data\":[{\"name\":\"Food\",\"actual\":400.0}]}]}")
+    }
 }

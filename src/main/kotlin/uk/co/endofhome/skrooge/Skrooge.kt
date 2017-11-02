@@ -65,8 +65,11 @@ class GenerateJson(val gson: Gson, val decisionWriter: DecisionWriter) {
                         it.value.reduce { acc, categoryReportDataItem -> CategoryReportDataItem(it.key, acc.actual + categoryReportDataItem.actual) }
                     }
 
-                    val catReport = CategoryReport(decisions.first().category!!.title, catReportDataItems)
-                    val jsonReport = JsonReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, listOf(catReport))
+                    val catReports = categories().map { category ->
+                        CategoryReport(category.title, catReportDataItems.filter { category.subCategories.map { it.name }.contains(it.name) })
+                    }.filter { it.data.isNotEmpty() }
+
+                    val jsonReport = JsonReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, catReports)
                     val jsonReportJson = gson.asJsonObject(jsonReport)
 
                     Response(CREATED).body(jsonReportJson.toString())
