@@ -20,8 +20,6 @@ import java.io.File
 import java.math.BigDecimal
 import java.time.*
 import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
-import java.util.*
 
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
@@ -48,35 +46,6 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionWriter).confirm(request) },
             "monthly-report/json" bind GET to { request -> MonthlyReport(gson, decisionWriter).handle(request) }
     )
-}
-
-class MonthlyReport(val gson: Gson, val decisionWriter: DecisionWriter) {
-    fun handle(request: Request): Response {
-        val year = request.query("year")!!.toInt()
-        val month = Month.of(request.query("month")!!.toInt())
-        val decisions = decisionWriter.read(year, month)
-
-        return decisions.let { when {
-                it.isNotEmpty() -> {
-                    val catReportDataItems: List<CategoryReportDataItem> = decisions.map {
-                        CategoryReportDataItem(it.subCategory!!.name, it.line.amount)
-                    }.groupBy { it.name }.map {
-                        it.value.reduce { acc, categoryReportDataItem -> CategoryReportDataItem(it.key, acc.actual + categoryReportDataItem.actual) }
-                    }
-
-                    val catReports = categories().map { category ->
-                        CategoryReport(category.title, catReportDataItems.filter { category.subCategories.map { it.name }.contains(it.name) })
-                    }.filter { it.data.isNotEmpty() }
-
-                    val jsonReport = JsonReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, catReports)
-                    val jsonReportJson = gson.asJsonObject(jsonReport)
-
-                    Response(OK).body(jsonReportJson.toString())
-                }
-                else -> Response(BAD_REQUEST)
-            }
-        }
-    }
 }
 
 class ReportCategorisations(val decisionWriter: DecisionWriter) {
@@ -392,9 +361,5 @@ data class BankStatements(val statements: List<FormattedBankStatement>)
 data class Decision(val line: Line, val category: Category?, val subCategory: SubCategory?)
 data class FormattedDecision(val line: FormattedLine, val category: Category?, val subCategory: SubCategory?, val categoriesWithSelection: CategoriesWithSelection)
 data class BankReport(val bankStatement: FormattedBankStatement, val outstandingStatements: List<FormattedBankStatement>) : ViewModel
-
-data class CategoryReportDataItem(val name: String, val actual: Double)
-data class CategoryReport(val title: String, val data: List<CategoryReportDataItem>)
-data class JsonReport(val year: Int, val month: String, val monthNumber: Int, val categories: List<CategoryReport>)
 
 data class Main(val unnecessary: String) : ViewModel
