@@ -5,7 +5,6 @@ import org.http4k.core.*
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Status.Companion.BAD_REQUEST
-import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
 import org.http4k.filter.DebuggingFilters
@@ -72,7 +71,7 @@ class MonthJson(val gson: Gson, val decisionWriter: DecisionWriter) {
                     val jsonReport = JsonReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, catReports)
                     val jsonReportJson = gson.asJsonObject(jsonReport)
 
-                    Response(CREATED).body(jsonReportJson.toString())
+                    Response(OK).body(jsonReportJson.toString())
                 }
                 else -> Response(BAD_REQUEST)
             }
