@@ -46,6 +46,7 @@ class JsonGenerationTest {
         val request = Request(GET, "/monthly-report/json").query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
+
         response shouldMatch hasStatus(OK)
         response shouldMatch hasBody("{\"year\":2017,\"month\":\"October\",\"monthNumber\":10,\"categories\":[{\"title\":\"In your home\",\"data\":[{\"name\":\"Building insurance\",\"actual\":250.0}]}]}")
     }
@@ -61,6 +62,7 @@ class JsonGenerationTest {
         val request = Request(GET, "/monthly-report/json").query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
+
         response shouldMatch hasStatus(OK)
         response shouldMatch hasBody("{\"year\":2017,\"month\":\"October\",\"monthNumber\":10,\"categories\":[{\"title\":\"In your home\",\"data\":[{\"name\":\"Building insurance\",\"actual\":750.0}]}]}")
     }
@@ -76,6 +78,7 @@ class JsonGenerationTest {
         val request = Request(GET, "/monthly-report/json").query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
+
         response shouldMatch hasStatus(OK)
         response shouldMatch hasBody("{\"year\":2017,\"month\":\"October\",\"monthNumber\":10,\"categories\":[{\"title\":\"In your home\",\"data\":[{\"name\":\"Building insurance\",\"actual\":250.0},{\"name\":\"Mortgage\",\"actual\":300.0}]}]}")
     }
@@ -94,6 +97,7 @@ class JsonGenerationTest {
         val request = Request(GET, "/monthly-report/json").query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
+
         response shouldMatch hasStatus(OK)
         response shouldMatch hasBody("{\"year\":2017,\"month\":\"October\",\"monthNumber\":10,\"categories\":[{\"title\":\"In your home\",\"data\":[{\"name\":\"Building insurance\",\"actual\":200.0},{\"name\":\"Mortgage\",\"actual\":100.0}]},{\"title\":\"Eats and drinks\",\"data\":[{\"name\":\"Food\",\"actual\":400.0}]}]}")
     }
