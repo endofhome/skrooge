@@ -19,8 +19,9 @@ class JsonGenerationTest {
     val decisionWriter = StubbedDecisionWriter()
     val skrooge = Skrooge(decisionWriter = decisionWriter).routes()
 
-//    val originalDecision = Decision(Line(LocalDate.of(2017, 10, 18), "Edgeworld Records", 14.99), Category("Fun", Categories.categories().find { it.title == "Fun" }?.subCategories!!), SubCategory("Tom fun budget"))
-
+    // TODO app already works for multiple files, but some tests would be nice
+    // TODO to guard against regressions.
+    
     @Before
     fun `setup`() {
         val statementData = StatementData(Year.of(2017), OCTOBER, "Milford", listOf(File("doesn't matter")))
@@ -30,7 +31,7 @@ class JsonGenerationTest {
 
     @Test
     fun `POST to generate - json endpoint with no monthly data returns BAD REQUEST`() {
-        val request = Request(GET, "/generate/json").query("year", "2006").query("month", "10")
+        val request = Request(GET, "/monthly-report/json").query("year", "2006").query("month", "10")
 
         skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
     }
@@ -42,7 +43,7 @@ class JsonGenerationTest {
         val decision = Decision(Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 250.00), Category(categoryTitle, subCategories), subCategories.find { it.name == "Building insurance" })
         val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", emptyList())
         decisionWriter.write(statementData, listOf(decision))
-        val request = Request(GET, "/generate/json").query("year", "2017").query("month", "10")
+        val request = Request(GET, "/monthly-report/json").query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
         response shouldMatch hasStatus(CREATED)
@@ -57,7 +58,7 @@ class JsonGenerationTest {
         val decision2 = Decision(Line(LocalDate.of(2017, 10, 14), "OIS Removals", 500.00), Category(categoryTitle, subCategories), subCategories.find { it.name == "Building insurance" })
         val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", emptyList())
         decisionWriter.write(statementData, listOf(decision1, decision2))
-        val request = Request(GET, "/generate/json").query("year", "2017").query("month", "10")
+        val request = Request(GET, "/monthly-report/json").query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
         response shouldMatch hasStatus(CREATED)
@@ -72,7 +73,7 @@ class JsonGenerationTest {
         val decision2 = Decision(Line(LocalDate.of(2017, 10, 10), "Some Bank", 300.00), Category(categoryTitle, subCategories), subCategories.find { it.name == "Mortgage" })
         val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", emptyList())
         decisionWriter.write(statementData, listOf(decision1, decision2))
-        val request = Request(GET, "/generate/json").query("year", "2017").query("month", "10")
+        val request = Request(GET, "/monthly-report/json").query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
         response shouldMatch hasStatus(CREATED)
@@ -90,7 +91,7 @@ class JsonGenerationTest {
         val decision3 = Decision(Line(LocalDate.of(2017, 10, 17), "Something in a totally different category", 400.00), Category(eatsAndDrinks, subCategoriesEatsAndDrinks), subCategoriesEatsAndDrinks.find { it.name == "Food" })
         val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", emptyList())
         decisionWriter.write(statementData, listOf(decision1, decision2, decision3))
-        val request = Request(GET, "/generate/json").query("year", "2017").query("month", "10")
+        val request = Request(GET, "/monthly-report/json").query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
         response shouldMatch hasStatus(CREATED)

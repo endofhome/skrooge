@@ -47,11 +47,11 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
             "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionWriter).confirm(request) },
-            "generate/json" bind GET to { request -> GenerateJson(gson, decisionWriter).handle(request) }
+            "monthly-report/json" bind GET to { request -> MonthJson(gson, decisionWriter).handle(request) }
     )
 }
 
-class GenerateJson(val gson: Gson, val decisionWriter: DecisionWriter) {
+class MonthJson(val gson: Gson, val decisionWriter: DecisionWriter) {
     fun handle(request: Request): Response {
         val year = request.query("year")!!.toInt()
         val month = Month.of(request.query("month")!!.toInt())
