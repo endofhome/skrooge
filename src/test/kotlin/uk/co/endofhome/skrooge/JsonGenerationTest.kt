@@ -21,6 +21,7 @@ class JsonGenerationTest {
 
     // TODO app already works for multiple files, but some tests would be nice
     // TODO to guard against regressions.
+    // TODO also, possibly all subcategories should be available, but with 0 values for actual expenditure.
     
     @Before
     fun `setup`() {
