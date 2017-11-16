@@ -1,5 +1,8 @@
 package uk.co.endofhome.skrooge
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.http4k.asString
 import org.http4k.core.*
 import org.http4k.core.Method.GET
@@ -14,8 +17,8 @@ import org.http4k.routing.*
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import org.http4k.template.*
-import uk.co.endofhome.skrooge.Categories.categories
-import uk.co.endofhome.skrooge.Categories.subcategoriesFor
+import uk.co.endofhome.skrooge.CategoryHelpers.categories
+import uk.co.endofhome.skrooge.CategoryHelpers.subcategoriesFor
 import java.io.File
 import java.math.BigDecimal
 import java.time.*
@@ -65,7 +68,7 @@ class ReportCategorisations(val decisionWriter: DecisionWriter) {
                 val amount = it[2].toDouble()
                 val category = it[3]
                 val subCategory = it[4]
-                Decision(Line(date, merchant, amount), Category(category, categories().find { it.title == category }!!.subCategories), SubCategory(subCategory))
+                Decision(Line(date, merchant, amount), Category(category, categories().find { it.title == category }!!.subcategories), SubCategory(subCategory))
             }
         }
 
@@ -113,7 +116,7 @@ class Statements(val categoryMappings: List<String>) {
                                     LineFormatter.format(decision.line),
                                     decision.category,
                                     decision.subCategory,
-                                    Categories.categoriesWithSelection(decision.subCategory)
+                                    CategoryHelpers.categoriesWithSelection(decision.subCategory)
                             )
                         })
                     })
@@ -160,20 +163,19 @@ class UnknownTransactionHandler(private val renderer: TemplateRenderer) {
     }
 }
 
-object Categories {
-    // TODO get categories and subcategories from a JSON schema file on startup
-
-    fun categories() = listOf(
-            Category("In your home", listOf(SubCategory("Mortgage"), SubCategory("Building insurance"))),
-            Category("Insurance", listOf(SubCategory("Travel insurance"), SubCategory("Income protection"))),
-            Category("Eats and drinks", listOf(SubCategory("Food"), SubCategory("Meals at work"))),
-            Category("Fun", listOf(SubCategory("Tom fun budget"), SubCategory("Someone else's fun budget")))
-    )
+object CategoryHelpers {
+    fun categories(schemaFilePath: String = "category-schema/category-schema.json"): List<Category> {
+        val schemaFile = File(schemaFilePath)
+        val contents: String = schemaFile.readText()
+        val mapper = ObjectMapper().registerModule(KotlinModule())
+        val categories: Categories = mapper.readValue(contents)
+        return categories.toList()
+    }
 
     fun categoriesWithSelection(subCategory: SubCategory?): CategoriesWithSelection {
         val titles = categories().map { it.title }
         val subCategories: List<List<SubCategoryWithSelection>> = categories().map { cat ->
-            cat.subCategories.map { subCat ->
+            cat.subcategories.map { subCat ->
                 SubCategoryWithSelection(subCat, selectedString(subCat, subCategory))
             }
         }
@@ -182,7 +184,7 @@ object Categories {
     }
 
     fun subcategoriesFor(category: String): List<SubCategory> {
-        return Categories.categories().filter { it.title == category }.flatMap { it.subCategories }
+        return CategoryHelpers.categories().filter { it.title == category }.flatMap { it.subcategories }
     }
 
     private fun selectedString(subCategory: SubCategory, anotherSubCategory: SubCategory?): String {
@@ -190,6 +192,10 @@ object Categories {
             true -> " selected"
             false -> ""
         }
+    }
+
+    data class Categories(val categories: List<Category>) {
+        fun toList() = categories
     }
 }
 
@@ -221,7 +227,7 @@ class FileSystemDecisionWriter : DecisionWriter {
                 val dateValues = split[0].split("-").map { it.toInt() }
                 val line = Line(LocalDate.of(dateValues[0], dateValues[1], dateValues[2]), split[1], split[2].toDouble())
 
-                val category = Categories.categories().find { it.title == split[3] }!!
+                val category = CategoryHelpers.categories().find { it.title == split[3] }!!
                 Decision(line, category, subcategoriesFor(category.title).find { it.name == split[4] })
             }
         }
@@ -350,7 +356,7 @@ data class Line(val date: LocalDate, val purchase: String, val amount: Double)
 data class FormattedLine(val date: String, val purchase: String, val amount: String)
 data class UnknownTransactions(val currentTransaction: Transaction, val outstandingTransactions: String) : ViewModel
 data class Transaction (val vendorName: String, val categories: List<Category>?)
-data class Category(val title: String, val subCategories: List<SubCategory>)
+data class Category(val title: String, val subcategories: List<SubCategory>)
 data class CategoryWithSelection(val title: String, val subCategories: List<SubCategoryWithSelection>)
 data class CategoriesWithSelection(val categories: List<CategoryWithSelection>)
 data class SubCategory(val name: String)

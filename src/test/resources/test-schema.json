@@ -1,0 +1,99 @@
+{
+  "categories": [
+    {
+      "title": "In your home",
+      "subcategories": [
+        {"name": "Mortgage"},
+        {"name": "Building insurance"},
+        {"name": "Council tax"},
+        {"name": "Water rates"},
+        {"name": "Gas"},
+        {"name": "Electricity"},
+        {"name": "Household maintenance"},
+        {"name": "Internet"},
+        {"name": "TV Licence"},
+        {"name": "Mobile phone"}
+      ]
+    },
+    {
+      "title": "Insurance",
+      "subcategories": [
+        {"name": "Travel insurance"},
+        {"name": "Income protection"},
+        {"name": "Life insurance"}
+      ]
+    },
+    {
+      "title": "Eats and drinks",
+      "subcategories": [
+        {"name": "Food"},
+        {"name": "Eating out"},
+        {"name": "Meals at work"}
+      ]
+    },
+    {
+      "title": "Motoring and public transport",
+      "subcategories": [
+        {"name": "Rail/bus/taxi"},
+        {"name": "Car club subscription"},
+        {"name": "Car club hires"}
+      ]
+    },
+    {
+      "title": "Savings and investments",
+      "subcategories": [
+        {"name": "Pension payments"}
+      ]
+    },
+    {
+      "title": "Family",
+      "subcategories": [
+        {"name": "Childcare"},
+        {"name": "Nappies/baby extras"},
+        {"name": "Baby activities"}
+      ]
+    },
+    {
+      "title": "Fun",
+      "subcategories": [
+        {"name": "Bob fun budget"},
+        {"name": "Bill fun budget"}
+      ]
+    },
+    {
+      "title": "Health and beauty",
+      "subcategories": [
+        {"name": "Dentistry"},
+        {"name": "Haircuts"},
+        {"name": "Optical bills"}
+      ]
+    },
+    {
+      "title": "Clothes",
+      "subcategories": [
+        {"name": "Baby clothes"}
+      ]
+    },
+    {
+      "title": "Big one offs",
+      "subcategories": [
+        {"name": "Christmas"},
+        {"name": "Summer holiday"},
+        {"name": "Winter holiday"},
+        {"name": "Birthdays"}
+      ]
+    },
+    {
+      "title": "Odds and sods",
+      "subcategories": [
+        {"name": "Charity donations"}
+      ]
+    },
+    {
+      "title": "Refurbishments",
+      "subcategories": [
+        {"name": "Refurbishments"}
+      ]
+    }
+  ]
+}
