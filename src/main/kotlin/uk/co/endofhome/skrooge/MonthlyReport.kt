@@ -1,10 +1,12 @@
 package uk.co.endofhome.skrooge
 
-import org.http4k.core.*
+import org.http4k.core.Request
+import org.http4k.core.Response
+import org.http4k.core.Status
 import org.http4k.format.Gson
 import java.time.Month
 import java.time.format.TextStyle
-import java.util.*
+import java.util.Locale
 
 class MonthlyReport(val gson: Gson, val decisionWriter: DecisionWriter) {
     fun handle(request: Request): Response {
@@ -20,8 +22,8 @@ class MonthlyReport(val gson: Gson, val decisionWriter: DecisionWriter) {
                         it.value.reduce { acc, categoryReportDataItem -> CategoryReportDataItem(it.key, acc.actual + categoryReportDataItem.actual) }
                     }
 
-                    val catReports = Categories.categories().map { category ->
-                        CategoryReport(category.title, catReportDataItems.filter { category.subCategories.map { it.name }.contains(it.name) })
+                    val catReports = CategoryHelpers.categories().map { category ->
+                        CategoryReport(category.title, catReportDataItems.filter { category.subcategories.map { it.name }.contains(it.name) })
                     }.filter { it.data.isNotEmpty() }
 
                     val jsonReport = JsonReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, catReports)

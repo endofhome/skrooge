@@ -9,7 +9,7 @@ import org.http4k.hamkrest.hasBody
 import org.http4k.hamkrest.hasStatus
 import org.junit.Before
 import org.junit.Test
-import uk.co.endofhome.skrooge.Categories.subcategoriesFor
+import uk.co.endofhome.skrooge.CategoryHelpers.subcategoriesFor
 import java.io.File
 import java.time.LocalDate
 import java.time.Month.OCTOBER
