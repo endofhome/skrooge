@@ -43,8 +43,8 @@ object StatementCsvFormatter {
         }
     }
 
-    private fun dateFrom(barclaycardDate: String): String {
-        val dateElements = barclaycardDate.split(" ")
+    private fun dateFrom(bankDate: String): String {
+        val dateElements = bankDate.split(" ")
         val day = dateElements[0]
         val month = monthFrom(dateElements[1])?.value
         val year = "20" + dateElements[2]
