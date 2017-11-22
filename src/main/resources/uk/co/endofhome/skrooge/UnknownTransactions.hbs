@@ -12,7 +12,7 @@
         <select name="new-mapping">
             {{#each currentTransaction.categories}}
             <optgroup label="{{title}}">
-                {{#each data}}
+                {{#each subcategories}}
                 <option value="{{currentTransaction.vendorName}},{{title}},{{name}}">{{name}}</option>
                 {{/each}}
             </optgroup>
