@@ -5,7 +5,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Month
 
-object StatementCsvFormatter {
+object BankOneStatementCsvFormatter {
     val baseInputPath = Paths.get("input")
 
     operator fun invoke(inputFilePath: Path): List<String> {
