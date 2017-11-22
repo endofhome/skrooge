@@ -4,24 +4,46 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.http4k.asString
-import org.http4k.core.*
+import org.http4k.core.Body
+import org.http4k.core.ContentType
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
+import org.http4k.core.Request
+import org.http4k.core.Response
+import org.http4k.core.Status
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
+import org.http4k.core.Uri
+import org.http4k.core.query
+import org.http4k.core.with
 import org.http4k.filter.DebuggingFilters
 import org.http4k.format.Gson
-import org.http4k.lens.*
-import org.http4k.routing.*
+import org.http4k.lens.BiDiBodyLens
+import org.http4k.lens.BiDiLens
+import org.http4k.lens.FormField
+import org.http4k.lens.FormValidator
+import org.http4k.lens.Query
+import org.http4k.lens.WebForm
+import org.http4k.lens.webForm
+import org.http4k.routing.ResourceLoader
+import org.http4k.routing.bind
+import org.http4k.routing.routes
+import org.http4k.routing.static
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
-import org.http4k.template.*
+import org.http4k.template.HandlebarsTemplates
+import org.http4k.template.TemplateRenderer
+import org.http4k.template.ViewModel
+import org.http4k.template.view
 import uk.co.endofhome.skrooge.CategoryHelpers.categories
 import uk.co.endofhome.skrooge.CategoryHelpers.subcategoriesFor
 import java.io.File
 import java.math.BigDecimal
-import java.time.*
+import java.time.LocalDate
+import java.time.Month
+import java.time.Year
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 fun main(args: Array<String>) {
@@ -111,7 +133,8 @@ class Statements(val categoryMappings: List<String>) {
                 false -> {
                     processedLines.forEach { decisionWriter.write(statementData, it.decisions) }
                     val bankStatements = BankStatements(processedLines.map { bankStatement ->
-                        FormattedBankStatement(bankStatement.bankName, bankStatement.decisions.map { decision ->
+                        FormattedBankStatement(bankStatement.bankName,
+                                bankStatement.decisions.sortedBy { it.line.date }.map { decision ->
                             FormattedDecision(
                                     LineFormatter.format(decision.line),
                                     decision.category,
