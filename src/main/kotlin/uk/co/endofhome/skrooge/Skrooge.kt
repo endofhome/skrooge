@@ -4,46 +4,24 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.http4k.asString
-import org.http4k.core.Body
-import org.http4k.core.ContentType
+import org.http4k.core.*
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
-import org.http4k.core.Request
-import org.http4k.core.Response
-import org.http4k.core.Status
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
-import org.http4k.core.Uri
-import org.http4k.core.query
-import org.http4k.core.with
 import org.http4k.filter.DebuggingFilters
 import org.http4k.format.Gson
-import org.http4k.lens.BiDiBodyLens
-import org.http4k.lens.BiDiLens
-import org.http4k.lens.FormField
-import org.http4k.lens.FormValidator
-import org.http4k.lens.Query
-import org.http4k.lens.WebForm
-import org.http4k.lens.webForm
-import org.http4k.routing.ResourceLoader
-import org.http4k.routing.bind
-import org.http4k.routing.routes
-import org.http4k.routing.static
+import org.http4k.lens.*
+import org.http4k.routing.*
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
-import org.http4k.template.HandlebarsTemplates
-import org.http4k.template.TemplateRenderer
-import org.http4k.template.ViewModel
-import org.http4k.template.view
+import org.http4k.template.*
 import uk.co.endofhome.skrooge.CategoryHelpers.categories
 import uk.co.endofhome.skrooge.CategoryHelpers.subcategoriesFor
 import java.io.File
 import java.math.BigDecimal
-import java.time.LocalDate
-import java.time.Month
-import java.time.Year
-import java.time.YearMonth
+import java.time.*
 import java.time.format.DateTimeFormatter
 
 fun main(args: Array<String>) {
@@ -109,13 +87,14 @@ class Statements(val categoryMappings: List<String>) {
             val statementData: StatementData = parser.parse(body)
             val processedLines: List<BankStatement> = statementData.files.map {
                 val filenameParts = it.name.split("_")
-                val splitName = filenameParts[2]
+                val splitUsername = filenameParts[1]
+                val splitFilename = filenameParts[2]
                 val splitYear = Integer.valueOf(filenameParts[0].split("-")[0])
                 val splitMonth = Integer.valueOf(filenameParts[0].split("-")[1])
                 BankStatement(
-                        splitName.substringBefore(".csv"),
                         YearMonth.of(splitYear, splitMonth),
-                        StatementDecider(categoryMappings).process(it.readLines())
+                        splitUsername,
+                        splitFilename.substringBefore(".csv"), StatementDecider(categoryMappings).process(it.readLines())
                 )
             }
             val statementsWithUnknownTransactions = processedLines.filter { it.decisions.map { it.category }.contains(null) }
@@ -133,7 +112,11 @@ class Statements(val categoryMappings: List<String>) {
                 false -> {
                     processedLines.forEach { decisionWriter.write(statementData, it.decisions) }
                     val bankStatements = BankStatements(processedLines.map { bankStatement ->
-                        FormattedBankStatement(bankStatement.bankName,
+                        FormattedBankStatement(
+                                bankStatement.yearMonth.year.toString(),
+                                bankStatement.yearMonth.month.name.toLowerCase().capitalize(),
+                                bankStatement.username,
+                                bankStatement.bankName,
                                 bankStatement.decisions.sortedBy { it.line.date }.map { decision ->
                             FormattedDecision(
                                     LineFormatter.format(decision.line),
@@ -384,8 +367,8 @@ data class CategoryWithSelection(val title: String, val subCategories: List<SubC
 data class CategoriesWithSelection(val categories: List<CategoryWithSelection>)
 data class SubCategory(val name: String)
 data class SubCategoryWithSelection(val subCategory: SubCategory, val selector: String)
-data class BankStatement(val bankName: String, val month: YearMonth, val decisions: List<Decision>)
-data class FormattedBankStatement(val bankName: String, val formattedDecisions: List<FormattedDecision>)
+data class BankStatement(val yearMonth: YearMonth, val username: String, val bankName: String, val decisions: List<Decision>)
+data class FormattedBankStatement(val year: String, val month: String, val username: String, val bankName: String, val formattedDecisions: List<FormattedDecision>)
 data class BankStatements(val statements: List<FormattedBankStatement>)
 data class Decision(val line: Line, val category: Category?, val subCategory: SubCategory?)
 data class FormattedDecision(val line: FormattedLine, val category: Category?, val subCategory: SubCategory?, val categoriesWithSelection: CategoriesWithSelection)

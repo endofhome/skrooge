@@ -21,7 +21,7 @@
             </select>
             </h3>
         {{/each}}
-        <input type="hidden" name="statement-data" value="2017;September;Tom;[{{bankStatement.bankName}}.csv]">
+        <input type="hidden" name="statement-data" value="{{bankStatement.year}};{{bankStatement.month}};{{bankStatement.username}};[{{bankStatement.bankName}}.csv]">
         <input type="hidden" name="outstanding-banks" value="{{outstandingStatements}}">
         <div class="button">
             <button type="submit">Confirm</button>
