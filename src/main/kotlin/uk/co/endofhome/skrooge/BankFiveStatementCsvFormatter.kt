@@ -32,15 +32,6 @@ object BankFiveStatementCsvFormatter : StatementCsvFormatter {
         return BigDecimal(doubleValue).setScale(2, RoundingMode.HALF_UP).toString()
     }
 
-    private fun String.modifyIfSpecialMerchant(): String {
-        val match = specialMerchants().keys.find { this.contains(it) }
-        return when {
-            match.isNullOrEmpty() -> this
-            else -> specialMerchants()[match]!!
-
-        }
-    }
-
     private fun String.zeroIfEmpty(): Double {
         return this.let {
             when {

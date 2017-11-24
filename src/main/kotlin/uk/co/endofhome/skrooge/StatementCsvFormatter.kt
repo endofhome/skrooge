@@ -31,4 +31,13 @@ interface StatementCsvFormatter {
                         "Lloyds Tsb Credit" to "Lloyds TSB Credit"
         )
     }
+
+    fun String.modifyIfSpecialMerchant(): String {
+        val match = BankFiveStatementCsvFormatter.specialMerchants().keys.find { this.contains(it) }
+        return when {
+            match.isNullOrEmpty() -> this
+            else -> BankFiveStatementCsvFormatter.specialMerchants()[match]!!
+        }
+    }
+
 }

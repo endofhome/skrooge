@@ -5,7 +5,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Month
 
-object BankOneStatementCsvFormatter {
+object BankOneStatementCsvFormatter: StatementCsvFormatter {
     val baseInputPath = Paths.get("input")
 
     operator fun invoke(inputFilePath: Path): List<String> {
@@ -34,13 +34,7 @@ object BankOneStatementCsvFormatter {
 
     private fun sanitise(merchant: String): String {
         val prefixRemoved = merchant.replace("\" ", "")
-        return when {
-            prefixRemoved.startsWith("Tesco") -> "Tesco"
-            prefixRemoved.startsWith("B & Q") -> "B&Q"
-            prefixRemoved.startsWith("Spotify") -> "Spotify"
-            prefixRemoved.startsWith("Wickes") -> "Wickes"
-            else -> prefixRemoved
-        }
+        return prefixRemoved.modifyIfSpecialMerchant()
     }
 
     private fun dateFrom(bankDate: String): String {

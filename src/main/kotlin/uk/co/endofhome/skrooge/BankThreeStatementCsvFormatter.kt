@@ -24,9 +24,6 @@ object BankThreeStatementCsvFormatter: StatementCsvFormatter {
 
     private fun sanitise(merchant: String): String {
         val santisedMerchant = merchant.removeSurrounding("\"").toLowerCase().capitalizeMerchant()
-        return when {
-            santisedMerchant.startsWith("Eft Payment") -> "EFT Payment"
-            else -> santisedMerchant
-        }
+        return santisedMerchant.modifyIfSpecialMerchant()
     }
 }
