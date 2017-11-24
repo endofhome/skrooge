@@ -17,7 +17,7 @@ object BankOneStatementCsvFormatter {
             val sanitisedLine = removeTrailingCommasFrom(it)
             val split = sanitisedLine.split(",")
             val date = dateFrom(split[0])
-            val sanitisedMerchant = sanitize(split[1])
+            val sanitisedMerchant = sanitise(split[1])
             val value = split.last()
 
             "$date,$sanitisedMerchant,$value"
@@ -32,7 +32,7 @@ object BankOneStatementCsvFormatter {
         }
     }
 
-    private fun sanitize(merchant: String): String {
+    private fun sanitise(merchant: String): String {
         val prefixRemoved = merchant.replace("\" ", "")
         return when {
             prefixRemoved.startsWith("Tesco") -> "Tesco"
