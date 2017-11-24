@@ -18,7 +18,14 @@ interface StatementCsvFormatter {
                     } else it
                 }
             }
-        }.joinToString("").capitalize()
+        }.joinToString("").capitalizeUnlessWebAddress()
+    }
+
+    fun String.capitalizeUnlessWebAddress(): String {
+        return when {
+            this.startsWith("www") -> this
+            else -> this.capitalize()
+        }
     }
 
     fun specialMerchants(): Map<String, String> {
@@ -28,7 +35,8 @@ interface StatementCsvFormatter {
                         "Spotify" to "Spotify",
                         "Wickes" to "Wickes",
                         "Eft Payment" to "EFT Payment",
-                        "Lloyds Tsb Credit" to "Lloyds TSB Credit"
+                        "Lloyds Tsb Credit" to "Lloyds TSB Credit",
+                        "Sainsburys" to "Sainsburys"
         )
     }
 
