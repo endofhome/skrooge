@@ -4,7 +4,7 @@ interface StatementCsvFormatter {
     fun String.capitalizeMerchant(): String {
         var specialCharacterDetected = false
         val numericCharacters = listOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
-        val specialCharacters = listOf('\'', '&', '/', ' ') + numericCharacters
+        val specialCharacters = listOf('\'', '&', '/', ' ', '*') + numericCharacters
         return this.map {
             when (specialCharacters.contains(it)) {
                 true -> {
@@ -19,5 +19,16 @@ interface StatementCsvFormatter {
                 }
             }
         }.joinToString("").capitalize()
+    }
+
+    fun specialMerchants(): Map<String, String> {
+        return mapOf(
+                "Tesco" to "Tesco",
+                        "B & Q" to "B&Q",
+                        "Spotify" to "Spotify",
+                        "Wickes" to "Wickes",
+                        "Eft Payment" to "EFT Payment",
+                        "Lloyds Tsb Credit" to "Lloyds TSB Credit"
+        )
     }
 }
