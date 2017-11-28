@@ -12,6 +12,7 @@ object BankThreeStatementCsvFormatter: StatementCsvFormatter {
 
         return file.readLines()
                 .drop(1)
+                .filterNot { it.toLowerCase().contains("eft payment") }
                 .map {
             val split = it.split(",")
             val date = split[1].split("/").reversed().joinToString("-")
