@@ -2,7 +2,7 @@ group 'uk.co.endofhome'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.1.51'
+    ext.kotlin_version = '1.2.0'
     ext.http4k_version = '2.36.0'
 
     repositories {
@@ -30,6 +30,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile "org.http4k:http4k-core:$http4k_version"
     compile "org.http4k:http4k-server-jetty:$http4k_version"
+    compile "org.http4k:http4k-client-apache:$http4k_version"
     compile group: "org.http4k", name: "http4k-template-handlebars", version: "$http4k_version"
     compile group: "org.http4k", name: "http4k-format-gson", version: "$http4k_version"
     compile "com.fasterxml.jackson.core:jackson-core:2.9.0"
