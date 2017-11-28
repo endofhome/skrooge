@@ -101,12 +101,16 @@ class Statements(val categoryMappings: List<String>) {
 
             return when (statementsWithUnknownTransactions.isNotEmpty()) {
                 true -> {
-                    val unknownTransactions = statementsWithUnknownTransactions.flatMap { it.decisions }.filter { it.category == null }
-                    val currentTransaction: Decision = unknownTransactions.first()
-                    val outstandingTransactions = unknownTransactions.filterIndexed { index, _ -> index != 0 }
+                    val unknownMerchants: Set<String> = statementsWithUnknownTransactions
+                            .flatMap { it.decisions }
+                            .filter { it.category == null }
+                            .map { it.line.merchant }
+                            .toSet()
+                    val currentMerchant = unknownMerchants.first()
+                    val outstandingMerchants = unknownMerchants.filterIndexed { index, _ -> index != 0 }
                     val uri = Uri.of("/unknown-transaction")
-                            .query("currentTransaction", currentTransaction.line.purchase)
-                            .query("outstandingTransactions", outstandingTransactions.map { it.line.purchase }.joinToString(","))
+                            .query("currentTransaction", currentMerchant)
+                            .query("outstandingTransactions", outstandingMerchants.joinToString(","))
                     Response(SEE_OTHER).header("Location", uri.toString())
                 }
                 false -> {
@@ -148,7 +152,7 @@ class Statements(val categoryMappings: List<String>) {
 object LineFormatter {
     fun format(line: Line) = FormattedLine(
                 line.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                line.purchase,
+                line.merchant,
                 line.amount.roundTo2DecimalPlaces()
         )
 
@@ -220,7 +224,7 @@ class FileSystemDecisionWriter : DecisionWriter {
         val bank = statementData.files[0].toString().split("_").last().substringBefore(".csv")
         File("$decisionFilePath/$year-$month-$username-decisions-$bank.csv").printWriter().use { out ->
             decisions.forEach {
-                out.print("${it.line.date},${it.line.purchase},${it.line.amount},${it.category?.title},${it.subCategory?.name}\n")
+                out.print("${it.line.date},${it.line.merchant},${it.line.amount},${it.category?.title},${it.subCategory?.name}\n")
             }
         }
     }
@@ -253,7 +257,7 @@ class StatementDecider(categoryMappings: List<String>) {
         val dateValues = lineEntries[0].split("-").map { it.toInt() }
         val line = Line(LocalDate.of(dateValues[0], dateValues[1], dateValues[2]), lineEntries[1], lineEntries[2].toDouble())
 
-        val match = mappings.find { it.purchase.contains(line.purchase) }
+        val match = mappings.find { it.purchase.contains(line.merchant) }
         return when (match) {
             null -> { Decision(line, null, null) }
             else -> { Decision(line, Category(match.mainCatgeory, emptyList()), SubCategory(match.subCategory)) }
@@ -324,7 +328,7 @@ interface MappingWriter {
     fun read(): List<String>
 }
 
-class FileSystemMappingWriter : MappingWriter{
+class FileSystemMappingWriter : MappingWriter {
     val categoryMappingsFileOutputPath = "category-mappings/category-mappings.csv"
     override fun write(line: String): Boolean {
         try {
@@ -334,6 +338,7 @@ class FileSystemMappingWriter : MappingWriter{
             return false
         }
     }
+
     override fun read(): List<String> = File(categoryMappingsFileOutputPath).readLines()
 }
 
@@ -358,10 +363,10 @@ data class StatementData(val year: Year, val month: Month, val username: String,
 }
 
 data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
-data class Line(val date: LocalDate, val purchase: String, val amount: Double)
-data class FormattedLine(val date: String, val purchase: String, val amount: String)
+data class Line(val date: LocalDate, val merchant: String, val amount: Double)
+data class FormattedLine(val date: String, val merchant: String, val amount: String)
 data class UnknownTransactions(val currentTransaction: Transaction, val outstandingTransactions: String) : ViewModel
-data class Transaction (val vendorName: String, val categories: List<Category>?)
+data class Transaction(val vendorName: String, val categories: List<Category>?)
 data class Category(val title: String, val subcategories: List<SubCategory>)
 data class CategoryWithSelection(val title: String, val subCategories: List<SubCategoryWithSelection>)
 data class CategoriesWithSelection(val categories: List<CategoryWithSelection>)
