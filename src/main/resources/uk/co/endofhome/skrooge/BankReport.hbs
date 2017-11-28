@@ -9,12 +9,12 @@
     <h1>Please review your monthly categorisations for {{bankStatement.bankName}}</h1>
     <form action="reports/categorisations" method="post">
         {{#each bankStatement.formattedDecisions}}
-            <h3>{{line.date}}, {{line.purchase}}: £{{line.amount}}
+            <h3>{{line.date}}, {{line.merchant}}: £{{line.amount}}
             <select name="decisions">
                 {{#each categoriesWithSelection.categories}}
                     <optgroup label="{{title}}">
                         {{#each subCategories}}
-                            <option value="[{{line.date}},{{line.purchase}},{{line.amount}},{{title}},{{subCategory.name}}]"{{selector}}>{{subCategory.name}}</option>
+                            <option value="[{{line.date}},{{line.merchant}},{{line.amount}},{{title}},{{subCategory.name}}]"{{selector}}>{{subCategory.name}}</option>
                         {{/each}}
                     </optgroup>
                 {{/each}}
