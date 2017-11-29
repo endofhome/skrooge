@@ -4,7 +4,6 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import org.junit.Test
 import java.io.File
-import java.nio.file.Path
 import java.nio.file.Paths
 
 class BankOneStatementCsvFormatterTest {
@@ -61,7 +60,7 @@ class BankOneStatementCsvFormatterTest {
     @Test
     fun `can format full statement`() {
         val formattedStatement = BankOneStatementCsvFormatter(Paths.get("${bankName}_test_full.csv"))
-        val expectedFile = File(BankOneStatementCsvFormatter.baseInputPath.toString() + File.separator + "2017-10_Tom_${bankName.capitalize()}.csv")
+        val expectedFile = File(BankOneStatementCsvFormatter.baseInputPath.toString() + File.separator + "processed" + File.separator + "2017-05_Test_${bankName.capitalize()}.csv")
         val expected = expectedFile.readLines()
 
         assertThat(formattedStatement, equalTo(expected))
