@@ -9,8 +9,8 @@ import java.nio.file.Paths
 object BankFiveStatementCsvFormatter : StatementCsvFormatter {
     val baseInputPath = Paths.get("input")
 
-    operator fun invoke(inputFilePath: Path): List<String> {
-        val file = File(baseInputPath.toString() + File.separator + inputFilePath.toString())
+    override operator fun invoke(inputFileName: Path): List<String> {
+        val file = File(baseInputPath.toString() + File.separator + inputFileName.toString())
 
         return file.readLines()
                 .drop(1)

@@ -1,6 +1,11 @@
 package uk.co.endofhome.skrooge
 
+import java.nio.file.Path
+
 interface StatementCsvFormatter {
+
+    operator fun invoke(inputFileName: Path): List<String>
+
     fun String.capitalizeMerchant(): String {
         var specialCharacterDetected = false
         val numericCharacters = listOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')

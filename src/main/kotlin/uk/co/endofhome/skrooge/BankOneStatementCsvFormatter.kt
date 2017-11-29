@@ -8,8 +8,8 @@ import java.time.Month
 object BankOneStatementCsvFormatter: StatementCsvFormatter {
     val baseInputPath = Paths.get("input")
 
-    operator fun invoke(inputFilePath: Path): List<String> {
-        val file = File(baseInputPath.toString() + File.separator + inputFilePath.toString())
+    override operator fun invoke(inputFileName: Path): List<String> {
+        val file = File(baseInputPath.toString() + File.separator + inputFileName.toString())
 
         return file.readLines()
                 .filterNot { it.contains("Payment") }
