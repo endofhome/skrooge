@@ -1,23 +1,24 @@
 package uk.co.endofhome.skrooge
 
+import com.natpryce.hamkrest.*
 import com.natpryce.hamkrest.assertion.assertThat
-import com.natpryce.hamkrest.containsSubstring
-import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.should.shouldMatch
 import org.http4k.core.*
 import org.http4k.core.Method.POST
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
+import org.http4k.core.Status.Companion.TEMPORARY_REDIRECT
 import org.http4k.core.body.form
 import org.http4k.hamkrest.hasBody
 import org.http4k.hamkrest.hasStatus
 import org.http4k.lens.Header
-import org.junit.Ignore
 import org.junit.Test
 
 class CategoryMappingNotQuiteAcceptanceTest {
-    val categoryMappings = listOf("Edgeworld Records,Fun,Tom fun budget")
+    val categoryMappings = mutableListOf("Edgeworld Records,Fun,Tom fun budget")
     val mappingWriter = StubbedMappingWriter()
+    val originalRequestBody = "2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]"
+
     val skrooge = Skrooge(categoryMappings, mappingWriter).routes()
     val helpers = TestHelpers(skrooge)
 
@@ -27,6 +28,8 @@ class CategoryMappingNotQuiteAcceptanceTest {
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("new-mapping", "")
                 .form("remaining-vendors", "")
+                .form("originalRequestBody", originalRequestBody)
+
         skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
     }
 
@@ -36,6 +39,8 @@ class CategoryMappingNotQuiteAcceptanceTest {
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("new-mapping", "Casbah Records;Established 1967 in our minds")
                 .form("remaining-vendors", "")
+                .form("originalRequestBody", originalRequestBody)
+
         skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
     }
 
@@ -45,7 +50,9 @@ class CategoryMappingNotQuiteAcceptanceTest {
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("new-mapping", "Casbah Records,Fun,Tom fun budget")
                 .form("remaining-vendors", "")
-        skrooge(request) shouldMatch hasStatus(OK)
+                .form("originalRequestBody", originalRequestBody)
+
+        skrooge(request) shouldMatch hasStatus(TEMPORARY_REDIRECT)
         assertThat(mappingWriter.read().last(), equalTo("Casbah Records,Fun,Tom fun budget"))
     }
 
@@ -55,8 +62,10 @@ class CategoryMappingNotQuiteAcceptanceTest {
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("new-mapping", "DIY Space for London,Fun,Tom fun budget")
                 .form("remaining-vendors", "Another vendor")
+                .form("originalRequestBody", originalRequestBody)
 
-        val followedResponse = helpers.followRedirectResponse(skrooge(request))
+
+        val followedResponse = helpers.follow302RedirectResponse(skrooge(request))
 
         assertThat(mappingWriter.read().last(), equalTo("DIY Space for London,Fun,Tom fun budget"))
         followedResponse shouldMatch hasStatus(OK)
@@ -64,31 +73,19 @@ class CategoryMappingNotQuiteAcceptanceTest {
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Another vendor</h3>"))
     }
 
-    @Ignore
     @Test
     fun `when all categories have been mapped a monthly report is available for review`() {
         val request = Request(POST, "/category-mapping")
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("new-mapping", "Last new mapping,Fun,Tom fun budget")
                 .form("remaining-vendors", "")
-
-        val followedResponse = helpers.followRedirectResponse(skrooge(request))
-
-        followedResponse shouldMatch hasStatus(OK)
-        followedResponse shouldMatch hasBody(containsSubstring("Please review the categories chosen."))
-        followedResponse shouldMatch hasBody(containsSubstring("<h3>Last new mapping</h3>"))
-    }
-
-    @Test
-    fun `temporarily, when all categories have been mapped a confirmation page is shown`() {
-        val request = Request(POST, "/category-mapping")
-                .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form("new-mapping", "Last new mapping,Fun,Tom fun budget")
-                .form("remaining-vendors", "")
+                .form("originalRequestBody", originalRequestBody)
 
         val response = skrooge(request)
 
-        response shouldMatch hasStatus(OK)
-        response shouldMatch hasBody(containsSubstring("All new categories mapped. Please POST your data once again."))
+        response shouldMatch hasStatus(TEMPORARY_REDIRECT)
+        response.header("Location")!! shouldMatch endsWith("/statements")
+        response.header("Method")!! shouldMatch equalTo("POST")
+        response.body shouldMatch equalTo(Body(originalRequestBody))
     }
 }

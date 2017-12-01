@@ -32,7 +32,7 @@ fun main(args: Array<String>) {
     app.asServer(Jetty(port)).startAndBlock()
 }
 
-class Skrooge(val categoryMappings: List<String> = File("category-mappings/category-mappings.csv").readLines(),
+class Skrooge(val categoryMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList(),
               val mappingWriter: MappingWriter = FileSystemMappingWriter(),
               val decisionWriter: DecisionWriter = FileSystemDecisionWriter()) {
 
@@ -45,7 +45,7 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
             "/" bind GET to { _ -> Statements(categoryMappings).index(renderer) },
             "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body, renderer, decisionWriter) },
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer).handle(request) },
-            "category-mapping" bind POST to { request -> CategoryMappings(mappingWriter).addCategoryMapping(request) },
+            "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionWriter).confirm(request) },
             "monthly-report/json" bind GET to { request -> MonthlyReport(gson, decisionWriter).handle(request) }
     )
@@ -111,6 +111,7 @@ class Statements(val categoryMappings: List<String>) {
                     val uri = Uri.of("/unknown-merchant")
                             .query("currentMerchant", currentMerchant)
                             .query("outstandingMerchants", outstandingMerchants.joinToString(","))
+                            .query("originalRequestBody", body.toString())
                     Response(SEE_OTHER).header("Location", uri.toString())
                 }
                 false -> {
@@ -162,12 +163,14 @@ object LineFormatter {
 
 class UnknownMerchantHandler(private val renderer: TemplateRenderer) {
     fun handle(request: Request): Response {
-        val vendorLens: BiDiLens<Request, String> = Query.required("currentMerchant")
-        val merchantsLens: BiDiLens<Request, List<String>> = Query.multi.required("outstandingMerchants")
+        val currentMerchantLens: BiDiLens<Request, String> = Query.required("currentMerchant")
+        val outstandingMerchantsLens: BiDiLens<Request, List<String>> = Query.multi.required("outstandingMerchants")
+        val originalRequestBodyLens: BiDiLens<Request, String> = Query.required("originalRequestBody")
         val view = Body.view(renderer, ContentType.TEXT_HTML)
-        val currentMerchant = Merchant(vendorLens(request), categories())
-        val vendors: List<String> = merchantsLens(request).flatMap { it.split(",") }
-        val unknownMerchants = UnknownMerchants(currentMerchant, vendors.joinToString(","))
+        val currentMerchant = Merchant(currentMerchantLens(request), categories())
+        val outstandingMerchants: List<String> = outstandingMerchantsLens(request).flatMap { it.split(",") }
+        val originalRequestBody = originalRequestBodyLens(request)
+        val unknownMerchants = UnknownMerchants(currentMerchant, outstandingMerchants.joinToString(","), originalRequestBody)
 
         return Response(OK).with(view of unknownMerchants)
     }
@@ -278,27 +281,35 @@ class StubbedDecisionWriter : DecisionWriter {
     override fun read(year: Int, month: Month) = file.toList()
 }
 
-class CategoryMappings(private val mappingWriter: MappingWriter) {
+class CategoryMappings(private val categoryMappings: MutableList<String>, private val mappingWriter: MappingWriter) {
     fun addCategoryMapping(request: Request): Response {
         val newMappingLens = FormField.required("new-mapping")
         val remainingVendorsLens = FormField.required("remaining-vendors")
+        val originalRequestBodyLens = FormField.required("originalRequestBody")
         val webForm: BiDiBodyLens<WebForm> = Body.webForm(FormValidator.Strict, newMappingLens, remainingVendorsLens).toLens()
         val newMapping = newMappingLens.extract(webForm(request)).split(",")
         val remainingVendors: List<String> = remainingVendorsLens.extract(webForm(request)).split(",").filter { it.isNotBlank() }
+        val originalRequestBody = Body(originalRequestBodyLens.extract(webForm(request)))
 
         return newMapping.size.let {
             when {
                 it < 3 -> Response(BAD_REQUEST)
                 else -> {
-                    mappingWriter.write(newMapping.joinToString(","))
+                    val newMappingString = newMapping.joinToString(",")
+                    mappingWriter.write(newMappingString)
+                    categoryMappings.add(newMappingString)
                     when (remainingVendors.isEmpty()) {
-                        true -> Response(OK).body("All new categories mapped. Please POST your data once again.")
+                        true -> Response(Status.TEMPORARY_REDIRECT)
+                                .header("Location", "/statements")
+                                .header("Method", POST.name)
+                                .body(originalRequestBody)
                         false -> {
                             val nextVendor = remainingVendors.first()
                             val carriedForwardVendors = remainingVendors.filterIndexed { index, _ -> index != 0 }
                             val uri = Uri.of("/unknown-merchant")
                                     .query("currentMerchant", nextVendor)
                                     .query("outstandingMerchants", carriedForwardVendors.joinToString(","))
+                                    .query("originalRequestBody", originalRequestBody.toString())
                             Response(SEE_OTHER).header("Location", uri.toString())
                         }
                     }
@@ -365,7 +376,7 @@ data class StatementData(val year: Year, val month: Month, val username: String,
 data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
 data class Line(val date: LocalDate, val merchant: String, val amount: Double)
 data class FormattedLine(val date: String, val merchant: String, val amount: String)
-data class UnknownMerchants(val currentMerchant: Merchant, val outstandingMerchants: String) : ViewModel
+data class UnknownMerchants(val currentMerchant: Merchant, val outstandingMerchants: String, val originalRequestBody: String) : ViewModel
 data class Merchant(val name: String, val categories: List<Category>?)
 data class Category(val title: String, val subcategories: List<SubCategory>)
 data class CategoryWithSelection(val title: String, val subCategories: List<SubCategoryWithSelection>)
