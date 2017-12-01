@@ -45,10 +45,10 @@ class StatementsAcceptanceTest {
 
     @Test
     fun `POST with empty csv produces empty output file`() {
-        val request = Request(POST, "/statements").body("2017;September;Tom;src/test/resources/[2017-01_Someone_empty-file.csv]")
+        val request = Request(POST, "/statements").body("2017;May;Test;src/test/resources/[2017-01_Someone_empty-file.csv]")
         skrooge(request)
 
-        val decisionFile = File("output/decisions/2017-9-Tom-decisions-empty-file.csv")
+        val decisionFile = File("output/decisions/2017-5-Test-decisions-empty-file.csv")
         val fileContents = decisionFile.readLines()
         assertThat(fileContents.size, equalTo(0))
     }
