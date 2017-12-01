@@ -44,7 +44,7 @@ class Skrooge(val categoryMappings: List<String> = File("category-mappings/categ
             "/public" bind publicDirectory,
             "/" bind GET to { _ -> Statements(categoryMappings).index(renderer) },
             "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body, renderer, decisionWriter) },
-            "/unknown-transaction" bind GET to { request -> UnknownTransactionHandler(renderer).handle(request) },
+            "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionWriter).confirm(request) },
             "monthly-report/json" bind GET to { request -> MonthlyReport(gson, decisionWriter).handle(request) }
@@ -97,20 +97,20 @@ class Statements(val categoryMappings: List<String>) {
                         splitFilename.substringBefore(".csv"), StatementDecider(categoryMappings).process(it.readLines())
                 )
             }
-            val statementsWithUnknownTransactions = processedLines.filter { it.decisions.map { it.category }.contains(null) }
+            val statementsWithUnknownMerchants = processedLines.filter { it.decisions.map { it.category }.contains(null) }
 
-            return when (statementsWithUnknownTransactions.isNotEmpty()) {
+            return when (statementsWithUnknownMerchants.isNotEmpty()) {
                 true -> {
-                    val unknownMerchants: Set<String> = statementsWithUnknownTransactions
+                    val unknownMerchants: Set<String> = statementsWithUnknownMerchants
                             .flatMap { it.decisions }
                             .filter { it.category == null }
                             .map { it.line.merchant }
                             .toSet()
                     val currentMerchant = unknownMerchants.first()
                     val outstandingMerchants = unknownMerchants.filterIndexed { index, _ -> index != 0 }
-                    val uri = Uri.of("/unknown-transaction")
-                            .query("currentTransaction", currentMerchant)
-                            .query("outstandingTransactions", outstandingMerchants.joinToString(","))
+                    val uri = Uri.of("/unknown-merchant")
+                            .query("currentMerchant", currentMerchant)
+                            .query("outstandingMerchants", outstandingMerchants.joinToString(","))
                     Response(SEE_OTHER).header("Location", uri.toString())
                 }
                 false -> {
@@ -160,16 +160,16 @@ object LineFormatter {
             BigDecimal(this).setScale(2, BigDecimal.ROUND_HALF_UP).toString()
 }
 
-class UnknownTransactionHandler(private val renderer: TemplateRenderer) {
+class UnknownMerchantHandler(private val renderer: TemplateRenderer) {
     fun handle(request: Request): Response {
-        val vendorLens: BiDiLens<Request, String> = Query.required("currentTransaction")
-        val transactionsLens: BiDiLens<Request, List<String>> = Query.multi.required("outstandingTransactions")
+        val vendorLens: BiDiLens<Request, String> = Query.required("currentMerchant")
+        val merchantsLens: BiDiLens<Request, List<String>> = Query.multi.required("outstandingMerchants")
         val view = Body.view(renderer, ContentType.TEXT_HTML)
-        val currentTransaction = Transaction(vendorLens(request), categories())
-        val vendors: List<String> = transactionsLens(request).flatMap { it.split(",") }
-        val unknownTransactions = UnknownTransactions(currentTransaction, vendors.joinToString(","))
+        val currentMerchant = Merchant(vendorLens(request), categories())
+        val vendors: List<String> = merchantsLens(request).flatMap { it.split(",") }
+        val unknownMerchants = UnknownMerchants(currentMerchant, vendors.joinToString(","))
 
-        return Response(OK).with(view of unknownTransactions)
+        return Response(OK).with(view of unknownMerchants)
     }
 }
 
@@ -296,9 +296,9 @@ class CategoryMappings(private val mappingWriter: MappingWriter) {
                         false -> {
                             val nextVendor = remainingVendors.first()
                             val carriedForwardVendors = remainingVendors.filterIndexed { index, _ -> index != 0 }
-                            val uri = Uri.of("/unknown-transaction")
-                                    .query("currentTransaction", nextVendor)
-                                    .query("outstandingTransactions", carriedForwardVendors.joinToString(","))
+                            val uri = Uri.of("/unknown-merchant")
+                                    .query("currentMerchant", nextVendor)
+                                    .query("outstandingMerchants", carriedForwardVendors.joinToString(","))
                             Response(SEE_OTHER).header("Location", uri.toString())
                         }
                     }
@@ -365,8 +365,8 @@ data class StatementData(val year: Year, val month: Month, val username: String,
 data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
 data class Line(val date: LocalDate, val merchant: String, val amount: Double)
 data class FormattedLine(val date: String, val merchant: String, val amount: String)
-data class UnknownTransactions(val currentTransaction: Transaction, val outstandingTransactions: String) : ViewModel
-data class Transaction(val vendorName: String, val categories: List<Category>?)
+data class UnknownMerchants(val currentMerchant: Merchant, val outstandingMerchants: String) : ViewModel
+data class Merchant(val name: String, val categories: List<Category>?)
 data class Category(val title: String, val subcategories: List<SubCategory>)
 data class CategoryWithSelection(val title: String, val subCategories: List<SubCategoryWithSelection>)
 data class CategoriesWithSelection(val categories: List<CategoryWithSelection>)

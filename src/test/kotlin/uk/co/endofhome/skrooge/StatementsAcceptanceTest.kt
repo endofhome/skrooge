@@ -54,50 +54,50 @@ class StatementsAcceptanceTest {
     }
 
     @Test
-    fun `POST with one entry produces output file with one entry when recognised transaction`() {
-        val request = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/2017-02_Someone_one-known-transaction.csv]")
+    fun `POST with one entry produces output file with one entry when recognised merchant`() {
+        val request = Request(POST, "/statements").body("2017;May;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
         skrooge(request)
 
-        val decisionFile = File("output/decisions/2017-9-Tom-decisions-one-known-transaction.csv")
+        val decisionFile = File("output/decisions/2017-5-Test-decisions-one-known-merchant.csv")
         val fileContents = decisionFile.readLines()
         assertThat(fileContents.size, equalTo(1))
         assertThat(fileContents[0], equalTo("2017-09-17,Pizza Union,5.5,Eats and drinks,Meals at work"))
     }
 
     @Test
-    fun `POST with one entry returns a monthly report when recognised transaction`() {
-        val requestWithPizzaUnion = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/2017-02_Someone_one-known-transaction.csv]")
+    fun `POST with one entry returns a monthly report when recognised merchant`() {
+        val requestWithPizzaUnion = Request(POST, "/statements").body("2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
         val response = skrooge(requestWithPizzaUnion)
 
         response shouldMatch hasStatus(OK)
-        response shouldMatch hasBody(containsSubstring("<h1>Please review your monthly categorisations for one-known-transaction</h1>"))
+        response shouldMatch hasBody(containsSubstring("<h1>Please review your monthly categorisations for one-known-merchant</h1>"))
         response shouldMatch hasBody(containsSubstring("<h3>17/09/2017, Pizza Union: £5.50"))
         response shouldMatch hasBody(containsSubstring("<option value=\"[17/09/2017,Pizza Union,5.50,Eats and drinks,Meals at work]\" selected>Meals at work</option>"))
         response shouldMatch hasBody(containsSubstring("<option value=\"[17/09/2017,Pizza Union,5.50,Eats and drinks,Food]\">Food</option>"))
     }
 
     @Test
-    fun `POST with one entry returns HTTP See Other when unrecognised transaction`() {
-        val requestWithMcDonalds = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/2017-04_Someone_unknown-transaction.csv]")
+    fun `POST with one entry returns HTTP See Other when unrecognised merchant`() {
+        val requestWithMcDonalds = Request(POST, "/statements").body("2017;April;Test;[src/test/resources/2017-04_Someone_unknown-merchant.csv]")
         val response = skrooge(requestWithMcDonalds)
         response shouldMatch hasStatus(SEE_OTHER)
-        response shouldMatch hasHeader("Location", "/unknown-transaction?currentTransaction=McDonalds&outstandingTransactions=")
+        response shouldMatch hasHeader("Location", "/unknown-merchant?currentMerchant=McDonalds&outstandingMerchants=")
 
         val followedResponse = helpers.followRedirectResponse(response)
-        followedResponse shouldMatch hasBody(containsSubstring("You need to categorise some transactions."))
+        followedResponse shouldMatch hasBody(containsSubstring("You need to categorise some merchants."))
     }
 
     @Test
-    fun `redirect when unrecognised transaction shows correct unrecognised transaction`() {
-        val requestWithMcDonalds = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/2017-04_Someone_unknown-transaction.csv]")
+    fun `redirect when unrecognised merchant shows correct unrecognised merchant`() {
+        val requestWithMcDonalds = Request(POST, "/statements").body("2017;April;Test;[src/test/resources/2017-04_Someone_unknown-merchant.csv]")
         val followedResponse = helpers.followRedirectResponse(skrooge(requestWithMcDonalds))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>McDonalds</h3>"))
     }
 
     @Test
-    fun `redirect when multiple unrecognised transactions shows correct unrecognised transactions`() {
-        val requestWithTwoRecordShops = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/2017-03_Someone_two-unknown-transactions.csv]")
+    fun `redirect when multiple unrecognised merchants shows correct unrecognised merchants`() {
+        val requestWithTwoRecordShops = Request(POST, "/statements").body("2017;March;Tom;[src/test/resources/2017-03_Someone_two-unknown-merchants.csv]")
         val followedResponse = helpers.followRedirectResponse(skrooge(requestWithTwoRecordShops))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
@@ -105,9 +105,9 @@ class StatementsAcceptanceTest {
     }
 
     @Test
-    fun `redirect when multiple unrecognised transactions and multiple input files`() {
-        val requestWithTwoFilesOfUnknownTransactions = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/2017-03_Someone_two-unknown-transactions.csv,src/test/resources/2017-04_Someone_unknown-transaction.csv]")
-        val followedResponse = helpers.followRedirectResponse(skrooge(requestWithTwoFilesOfUnknownTransactions))
+    fun `redirect when multiple unrecognised merchants and multiple input files`() {
+        val requestWithTwoFilesOfUnknownMerchants = Request(POST, "/statements").body("2017;March;Test;[src/test/resources/2017-03_Someone_two-unknown-merchants.csv,src/test/resources/2017-04_Someone_unknown-merchant.csv]")
+        val followedResponse = helpers.followRedirectResponse(skrooge(requestWithTwoFilesOfUnknownMerchants))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
         followedResponse shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"remaining-vendors\" value=\"Edgeworld Records,McDonalds\">"))

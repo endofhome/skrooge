@@ -60,7 +60,7 @@ class CategoryMappingNotQuiteAcceptanceTest {
 
         assertThat(mappingWriter.read().last(), equalTo("DIY Space for London,Fun,Tom fun budget"))
         followedResponse shouldMatch hasStatus(OK)
-        followedResponse shouldMatch hasBody(containsSubstring("You need to categorise some transactions."))
+        followedResponse shouldMatch hasBody(containsSubstring("You need to categorise some merchants."))
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Another vendor</h3>"))
     }
 

@@ -6,19 +6,19 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
 </head>
 <body>
-    <h1>You need to categorise some transactions.</h1>
-    <h3>{{currentTransaction.vendorName}}</h3>
+    <h1>You need to categorise some merchants.</h1>
+    <h3>{{currentMerchant.name}}</h3>
     <form action="/category-mapping" method="post">
         <select name="new-mapping">
-            {{#each currentTransaction.categories}}
+            {{#each currentMerchant.categories}}
             <optgroup label="{{title}}">
                 {{#each subcategories}}
-                <option value="{{currentTransaction.vendorName}},{{title}},{{name}}">{{name}}</option>
+                <option value="{{currentMerchant.name}},{{title}},{{name}}">{{name}}</option>
                 {{/each}}
             </optgroup>
             {{/each}}
         </select>
-        <input type="hidden" name="remaining-vendors" value="{{outstandingTransactions}}">
+        <input type="hidden" name="remaining-vendors" value="{{outstandingMerchants}}">
 
         <div class="button">
             <button type="submit">Update category</button>
