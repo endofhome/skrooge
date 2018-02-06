@@ -39,6 +39,16 @@ class BankSixStatementCsvFormatterTest {
     }
 
     @Test
+    fun `can format statement with quoted lines`() {
+        val formattedStatement = BankSixStatementCsvFormatter(Paths.get("${bankName}_quoted_line.csv"))
+        val expectedFormat =
+                listOf(
+                        "2017-12-12,Bob,19.99"
+                )
+        assertThat(formattedStatement, equalTo(expectedFormat))
+    }
+
+    @Test
     fun `can format full statement`() {
         val formattedStatement = BankSixStatementCsvFormatter(Paths.get("${bankName}_test_full.csv"))
         val expectedFile = File(BankSixStatementCsvFormatter.baseInputPath.toString() + File.separator + "processed" + File.separator + "2017-05_Test_${bankName.capitalize()}.csv")

@@ -13,7 +13,8 @@ object BankSixStatementCsvFormatter : StatementCsvFormatter {
         return file.readLines()
                 .drop(1)
                 .map {
-            val split = it.split(",")
+            val unquoted = it.removeQuotedCommas()
+            val split = unquoted.split(",")
             val date = split[0].split("/").reversed().joinToString("-")
             val merchant = sanitise(split[3])
             val value = split[4]
@@ -25,5 +26,16 @@ object BankSixStatementCsvFormatter : StatementCsvFormatter {
     private fun sanitise(merchant: String): String {
         val santisedMerchant = merchant.trim().toLowerCase().capitalizeMerchant()
         return santisedMerchant.modifyIfSpecialMerchant()
+    }
+
+    private fun String.removeQuotedCommas(): String {
+        val split = this.split("\"")
+        return if (split.size == 3) {
+            val quotedMerchant = this.substringAfter('"').substringBefore('"').trim().removeSurrounding("\"")
+            val unquotedMerchant = quotedMerchant.substringBefore(",")
+            "${split[0]}$unquotedMerchant${split[2]}"
+        } else {
+            this
+        }
     }
 }
