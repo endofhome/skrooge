@@ -2,7 +2,7 @@ group 'uk.co.endofhome'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.2.31'
+    ext.kotlin_version = '1.2.41'
     ext.http4k_version = '2.36.0'
 
     repositories {
@@ -27,7 +27,9 @@ repositories {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.2.0'
     compile "org.http4k:http4k-core:$http4k_version"
     compile "org.http4k:http4k-server-jetty:$http4k_version"
     compile "org.http4k:http4k-client-apache:$http4k_version"
@@ -39,7 +41,7 @@ dependencies {
 
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile "com.natpryce:hamkrest:1.4.2.0"
-    testCompile group: "org.http4k", name: "http4k-testing-hamkrest", version: "2.28.0"
+    testCompile group: "org.http4k", name: "http4k-testing-hamkrest", version: "$http4k_version"
 }
 
 mainClassName = 'uk.co.endofhome.skrooge.Skrooge.kt'
