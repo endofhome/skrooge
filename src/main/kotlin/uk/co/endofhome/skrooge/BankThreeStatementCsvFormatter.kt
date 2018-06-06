@@ -2,13 +2,11 @@ package uk.co.endofhome.skrooge
 
 import java.io.File
 import java.nio.file.Path
-import java.nio.file.Paths
 
 object BankThreeStatementCsvFormatter: StatementCsvFormatter {
-    val baseInputPath = Paths.get("input")
 
     override operator fun invoke(inputFileName: Path): List<String> {
-        val file = File(baseInputPath.toString() + File.separator + inputFileName.toString())
+        val file = File(baseInputPath().toString() + File.separator + inputFileName.toString())
 
         return file.readLines()
                 .drop(1)

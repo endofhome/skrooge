@@ -4,13 +4,11 @@ import java.io.File
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.nio.file.Path
-import java.nio.file.Paths
 
 object BankFiveStatementCsvFormatter : StatementCsvFormatter {
-    val baseInputPath = Paths.get("input")
 
     override operator fun invoke(inputFileName: Path): List<String> {
-        val file = File(baseInputPath.toString() + File.separator + inputFileName.toString())
+        val file = File(baseInputPath().toString() + File.separator + inputFileName.toString())
 
         return file.readLines()
                 .drop(1)

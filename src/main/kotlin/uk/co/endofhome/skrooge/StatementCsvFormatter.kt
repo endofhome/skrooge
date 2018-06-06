@@ -1,8 +1,11 @@
 package uk.co.endofhome.skrooge
 
 import java.nio.file.Path
+import java.nio.file.Paths
 
 interface StatementCsvFormatter {
+
+    fun baseInputPath(): Path = Paths.get("input")
 
     operator fun invoke(inputFileName: Path): List<String>
 

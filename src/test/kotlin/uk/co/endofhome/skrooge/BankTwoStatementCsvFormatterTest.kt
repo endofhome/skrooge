@@ -6,10 +6,10 @@ import org.junit.Test
 import java.nio.file.Paths
 
 class BankTwoStatementCsvFormatterTest {
-    val bankName = System.getenv("BANK_TWO").toLowerCase()
-    val merchantFour = System.getenv("MERCHANT_FOUR")
-    val merchantFive = System.getenv("MERCHANT_FIVE")
-    val merchantSix = System.getenv("MERCHANT_SIX")
+    private val bankName = System.getenv("BANK_TWO").toLowerCase()
+    private val merchantFour = System.getenv("MERCHANT_FOUR")
+    private val merchantFive = System.getenv("MERCHANT_FIVE")
+    private val merchantSix = System.getenv("MERCHANT_SIX")
 
     // You will need csv files in your 'input' directory. as well
     // as environment variables for bankName and merchants set up
@@ -20,7 +20,7 @@ class BankTwoStatementCsvFormatterTest {
         val formattedStatement = BankTwoStatementCsvFormatter(Paths.get("${bankName}_test_one_line.csv"))
         val expectedFormat =
                 listOf(
-                        "2017-11-13,${merchantSix},85.00"
+                        "2017-11-13,$merchantSix,85.00"
                 )
         assertThat(formattedStatement, equalTo(expectedFormat))
     }
@@ -30,9 +30,9 @@ class BankTwoStatementCsvFormatterTest {
         val formattedStatement = BankTwoStatementCsvFormatter(Paths.get("${bankName}_test_three_lines.csv"))
         val expectedFormat =
                 listOf(
-                        "2017-11-15,${merchantFour},-28.33",
-                        "2017-11-15,${merchantFive},-28.33",
-                        "2017-11-13,${merchantSix},85.00"
+                        "2017-11-15,$merchantFour,-28.33",
+                        "2017-11-15,$merchantFive,-28.33",
+                        "2017-11-13,$merchantSix,85.00"
                 )
         assertThat(formattedStatement, equalTo(expectedFormat))
     }
