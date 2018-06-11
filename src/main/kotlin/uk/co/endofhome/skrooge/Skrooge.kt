@@ -4,24 +4,46 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.http4k.asString
-import org.http4k.core.*
+import org.http4k.core.Body
+import org.http4k.core.ContentType
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
+import org.http4k.core.Request
+import org.http4k.core.Response
+import org.http4k.core.Status
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
+import org.http4k.core.Uri
+import org.http4k.core.query
+import org.http4k.core.with
 import org.http4k.filter.DebuggingFilters
 import org.http4k.format.Gson
-import org.http4k.lens.*
-import org.http4k.routing.*
+import org.http4k.lens.BiDiBodyLens
+import org.http4k.lens.BiDiLens
+import org.http4k.lens.FormField
+import org.http4k.lens.FormValidator
+import org.http4k.lens.Query
+import org.http4k.lens.WebForm
+import org.http4k.lens.webForm
+import org.http4k.routing.ResourceLoader
+import org.http4k.routing.bind
+import org.http4k.routing.routes
+import org.http4k.routing.static
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
-import org.http4k.template.*
+import org.http4k.template.HandlebarsTemplates
+import org.http4k.template.TemplateRenderer
+import org.http4k.template.ViewModel
+import org.http4k.template.view
 import uk.co.endofhome.skrooge.CategoryHelpers.categories
 import uk.co.endofhome.skrooge.CategoryHelpers.subcategoriesFor
 import java.io.File
 import java.math.BigDecimal
-import java.time.*
+import java.time.LocalDate
+import java.time.Month
+import java.time.Year
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 fun main(args: Array<String>) {
@@ -32,8 +54,8 @@ fun main(args: Array<String>) {
     app.asServer(Jetty(port)).startAndBlock()
 }
 
-class Skrooge(val categoryMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList(),
-              val mappingWriter: MappingWriter = FileSystemMappingWriter(),
+class Skrooge(private val categoryMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList(),
+              private val mappingWriter: MappingWriter = FileSystemMappingWriter(),
               val decisionWriter: DecisionWriter = FileSystemDecisionWriter()) {
 
     private val gson = Gson
@@ -47,11 +69,12 @@ class Skrooge(val categoryMappings: MutableList<String> = File("category-mapping
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionWriter).confirm(request) },
-            "monthly-report/json" bind GET to { request -> MonthlyReport(gson, decisionWriter).handle(request) }
+            "annual-report/json" bind GET to { request -> AnnualReporter(gson, decisionWriter, toCategoryReports).handle(request) },
+            "monthly-report/json" bind GET to { request -> MonthlyReporter(gson, decisionWriter, toCategoryReports).handle(request) }
     )
 }
 
-class ReportCategorisations(val decisionWriter: DecisionWriter) {
+class ReportCategorisations(private val decisionWriter: DecisionWriter) {
     fun confirm(request: Request): Response {
         val webForm = Body.webForm(FormValidator.Strict)
         val form = webForm.toLens().extract(request)
@@ -215,9 +238,14 @@ object CategoryHelpers {
 interface DecisionWriter {
     fun write(statementData: StatementData, decisions: List<Decision>)
     fun read(year: Int, month: Month): List<Decision>
+    fun readForYearStarting(startDate: LocalDate): List<Decision>
 }
 
 class FileSystemDecisionWriter : DecisionWriter {
+    override fun readForYearStarting(startDate: LocalDate): List<Decision> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     private val decisionFilePath = "output/decisions"
 
     override fun write(statementData: StatementData, decisions: List<Decision>) {
@@ -270,6 +298,9 @@ class StatementDecider(categoryMappings: List<String>) {
 
 class StubbedDecisionWriter : DecisionWriter {
     private val file: MutableList<Decision> = mutableListOf()
+
+    override fun readForYearStarting(startDate: LocalDate): List<Decision> =
+            file.filter { it.line.date >= startDate && it.line.date < startDate.plusYears(1L) }
 
     override fun write(statementData: StatementData, decisions: List<Decision>) {
         file.clear()
