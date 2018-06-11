@@ -5,4 +5,3 @@ build/
 .DS_Store
 output/
 input/
-src/test/kotlin/uk/co/endofhome/skrooge/csvformatters
