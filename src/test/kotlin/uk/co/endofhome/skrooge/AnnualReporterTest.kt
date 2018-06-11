@@ -14,7 +14,7 @@ import java.time.Month
 import java.time.Year
 import java.time.format.DateTimeFormatter
 
-class AnnualReportTest {
+class AnnualReporterTest {
 
     @Test
     fun `valid request returns OK`() {
