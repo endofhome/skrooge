@@ -308,32 +308,6 @@ class PretendFormParser {
     }
 }
 
-interface MappingWriter {
-    fun write(line: String): Boolean
-    fun read(): List<String>
-}
-
-class FileSystemMappingWriter : MappingWriter {
-    val categoryMappingsFileOutputPath = "category-mappings/category-mappings.csv"
-    override fun write(line: String): Boolean {
-        try {
-            File(categoryMappingsFileOutputPath).appendText(line + "\n")
-            return true
-        } catch (e: Exception) {
-            return false
-        }
-    }
-
-    override fun read(): List<String> = File(categoryMappingsFileOutputPath).readLines()
-}
-
-class StubbedMappingWriter : MappingWriter {
-    private val file: MutableList<String> = mutableListOf()
-
-    override fun write(line: String) = file.add(line)
-    override fun read() = file
-}
-
 data class StatementData(val year: Year, val month: Month, val username: String, val files: List<File>) {
     companion object {
         fun fromFormParts(formParts: List<String>): StatementData {
