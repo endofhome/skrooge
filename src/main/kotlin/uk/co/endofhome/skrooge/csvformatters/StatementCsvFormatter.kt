@@ -1,4 +1,4 @@
-package uk.co.endofhome.skrooge
+package uk.co.endofhome.skrooge.csvformatters
 
 import java.nio.file.Path
 import java.nio.file.Paths

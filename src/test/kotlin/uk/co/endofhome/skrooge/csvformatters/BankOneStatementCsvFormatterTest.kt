@@ -1,4 +1,4 @@
-package uk.co.endofhome.skrooge
+package uk.co.endofhome.skrooge.csvformatters
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
