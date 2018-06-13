@@ -14,13 +14,13 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 class MonthlyReporter(private val gson: Gson,
-                      private val decisionWriter: DecisionWriter,
+                      private val decisionReaderWriter: DecisionReaderWriter,
                       private val decisionsToCategoryReports: List<Decision>.() -> List<CategoryReport>)
 {
     fun handle(request: Request): Response {
         val year = request.query("year")!!.toInt()
         val month = Month.of(request.query("month")!!.toInt())
-        val decisions = decisionWriter.read(year, month)
+        val decisions = decisionReaderWriter.read(year, month)
 
         return decisions.let { when {
                 it.isNotEmpty() -> {
@@ -39,14 +39,14 @@ class MonthlyReporter(private val gson: Gson,
 
 
 class AnnualReporter(private val gson: Gson,
-                     private val decisionWriter: DecisionWriter,
+                     private val decisionReaderWriter: DecisionReaderWriter,
                      private val decisionsToCategoryReports: List<Decision>.() -> List<CategoryReport>)
 {
 
     fun handle(request: Request): Response {
         val startDateString = request.query("startDate")!!
         val startDate = LocalDate.parse(startDateString, DateTimeFormatter.ISO_DATE)
-        val decisions = decisionWriter.readForYearStarting(startDate)
+        val decisions = decisionReaderWriter.readForYearStarting(startDate)
 
         return decisions.let { when {
             it.isNotEmpty() -> {

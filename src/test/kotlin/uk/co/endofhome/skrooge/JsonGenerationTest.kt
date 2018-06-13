@@ -16,8 +16,8 @@ import java.time.Month.OCTOBER
 import java.time.Year
 
 class JsonGenerationTest {
-    val decisionWriter = StubbedDecisionWriter()
-    val skrooge = Skrooge(decisionWriter = decisionWriter).routes()
+    val decisionWriter = StubbedDecisionReaderWriter()
+    val skrooge = Skrooge(decisionReaderWriter = decisionWriter).routes()
 
     // TODO app already works for multiple files, but some tests would be nice
     // TODO to guard against regressions.

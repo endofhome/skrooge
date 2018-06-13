@@ -55,7 +55,7 @@ fun main(args: Array<String>) {
 
 class Skrooge(private val categoryMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList(),
               private val mappingWriter: MappingWriter = FileSystemMappingWriter(),
-              val decisionWriter: DecisionWriter = FileSystemDecisionWriter()) {
+              val decisionReaderWriter: DecisionReaderWriter = FileSystemDecisionReaderReaderWriter()) {
 
     private val gson = Gson
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
@@ -64,16 +64,16 @@ class Skrooge(private val categoryMappings: MutableList<String> = File("category
     fun routes() = routes(
             "/public" bind publicDirectory,
             "/" bind GET to { _ -> Statements(categoryMappings).index(renderer) },
-            "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body, renderer, decisionWriter) },
+            "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body, renderer, decisionReaderWriter) },
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },
-            "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionWriter).confirm(request) },
-            "annual-report/json" bind GET to { request -> AnnualReporter(gson, decisionWriter, toCategoryReports).handle(request) },
-            "monthly-report/json" bind GET to { request -> MonthlyReporter(gson, decisionWriter, toCategoryReports).handle(request) }
+            "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionReaderWriter).confirm(request) },
+            "annual-report/json" bind GET to { request -> AnnualReporter(gson, decisionReaderWriter, toCategoryReports).handle(request) },
+            "monthly-report/json" bind GET to { request -> MonthlyReporter(gson, decisionReaderWriter, toCategoryReports).handle(request) }
     )
 }
 
-class ReportCategorisations(private val decisionWriter: DecisionWriter) {
+class ReportCategorisations(private val decisionReaderWriter: DecisionReaderWriter) {
     fun confirm(request: Request): Response {
         val webForm = Body.webForm(FormValidator.Strict)
         val form = webForm.toLens().extract(request)
@@ -96,7 +96,7 @@ class ReportCategorisations(private val decisionWriter: DecisionWriter) {
 
         val statementDataString: List<String> = form.fields["statement-data"]!![0].split(";")
         val statementData = StatementData.fromFormParts(statementDataString)
-        decisionWriter.write(statementData, decisions)
+        decisionReaderWriter.write(statementData, decisions)
         return Response(Status.CREATED)
     }
 }
@@ -104,7 +104,7 @@ class ReportCategorisations(private val decisionWriter: DecisionWriter) {
 class Statements(val categoryMappings: List<String>) {
     private val parser = PretendFormParser()
 
-    fun uploadStatements(body: Body, renderer: TemplateRenderer, decisionWriter: DecisionWriter): Response {
+    fun uploadStatements(body: Body, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
         try {
             val statementData: StatementData = parser.parse(body)
             val processedLines: List<BankStatement> = statementData.files.map {
@@ -137,7 +137,7 @@ class Statements(val categoryMappings: List<String>) {
                     Response(SEE_OTHER).header("Location", uri.toString())
                 }
                 false -> {
-                    processedLines.forEach { decisionWriter.write(statementData, it.decisions) }
+                    processedLines.forEach { decisionReaderWriter.write(statementData, it.decisions) }
                     val bankStatements = BankStatements(processedLines.map { bankStatement ->
                         FormattedBankStatement(
                                 bankStatement.yearMonth.year.toString(),
