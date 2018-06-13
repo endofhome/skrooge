@@ -41,7 +41,7 @@ class BankThreeStatementCsvFormatterTest {
     @Test
     fun `can format full statement`() {
         val formattedStatement = BankThreeStatementCsvFormatter(Paths.get("${bankName}_test_full.csv"))
-        val expectedFile = File(BankTwoStatementCsvFormatter.baseInputPath().toString() + separator + "normalised" + separator + "2017-05_Test_${bankName.capitalize()}.csv")
+        val expectedFile = File(BankTwoStatementCsvFormatter.normalisedInputsPath().toString() + separator + "2017-05_Test_${bankName.capitalize()}.csv")
         val expected = expectedFile.readLines()
 
         assertThat(formattedStatement, equalTo(expected))

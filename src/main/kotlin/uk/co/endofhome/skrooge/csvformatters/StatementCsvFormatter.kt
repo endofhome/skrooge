@@ -5,7 +5,8 @@ import java.nio.file.Paths
 
 interface StatementCsvFormatter {
 
-    fun baseInputPath(): Path = Paths.get("input")
+    fun baseInputPath(): Path = Paths.get("input/raw")
+    fun normalisedInputsPath(): Path = Paths.get("input/normalised")
 
     operator fun invoke(inputFileName: Path): List<String>
 
