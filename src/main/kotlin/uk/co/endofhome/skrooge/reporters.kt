@@ -15,7 +15,7 @@ import java.util.Locale
 
 class MonthlyReporter(private val gson: Gson,
                       private val decisionReaderWriter: DecisionReaderWriter,
-                      private val decisionsToCategoryReports: List<Decision>.() -> List<CategoryReport>)
+                      private val toCategoryReports: List<Decision>.() -> List<CategoryReport>)
 {
     fun handle(request: Request): Response {
         val year = request.query("year")!!.toInt()
@@ -24,7 +24,7 @@ class MonthlyReporter(private val gson: Gson,
 
         return decisions.let { when {
                 it.isNotEmpty() -> {
-                    val catReports = decisionsToCategoryReports(decisions)
+                    val catReports = decisions.toCategoryReports()
 
                     val jsonReport = MonthlyReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, catReports)
                     val jsonReportJson = gson.asJsonObject(jsonReport)
@@ -40,7 +40,7 @@ class MonthlyReporter(private val gson: Gson,
 
 class AnnualReporter(private val gson: Gson,
                      private val decisionReaderWriter: DecisionReaderWriter,
-                     private val decisionsToCategoryReports: List<Decision>.() -> List<CategoryReport>)
+                     private val toCategoryReports: List<Decision>.() -> List<CategoryReport>)
 {
 
     fun handle(request: Request): Response {
@@ -50,7 +50,7 @@ class AnnualReporter(private val gson: Gson,
 
         return decisions.let { when {
             it.isNotEmpty() -> {
-                val catReports = decisionsToCategoryReports(decisions)
+                val catReports = decisions.toCategoryReports()
                 val jsonReport = AnnualReport(startDate, catReports)
                 val jsonReportJson = gson.asJsonObject(jsonReport)
 
