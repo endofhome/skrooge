@@ -51,7 +51,7 @@ class FileSystemDecisionReaderReaderWriter : DecisionReaderWriter {
     }
 
     private fun List<File>.toDecisions(): List<Decision> {
-        println("files being counted for this month: ")
+        println("files being counted for this period: ")
         this.forEach {
             println(it.name)
         }
