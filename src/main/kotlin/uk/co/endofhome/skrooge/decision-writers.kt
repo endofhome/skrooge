@@ -26,28 +26,30 @@ class FileSystemDecisionReaderReaderWriter : DecisionReaderWriter {
         }
     }
 
-    override fun read(year: Int, month: Month): List<Decision> {
-        val monthFiles = File(decisionFilePath).listFiles().filter { it.name.startsWith("$year-${month.value}") }
-
-        return monthFiles.toDecisions()
-    }
+    override fun read(year: Int, month: Month): List<Decision> =
+        File(decisionFilePath).listFiles()
+                              .filter {
+                                  val filenameSplit = it.name.split("-")
+                                  filenameSplit[2] != "Test"
+                              }
+                              .filter { it.name.startsWith("$year-${month.value}") }
+                              .toDecisions()
 
     override fun readForYearStarting(startDate: LocalDate): List<Decision> {
         // so far this is weird because the day of the month is completely ignored.
         // probably easier to start this way, but query param should be simply yyyy-MM
 
-        val yearFiles = File(decisionFilePath)
+        return File(decisionFilePath)
                 .listFiles()
                 .filter {
                     val filenameSplit = it.name.split("-")
                     val year = Year.parse(filenameSplit[0])
                     val month = Month.of(filenameSplit[1].toInt())
 
+                    filenameSplit[2] != "Test" &&
                     (year == Year.of(startDate.year)  && month >= startDate.month)
                             || (year == Year.of(startDate.year + 1)  && month < startDate.month)
-                }
-
-        return yearFiles.toDecisions()
+                }.toDecisions()
     }
 
     private fun List<File>.toDecisions(): List<Decision> {
