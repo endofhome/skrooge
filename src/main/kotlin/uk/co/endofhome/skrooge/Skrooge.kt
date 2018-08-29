@@ -19,8 +19,8 @@ import org.http4k.format.Gson
 import org.http4k.lens.BiDiBodyLens
 import org.http4k.lens.BiDiLens
 import org.http4k.lens.FormField
-import org.http4k.lens.FormValidator
 import org.http4k.lens.Query
+import org.http4k.lens.Validator
 import org.http4k.lens.WebForm
 import org.http4k.lens.webForm
 import org.http4k.routing.ResourceLoader
@@ -47,7 +47,7 @@ fun main(args: Array<String>) {
     val app = Skrooge()
                 .routes()
                 .withFilter(DebuggingFilters.PrintRequestAndResponse())
-    app.asServer(Jetty(port)).startAndBlock()
+    app.asServer(Jetty(port)).start()
 }
 
 class Skrooge(private val categoryMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList(),
@@ -72,7 +72,7 @@ class Skrooge(private val categoryMappings: MutableList<String> = File("category
 
 class ReportCategorisations(private val decisionReaderWriter: DecisionReaderWriter) {
     fun confirm(request: Request): Response {
-        val webForm = Body.webForm(FormValidator.Strict)
+        val webForm = Body.webForm(Validator.Strict)
         val form = webForm.toLens().extract(request)
         val decisionsStrings: List<String>? = form.fields["decisions"]
         val decisionsSplit: List<List<String>>? = decisionsStrings?.map { it.substring(1, it.lastIndex).split(", ") }
@@ -221,7 +221,7 @@ class CategoryMappings(private val categoryMappings: MutableList<String>, privat
         val newMappingLens = FormField.required("new-mapping")
         val remainingVendorsLens = FormField.required("remaining-vendors")
         val originalRequestBodyLens = FormField.required("originalRequestBody")
-        val webForm: BiDiBodyLens<WebForm> = Body.webForm(FormValidator.Strict, newMappingLens, remainingVendorsLens).toLens()
+        val webForm: BiDiBodyLens<WebForm> = Body.webForm(Validator.Strict, newMappingLens, remainingVendorsLens).toLens()
         val newMapping = newMappingLens.extract(webForm(request)).split(",")
         val remainingVendors: List<String> = remainingVendorsLens.extract(webForm(request)).split(",").filter { it.isNotBlank() }
         val originalRequestBody = Body(originalRequestBodyLens.extract(webForm(request)))

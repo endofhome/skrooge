@@ -2,8 +2,8 @@ group 'uk.co.endofhome'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.2.41'
-    ext.http4k_version = '2.36.0'
+    ext.kotlin_version = '1.2.60'
+    ext.http4k_version = '3.36.1'
 
     repositories {
         mavenCentral()
@@ -28,7 +28,6 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.2.0'
     compile "org.http4k:http4k-core:$http4k_version"
     compile "org.http4k:http4k-server-jetty:$http4k_version"
