@@ -20,7 +20,11 @@ import org.junit.Test
 import java.io.File
 
 class StatementsAcceptanceTest {
-    val skrooge = Skrooge(categoryMappings = mutableListOf()).routes()
+    private val categoryHelpers = CategoryHelpers("src/test/resources/test-schema.json")
+    private val categoryMappings = mutableListOf<String>()
+    private val mappingWriter = StubbedMappingWriter()
+    private val decisionReaderWriter = StubbedDecisionReaderWriter()
+    private val skrooge = Skrooge(categoryHelpers, categoryMappings, mappingWriter, decisionReaderWriter).routes()
     private val helpers = TestHelpers(skrooge)
 
     @Test
