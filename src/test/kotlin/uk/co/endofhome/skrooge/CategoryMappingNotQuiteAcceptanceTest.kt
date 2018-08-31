@@ -20,11 +20,12 @@ import org.http4k.lens.Header
 import org.junit.Test
 
 class CategoryMappingNotQuiteAcceptanceTest {
+    private val categories = CategoryHelpers.categories("src/test/resources/test-schema.json")
     private val categoryMappings = mutableListOf("Edgeworld Records,Fun,Tom fun budget")
     private val mappingWriter = StubbedMappingWriter()
     private val originalRequestBody = "2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]"
 
-    val skrooge = Skrooge(categoryMappings = categoryMappings, mappingWriter = mappingWriter).routes()
+    val skrooge = Skrooge(categories, categoryMappings, mappingWriter).routes()
     private val helpers = TestHelpers(skrooge)
 
     @Test
