@@ -14,8 +14,9 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 class MonthlyReporter(private val gson: Gson,
+                      private val categories: List<Category>,
                       private val decisionReaderWriter: DecisionReaderWriter,
-                      private val toCategoryReports: List<Decision>.() -> List<CategoryReport>)
+                      private val toCategoryReports: Pair<List<Category>, List<Decision>>.() -> List<CategoryReport>)
 {
     fun handle(request: Request): Response {
         val year = request.query("year")!!.toInt()
@@ -24,7 +25,7 @@ class MonthlyReporter(private val gson: Gson,
 
         return decisions.let { when {
                 it.isNotEmpty() -> {
-                    val catReports = decisions.toCategoryReports()
+                    val catReports = (categories to decisions).toCategoryReports()
 
                     val jsonReport = MonthlyReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, catReports)
                     val jsonReportJson = gson.asJsonObject(jsonReport)
@@ -39,8 +40,9 @@ class MonthlyReporter(private val gson: Gson,
 
 
 class AnnualReporter(private val gson: Gson,
+                     private val categories: List<Category>,
                      private val decisionReaderWriter: DecisionReaderWriter,
-                     private val toCategoryReports: List<Decision>.() -> List<CategoryReport>)
+                     private val toCategoryReports: Pair<List<Category>, List<Decision>>.() -> List<CategoryReport>)
 {
 
     fun handle(request: Request): Response {
@@ -50,7 +52,7 @@ class AnnualReporter(private val gson: Gson,
 
         return decisions.let { when {
             it.isNotEmpty() -> {
-                val catReports = decisions.toCategoryReports()
+                val catReports = (categories to decisions).toCategoryReports()
                 val jsonReport = AnnualReport(startDate, catReports)
                 val jsonReportJson = gson.asJsonObject(jsonReport)
 
@@ -67,14 +69,15 @@ data class CategoryReport(val title: String, val data: List<CategoryReportDataIt
 data class MonthlyReport(val year: Int, val month: String, val monthNumber: Int, val categories: List<CategoryReport>) : ViewModel
 data class AnnualReport(val startDate: LocalDate, val categories: List<CategoryReport>) : ViewModel
 
-val toCategoryReports: List<Decision>.() -> List<CategoryReport> = {
-    val catReportDataItems: List<CategoryReportDataItem> = this.map {
+val toCategoryReports: Pair<List<Category>, List<Decision>>.() -> List<CategoryReport> = {
+    val (categories, decisions) = this
+    val catReportDataItems: List<CategoryReportDataItem> = decisions.map {
         CategoryReportDataItem(it.subCategory!!.name, it.line.amount)
     }.groupBy { it.name }.map {
         it.value.reduce { acc, categoryReportDataItem -> CategoryReportDataItem(it.key, acc.actual + categoryReportDataItem.actual) }
     }.map { it.copy(actual = BigDecimal.valueOf(it.actual).setScale(2, RoundingMode.HALF_UP).toDouble()) }
 
-    CategoryHelpers.categories().map { category ->
+    categories.map { category ->
         CategoryReport(category.title, catReportDataItems.filter { category.subcategories.map { it.name }.contains(it.name) })
     }.filter { it.data.isNotEmpty() }
 }

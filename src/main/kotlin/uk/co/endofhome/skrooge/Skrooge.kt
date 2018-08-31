@@ -57,6 +57,7 @@ class Skrooge(private val categoryMappings: MutableList<String> = File("category
     private val gson = Gson
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
     private val publicDirectory = static(ResourceLoader.Directory("public"))
+    private val categories = CategoryHelpers.categories()
 
     fun routes() = routes(
             "/public" bind publicDirectory,
@@ -65,8 +66,8 @@ class Skrooge(private val categoryMappings: MutableList<String> = File("category
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionReaderWriter).confirm(request) },
-            "annual-report/json" bind GET to { request -> AnnualReporter(gson, decisionReaderWriter, toCategoryReports).handle(request) },
-            "monthly-report/json" bind GET to { request -> MonthlyReporter(gson, decisionReaderWriter, toCategoryReports).handle(request) }
+            "annual-report/json" bind GET to { request -> AnnualReporter(gson, categories, decisionReaderWriter, toCategoryReports).handle(request) },
+            "monthly-report/json" bind GET to { request -> MonthlyReporter(gson, categories, decisionReaderWriter, toCategoryReports).handle(request) }
     )
 }
 

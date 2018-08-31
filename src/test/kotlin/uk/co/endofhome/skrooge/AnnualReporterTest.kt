@@ -58,7 +58,7 @@ class AnnualReporterTest {
         val decisions = listOf(Decision(line, Category("Eats and drinks", subcategories), subcategoryConcerned))
         val decisionWriter = StubbedDecisionReaderWriter()
         decisionWriter.write(statementData, decisions)
-        val gson = Gson
-        return AnnualReporter(gson, decisionWriter, toCategoryReports)
+        val categories = CategoryHelpers.categories("src/test/resources/test-schema.json")
+        return AnnualReporter(Gson, categories, decisionWriter, toCategoryReports)
     }
 }
