@@ -4,19 +4,24 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.should.shouldMatch
-import org.http4k.core.*
+import org.http4k.core.Body
+import org.http4k.core.Method
 import org.http4k.core.Method.POST
+import org.http4k.core.Request
+import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
-import org.http4k.hamkrest.*
+import org.http4k.hamkrest.hasBody
+import org.http4k.hamkrest.hasHeader
+import org.http4k.hamkrest.hasStatus
 import org.http4k.routing.RoutingHttpHandler
 import org.junit.Test
 import java.io.File
 
 class StatementsAcceptanceTest {
-    val skrooge = Skrooge().routes()
-    val helpers = TestHelpers(skrooge)
+    val skrooge = Skrooge(mutableListOf()).routes()
+    private val helpers = TestHelpers(skrooge)
 
     @Test
     fun `POST to statements endpoint with empty body returns HTTP Bad Request`() {
@@ -66,8 +71,10 @@ class StatementsAcceptanceTest {
 
     @Test
     fun `POST with one entry returns a monthly report when recognised merchant`() {
+        val categoryMappings = mutableListOf("Pizza Union,Eats and drinks,Meals at work")
+        val localSkrooge = Skrooge(categoryMappings).routes()
         val requestWithPizzaUnion = Request(POST, "/statements").body("2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
-        val response = skrooge(requestWithPizzaUnion)
+        val response = localSkrooge(requestWithPizzaUnion)
 
         response shouldMatch hasStatus(OK)
         response shouldMatch hasBody(containsSubstring("<h1>Please review your monthly categorisations for one-known-merchant</h1>"))
