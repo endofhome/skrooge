@@ -15,7 +15,7 @@ class BankReportsTest {
     private val categoryMappings = mutableListOf("Pizza Union,Some category,Some subcategory")
     private val mappingWriter = StubbedMappingWriter(categoryMappings)
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
-    private val skrooge = Skrooge(categoryHelpers, categoryMappings, mappingWriter, decisionReaderWriter).routes()
+    private val skrooge = Skrooge(categoryHelpers, mappingWriter, decisionReaderWriter).routes()
 
     @Test
     fun `Statement categorisation report has required hidden fields`() {

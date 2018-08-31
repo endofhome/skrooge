@@ -50,11 +50,11 @@ fun main(args: Array<String>) {
 }
 
 class Skrooge(private val categoryHelpers: CategoryHelpers = CategoryHelpers(),
-              private val categoryMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList(),
               private val mappingWriter: MappingWriter = FileSystemMappingWriter(),
-              private val decisionReaderWriter: DecisionReaderWriter = FileSystemDecisionReaderReaderWriter(CategoryHelpers())) {
+              private val decisionReaderWriter: DecisionReaderWriter = FileSystemDecisionReaderReaderWriter(categoryHelpers)) {
 
     private val categories = categoryHelpers.categories()
+    private val categoryMappings = categoryHelpers.categoryMappings
     private val gson = Gson
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
     private val publicDirectory = static(ResourceLoader.Directory("public"))

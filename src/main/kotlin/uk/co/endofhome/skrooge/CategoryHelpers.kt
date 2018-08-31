@@ -5,7 +5,8 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
 
-class CategoryHelpers(private val schemaFilePath: String = "category-schema/category-schema.json") {
+class CategoryHelpers(private val schemaFilePath: String = "category-schema/category-schema.json", val categoryMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList()) {
+
     fun categories(): List<Category> {
         val schemaFile = File(schemaFilePath)
         val contents: String = schemaFile.readText()

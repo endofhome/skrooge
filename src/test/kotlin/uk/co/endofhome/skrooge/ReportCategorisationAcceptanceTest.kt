@@ -23,7 +23,7 @@ class ReportCategorisationAcceptanceTest {
     private val categories = categoryHelpers.categories()
     private val categoryMappings = mutableListOf<String>()
     private val decisionWriter = StubbedDecisionReaderWriter()
-    private val skrooge = Skrooge(categoryHelpers, categoryMappings, decisionReaderWriter = decisionWriter).routes()
+    private val skrooge = Skrooge(categoryHelpers, decisionReaderWriter = decisionWriter).routes()
 
     private val originalDecision =
             Decision(

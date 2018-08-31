@@ -18,7 +18,7 @@ class JsonGenerationTest {
     private val categoryHelpers = CategoryHelpers("src/test/resources/test-schema.json")
     private val categoryMappings = mutableListOf<String>()
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
-    private val skrooge = Skrooge(categoryHelpers, categoryMappings = categoryMappings, decisionReaderWriter = decisionReaderWriter).routes()
+    private val skrooge = Skrooge(categoryHelpers, decisionReaderWriter = decisionReaderWriter).routes()
 
     // TODO app already works for multiple files, but some tests would be nice
     // TODO to guard against regressions.
