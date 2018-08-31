@@ -1,6 +1,8 @@
 package uk.co.endofhome.skrooge
 
 import java.io.File
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.Month
 import java.time.Year
@@ -11,15 +13,13 @@ interface DecisionReaderWriter {
     fun readForYearStarting(startDate: LocalDate): List<Decision>
 }
 
-class FileSystemDecisionReaderReaderWriter(private val categoryHelpers: CategoryHelpers) : DecisionReaderWriter {
-    private val decisionFilePath = "output/decisions"
-
+class FileSystemDecisionReaderReaderWriter(private val categoryHelpers: CategoryHelpers, private val outputPath: Path = Paths.get("output/decisions")) : DecisionReaderWriter {
     override fun write(statementData: StatementData, decisions: List<Decision>) {
         val year = statementData.year.toString()
         val month = statementData.month.value
         val username = statementData.username
         val bank = statementData.files[0].toString().split("_").last().substringBefore(".csv")
-        File("$decisionFilePath/$year-$month-$username-decisions-$bank.csv").printWriter().use { out ->
+        File("$outputPath/$year-$month-$username-decisions-$bank.csv").printWriter().use { out ->
             decisions.forEach {
                 out.print("${it.line.date},${it.line.merchant},${it.line.amount},${it.category?.title},${it.subCategory?.name}\n")
             }
@@ -27,7 +27,7 @@ class FileSystemDecisionReaderReaderWriter(private val categoryHelpers: Category
     }
 
     override fun read(year: Int, month: Month): List<Decision> =
-        File(decisionFilePath).listFiles()
+        outputPath.toFile().listFiles()
                               .filter {
                                   val filenameSplit = it.name.split("-")
                                   filenameSplit[2] != "Test"
@@ -39,7 +39,7 @@ class FileSystemDecisionReaderReaderWriter(private val categoryHelpers: Category
         // so far this is weird because the day of the month is completely ignored.
         // probably easier to start this way, but query param should be simply yyyy-MM
 
-        return File(decisionFilePath)
+        return outputPath.toFile()
                 .listFiles()
                 .filter {
                     val filenameSplit = it.name.split("-")
@@ -74,9 +74,6 @@ class FileSystemDecisionReaderReaderWriter(private val categoryHelpers: Category
 class StubbedDecisionReaderWriter : DecisionReaderWriter {
     private val file: MutableList<Decision> = mutableListOf()
 
-    override fun readForYearStarting(startDate: LocalDate): List<Decision> =
-            file.filter { it.line.date >= startDate && it.line.date < startDate.plusYears(1L) }
-
     override fun write(statementData: StatementData, decisions: List<Decision>) {
         file.clear()
         decisions.forEach {
@@ -85,4 +82,7 @@ class StubbedDecisionReaderWriter : DecisionReaderWriter {
     }
 
     override fun read(year: Int, month: Month) = file.toList()
+
+    override fun readForYearStarting(startDate: LocalDate): List<Decision> =
+            file.filter { it.line.date >= startDate && it.line.date < startDate.plusYears(1L) }
 }

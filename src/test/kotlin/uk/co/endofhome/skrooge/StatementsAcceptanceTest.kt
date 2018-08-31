@@ -18,6 +18,7 @@ import org.http4k.hamkrest.hasStatus
 import org.http4k.routing.RoutingHttpHandler
 import org.junit.Test
 import java.io.File
+import java.nio.file.Paths
 
 class StatementsAcceptanceTest {
     private val categoryHelpers = CategoryHelpers("src/test/resources/test-schema.json")
@@ -54,20 +55,29 @@ class StatementsAcceptanceTest {
 
     @Test
     fun `POST with empty csv produces empty output file`() {
-        val request = Request(POST, "/statements").body("2017;May;Test;src/test/resources/[2017-01_Someone_empty-file.csv]")
-        skrooge(request)
+        val outputPath = Paths.get("src/test/resources/decisions")
+        val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categoryHelpers, outputPath)
+        val localSkrooge = Skrooge(categoryHelpers, categoryMappings, mappingWriter, decisionReaderWriter).routes()
+        val request = Request(POST, "/statements").body("2017;January;Test;[src/test/resources/2017-01_Someone_empty-file.csv]")
 
-        val decisionFile = File("output/decisions/2017-5-Test-decisions-empty-file.csv")
+        localSkrooge(request)
+
+        val decisionFile = File("$outputPath/2017-1-Test-decisions-empty-file.csv")
         val fileContents = decisionFile.readLines()
         assertThat(fileContents.size, equalTo(0))
     }
 
     @Test
     fun `POST with one entry produces output file with one entry when recognised merchant`() {
-        val request = Request(POST, "/statements").body("2017;May;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
-        skrooge(request)
+        val categoryMappings = mutableListOf("Pizza Union,Eats and drinks,Meals at work")
+        val outputPath = Paths.get("src/test/resources/decisions")
+        val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categoryHelpers, outputPath)
+        val localSkrooge = Skrooge(categoryHelpers, categoryMappings, mappingWriter, decisionReaderWriter).routes()
+        val request = Request(POST, "/statements").body("2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
 
-        val decisionFile = File("output/decisions/2017-5-Test-decisions-one-known-merchant.csv")
+        localSkrooge(request)
+
+        val decisionFile = File("$outputPath/2017-2-Test-decisions-one-known-merchant.csv")
         val fileContents = decisionFile.readLines()
         assertThat(fileContents.size, equalTo(1))
         assertThat(fileContents[0], equalTo("2017-09-17,Pizza Union,5.5,Eats and drinks,Meals at work"))
@@ -76,6 +86,8 @@ class StatementsAcceptanceTest {
     @Test
     fun `POST with one entry returns a monthly report when recognised merchant`() {
         val categoryMappings = mutableListOf("Pizza Union,Eats and drinks,Meals at work")
+        val outputPath = Paths.get("src/test/resources/decisions")
+        val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categoryHelpers, outputPath)
         val localSkrooge = Skrooge(categoryHelpers, categoryMappings, mappingWriter, decisionReaderWriter).routes()
         val requestWithPizzaUnion = Request(POST, "/statements").body("2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
         val response = localSkrooge(requestWithPizzaUnion)
