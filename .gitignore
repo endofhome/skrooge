@@ -11,3 +11,6 @@ todo.txt
 current-processing-status.txt
 category-mappings/
 category-schema/
+
+src/main/kotlin/uk/co/endofhome/skrooge/scripts/MonzoClient.kt
+src/test/resources/monzo-retail-output.txt
