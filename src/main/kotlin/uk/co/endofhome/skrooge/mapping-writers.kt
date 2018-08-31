@@ -8,22 +8,20 @@ interface MappingWriter {
 }
 
 class FileSystemMappingWriter : MappingWriter {
-    val categoryMappingsFileOutputPath = "category-mappings/category-mappings.csv"
+    private val categoryMappingsFileOutputPath = "category-mappings/category-mappings.csv"
     override fun write(line: String): Boolean {
-        try {
+        return try {
             File(categoryMappingsFileOutputPath).appendText(line + "\n")
-            return true
+            true
         } catch (e: Exception) {
-            return false
+            false
         }
     }
 
     override fun read(): List<String> = File(categoryMappingsFileOutputPath).readLines()
 }
 
-class StubbedMappingWriter : MappingWriter {
-    private val file: MutableList<String> = mutableListOf()
-
+class StubbedMappingWriter(val file: MutableList<String> = mutableListOf()) : MappingWriter {
     override fun write(line: String) = file.add(line)
     override fun read() = file
 }
