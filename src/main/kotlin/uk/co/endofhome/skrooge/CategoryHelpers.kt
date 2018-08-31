@@ -5,8 +5,8 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
 
-object CategoryHelpers {
-    fun categories(schemaFilePath: String = "category-schema/category-schema.json"): List<Category> {
+class CategoryHelpers(private val schemaFilePath: String = "category-schema/category-schema.json") {
+    fun categories(): List<Category> {
         val schemaFile = File(schemaFilePath)
         val contents: String = schemaFile.readText()
         val mapper = ObjectMapper().registerModule(KotlinModule())
@@ -26,7 +26,7 @@ object CategoryHelpers {
     }
 
     fun subcategoriesFor(category: String): List<SubCategory> {
-        return CategoryHelpers.categories().filter { it.title == category }.flatMap { it.subcategories }
+        return categories().filter { it.title == category }.flatMap { it.subcategories }
     }
 
     private fun selectedString(subCategory: SubCategory, anotherSubCategory: SubCategory?): String {

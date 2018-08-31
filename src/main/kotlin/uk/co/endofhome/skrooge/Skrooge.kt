@@ -33,7 +33,6 @@ import org.http4k.template.HandlebarsTemplates
 import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
 import org.http4k.template.view
-import uk.co.endofhome.skrooge.CategoryHelpers.categories
 import java.io.File
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -50,19 +49,20 @@ fun main(args: Array<String>) {
     app.asServer(Jetty(port)).start()
 }
 
-class Skrooge(private val categories: List<Category> = categories(),
+class Skrooge(private val categoryHelpers: CategoryHelpers = CategoryHelpers(),
               private val categoryMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList(),
               private val mappingWriter: MappingWriter = FileSystemMappingWriter(),
-              private val decisionReaderWriter: DecisionReaderWriter = FileSystemDecisionReaderReaderWriter()) {
+              private val decisionReaderWriter: DecisionReaderWriter = FileSystemDecisionReaderReaderWriter(CategoryHelpers())) {
 
+    private val categories = categoryHelpers.categories()
     private val gson = Gson
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
     private val publicDirectory = static(ResourceLoader.Directory("public"))
 
     fun routes() = routes(
             "/public" bind publicDirectory,
-            "/" bind GET to { _ -> Statements(categoryMappings).index(renderer) },
-            "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body, renderer, decisionReaderWriter) },
+            "/" bind GET to { _ -> Statements(categoryMappings, categoryHelpers).index(renderer) },
+            "/statements" bind POST to { request -> Statements(categoryMappings, categoryHelpers).uploadStatements(request.body, renderer, decisionReaderWriter) },
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer, categories).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionReaderWriter, categories).confirm(request) },
@@ -99,7 +99,7 @@ class ReportCategorisations(private val decisionReaderWriter: DecisionReaderWrit
     }
 }
 
-class Statements(val categoryMappings: List<String>) {
+class Statements(private val categoryMappings: List<String>, private val categoryHelpers: CategoryHelpers) {
     private val parser = PretendFormParser()
 
     fun uploadStatements(body: Body, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
@@ -147,7 +147,7 @@ class Statements(val categoryMappings: List<String>) {
                                     LineFormatter.format(decision.line),
                                     decision.category,
                                     decision.subCategory,
-                                    CategoryHelpers.categoriesWithSelection(decision.subCategory)
+                                    categoryHelpers.categoriesWithSelection(decision.subCategory)
                             )
                         })
                     })
