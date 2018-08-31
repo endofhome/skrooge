@@ -21,11 +21,11 @@ import java.io.File
 import java.nio.file.Paths
 
 class StatementsAcceptanceTest {
-    private val categoryHelpers = CategoryHelpers("src/test/resources/test-schema.json")
+    private val categories = Categories("src/test/resources/test-schema.json")
     private val categoryMappings = mutableListOf<String>()
     private val mappingWriter = StubbedMappingWriter()
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
-    private val skrooge = Skrooge(categoryHelpers, mappingWriter, decisionReaderWriter).routes()
+    private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter).routes()
     private val helpers = TestHelpers(skrooge)
 
     @Test
@@ -56,8 +56,8 @@ class StatementsAcceptanceTest {
     @Test
     fun `POST with empty csv produces empty output file`() {
         val outputPath = Paths.get("src/test/resources/decisions")
-        val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categoryHelpers, outputPath)
-        val localSkrooge = Skrooge(categoryHelpers, mappingWriter, decisionReaderWriter).routes()
+        val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
+        val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter).routes()
         val request = Request(POST, "/statements").body("2017;January;Test;[src/test/resources/2017-01_Someone_empty-file.csv]")
 
         localSkrooge(request)
@@ -70,10 +70,10 @@ class StatementsAcceptanceTest {
     @Test
     fun `POST with one entry produces output file with one entry when recognised merchant`() {
         val categoryMappings = mutableListOf("Pizza Union,Eats and drinks,Meals at work")
-        val categoryHelpers = CategoryHelpers("src/test/resources/test-schema.json", categoryMappings)
+        val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
         val outputPath = Paths.get("src/test/resources/decisions")
-        val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categoryHelpers, outputPath)
-        val localSkrooge = Skrooge(categoryHelpers, mappingWriter, decisionReaderWriter).routes()
+        val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
+        val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter).routes()
         val request = Request(POST, "/statements").body("2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
 
         localSkrooge(request)
@@ -87,10 +87,10 @@ class StatementsAcceptanceTest {
     @Test
     fun `POST with one entry returns a monthly report when recognised merchant`() {
         val categoryMappings = mutableListOf("Pizza Union,Eats and drinks,Meals at work")
-        val categoryHelpers = CategoryHelpers("src/test/resources/test-schema.json", categoryMappings)
+        val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
         val outputPath = Paths.get("src/test/resources/decisions")
-        val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categoryHelpers, outputPath)
-        val localSkrooge = Skrooge(categoryHelpers, mappingWriter, decisionReaderWriter).routes()
+        val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
+        val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter).routes()
         val requestWithPizzaUnion = Request(POST, "/statements").body("2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
         val response = localSkrooge(requestWithPizzaUnion)
 

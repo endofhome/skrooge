@@ -49,25 +49,24 @@ fun main(args: Array<String>) {
     app.asServer(Jetty(port)).start()
 }
 
-class Skrooge(private val categoryHelpers: CategoryHelpers = CategoryHelpers(),
+class Skrooge(private val categories: Categories = Categories(),
               private val mappingWriter: MappingWriter = FileSystemMappingWriter(),
-              private val decisionReaderWriter: DecisionReaderWriter = FileSystemDecisionReaderReaderWriter(categoryHelpers)) {
+              private val decisionReaderWriter: DecisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories)) {
 
-    private val categories = categoryHelpers.categories()
-    private val categoryMappings = categoryHelpers.categoryMappings
+    private val categoryMappings = categories.categoryMappings
     private val gson = Gson
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
     private val publicDirectory = static(ResourceLoader.Directory("public"))
 
     fun routes() = routes(
             "/public" bind publicDirectory,
-            "/" bind GET to { _ -> Statements(categoryMappings, categoryHelpers).index(renderer) },
-            "/statements" bind POST to { request -> Statements(categoryMappings, categoryHelpers).uploadStatements(request.body, renderer, decisionReaderWriter) },
-            "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer, categories).handle(request) },
+            "/" bind GET to { _ -> Statements(categoryMappings, categories).index(renderer) },
+            "/statements" bind POST to { request -> Statements(categoryMappings, categories).uploadStatements(request.body, renderer, decisionReaderWriter) },
+            "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },
-            "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionReaderWriter, categories).confirm(request) },
-            "annual-report/json" bind GET to { request -> AnnualReporter(gson, categories, decisionReaderWriter, toCategoryReports).handle(request) },
-            "monthly-report/json" bind GET to { request -> MonthlyReporter(gson, categories, decisionReaderWriter, toCategoryReports).handle(request) }
+            "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionReaderWriter, categories.all()).confirm(request) },
+            "annual-report/json" bind GET to { request -> AnnualReporter(gson, categories.all(), decisionReaderWriter, toCategoryReports).handle(request) },
+            "monthly-report/json" bind GET to { request -> MonthlyReporter(gson, categories.all(), decisionReaderWriter, toCategoryReports).handle(request) }
     )
 }
 
@@ -99,7 +98,7 @@ class ReportCategorisations(private val decisionReaderWriter: DecisionReaderWrit
     }
 }
 
-class Statements(private val categoryMappings: List<String>, private val categoryHelpers: CategoryHelpers) {
+class Statements(private val categoryMappings: List<String>, private val categories: Categories) {
     private val parser = PretendFormParser()
 
     fun uploadStatements(body: Body, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
@@ -147,7 +146,7 @@ class Statements(private val categoryMappings: List<String>, private val categor
                                     LineFormatter.format(decision.line),
                                     decision.category,
                                     decision.subCategory,
-                                    categoryHelpers.categoriesWithSelection(decision.subCategory)
+                                    categories.withSelection(decision.subCategory)
                             )
                         })
                     })

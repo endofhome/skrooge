@@ -5,7 +5,7 @@ import com.natpryce.hamkrest.equalTo
 import org.junit.Test
 
 class CategoriesTest {
-    private val categories = CategoryHelpers("src/test/resources/test-schema.json").categories()
+    private val categories = Categories("src/test/resources/test-schema.json").all()
 
     @Test
     fun `can get first category from category-schema file`() {

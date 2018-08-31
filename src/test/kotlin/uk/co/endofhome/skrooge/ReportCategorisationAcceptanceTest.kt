@@ -19,16 +19,15 @@ import java.time.Month
 import java.time.Year
 
 class ReportCategorisationAcceptanceTest {
-    private val categoryHelpers = CategoryHelpers("src/test/resources/test-schema.json")
-    private val categories = categoryHelpers.categories()
     private val categoryMappings = mutableListOf<String>()
+    private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
     private val decisionWriter = StubbedDecisionReaderWriter()
-    private val skrooge = Skrooge(categoryHelpers, decisionReaderWriter = decisionWriter).routes()
+    private val skrooge = Skrooge(categories, decisionReaderWriter = decisionWriter).routes()
 
     private val originalDecision =
             Decision(
                     Line(LocalDate.of(2017, 10, 18), "Edgeworld Records", 14.99),
-                    Category("Fun", categories.find { it.title == "Fun" }?.subcategories!!),
+                    Category("Fun", categories.all().find { it.title == "Fun" }?.subcategories!!),
                     SubCategory("Tom fun budget")
             )
 
@@ -58,7 +57,7 @@ class ReportCategorisationAcceptanceTest {
                 .form("decisions", "[18/10/2017,Edgeworld Records,14.99,Eats and drinks,Food]")
 
         val expectedCategory = "Eats and drinks"
-        val expectedSubCategories = categories.find { it.title == expectedCategory }!!.subcategories
+        val expectedSubCategories = categories.all().find { it.title == expectedCategory }!!.subcategories
         val expectedDecision = originalDecision.copy(
                 category = originalDecision.category?.copy(expectedCategory, expectedSubCategories),
                 subCategory = SubCategory("Food")

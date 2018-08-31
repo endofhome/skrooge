@@ -5,19 +5,19 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
 
-class CategoryHelpers(private val schemaFilePath: String = "category-schema/category-schema.json", val categoryMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList()) {
+class Categories(private val schemaFilePath: String = "category-schema/category-schema.json", val categoryMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList()) {
 
-    fun categories(): List<Category> {
+    fun all(): List<Category> {
         val schemaFile = File(schemaFilePath)
         val contents: String = schemaFile.readText()
         val mapper = ObjectMapper().registerModule(KotlinModule())
-        val categories: Categories = mapper.readValue(contents)
-        return categories.toList()
+        val categoriesData: CategoriesData = mapper.readValue(contents)
+        return categoriesData.toList()
     }
 
-    fun categoriesWithSelection(subCategory: SubCategory?): CategoriesWithSelection {
-        val titles = categories().map { it.title }
-        val subCategories: List<List<SubCategoryWithSelection>> = categories().map { cat ->
+    fun withSelection(subCategory: SubCategory?): CategoriesWithSelection {
+        val titles = all().map { it.title }
+        val subCategories: List<List<SubCategoryWithSelection>> = all().map { cat ->
             cat.subcategories.map { subCat ->
                 SubCategoryWithSelection(subCat, selectedString(subCat, subCategory))
             }
@@ -27,7 +27,7 @@ class CategoryHelpers(private val schemaFilePath: String = "category-schema/cate
     }
 
     fun subcategoriesFor(category: String): List<SubCategory> {
-        return categories().filter { it.title == category }.flatMap { it.subcategories }
+        return all().filter { it.title == category }.flatMap { it.subcategories }
     }
 
     private fun selectedString(subCategory: SubCategory, anotherSubCategory: SubCategory?): String {
@@ -37,7 +37,7 @@ class CategoryHelpers(private val schemaFilePath: String = "category-schema/cate
         }
     }
 
-    data class Categories(val categories: List<Category>) {
+    data class CategoriesData(val categories: List<Category>) {
         fun toList() = categories
     }
 }

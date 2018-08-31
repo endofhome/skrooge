@@ -11,11 +11,11 @@ import org.junit.Test
 
 class BankReportsTest {
 
-    private val categoryHelpers = CategoryHelpers("src/test/resources/test-schema.json")
+    private val categories = Categories("src/test/resources/test-schema.json")
     private val categoryMappings = mutableListOf("Pizza Union,Some category,Some subcategory")
     private val mappingWriter = StubbedMappingWriter(categoryMappings)
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
-    private val skrooge = Skrooge(categoryHelpers, mappingWriter, decisionReaderWriter).routes()
+    private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter).routes()
 
     @Test
     fun `Statement categorisation report has required hidden fields`() {

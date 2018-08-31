@@ -13,7 +13,7 @@ interface DecisionReaderWriter {
     fun readForYearStarting(startDate: LocalDate): List<Decision>
 }
 
-class FileSystemDecisionReaderReaderWriter(private val categoryHelpers: CategoryHelpers, private val outputPath: Path = Paths.get("output/decisions")) : DecisionReaderWriter {
+class FileSystemDecisionReaderReaderWriter(private val categories: Categories, private val outputPath: Path = Paths.get("output/decisions")) : DecisionReaderWriter {
     override fun write(statementData: StatementData, decisions: List<Decision>) {
         val year = statementData.year.toString()
         val month = statementData.month.value
@@ -64,8 +64,8 @@ class FileSystemDecisionReaderReaderWriter(private val categoryHelpers: Category
                 val dateValues = split[0].split("-").map { it.toInt() }
                 val line = Line(LocalDate.of(dateValues[0], dateValues[1], dateValues[2]), split[1], split[2].toDouble())
 
-                val category = categoryHelpers.categories().find { it.title == split[3] }!!
-                Decision(line, category, categoryHelpers.subcategoriesFor(category.title).find { it.name == split[4] })
+                val category = categories.all().find { it.title == split[3] }!!
+                Decision(line, category, categories.subcategoriesFor(category.title).find { it.name == split[4] })
             }
         }
     }
