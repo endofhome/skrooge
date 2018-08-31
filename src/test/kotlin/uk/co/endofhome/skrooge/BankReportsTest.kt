@@ -11,8 +11,8 @@ import org.junit.Test
 
 class BankReportsTest {
 
-    private val categories = Categories("src/test/resources/test-schema.json")
     private val categoryMappings = mutableListOf("Pizza Union,Some category,Some subcategory")
+    private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
     private val mappingWriter = StubbedMappingWriter(categoryMappings)
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
     private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter).routes()

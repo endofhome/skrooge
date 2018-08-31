@@ -5,7 +5,8 @@ import com.natpryce.hamkrest.equalTo
 import org.junit.Test
 
 class CategoriesTest {
-    private val categories = Categories("src/test/resources/test-schema.json").all()
+    private val categoryMappings = emptyList<String>().toMutableList()
+    private val categories = Categories("src/test/resources/test-schema.json", categoryMappings).all()
 
     @Test
     fun `can get first category from category-schema file`() {

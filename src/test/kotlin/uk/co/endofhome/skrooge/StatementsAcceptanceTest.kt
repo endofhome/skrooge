@@ -21,8 +21,8 @@ import java.io.File
 import java.nio.file.Paths
 
 class StatementsAcceptanceTest {
-    private val categories = Categories("src/test/resources/test-schema.json")
     private val categoryMappings = mutableListOf<String>()
+    private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
     private val mappingWriter = StubbedMappingWriter()
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
     private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter).routes()

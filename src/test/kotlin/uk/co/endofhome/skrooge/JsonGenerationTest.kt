@@ -15,8 +15,8 @@ import java.time.Month.OCTOBER
 import java.time.Year
 
 class JsonGenerationTest {
-    private val categories = Categories("src/test/resources/test-schema.json")
     private val categoryMappings = mutableListOf<String>()
+    private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
     private val skrooge = Skrooge(categories, decisionReaderWriter = decisionReaderWriter).routes()
 

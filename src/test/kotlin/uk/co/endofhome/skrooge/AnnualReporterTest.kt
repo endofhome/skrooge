@@ -58,7 +58,8 @@ class AnnualReporterTest {
         val decisions = listOf(Decision(line, Category("Eats and drinks", subcategories), subcategoryConcerned))
         val decisionWriter = StubbedDecisionReaderWriter()
         decisionWriter.write(statementData, decisions)
-        val categories = Categories("src/test/resources/test-schema.json").all()
+        val categoryMappings = emptyList<String>().toMutableList()
+        val categories = Categories("src/test/resources/test-schema.json", categoryMappings).all()
         return AnnualReporter(Gson, categories, decisionWriter, toCategoryReports)
     }
 }
