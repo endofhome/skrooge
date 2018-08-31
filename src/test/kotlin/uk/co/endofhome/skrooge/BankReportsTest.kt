@@ -17,11 +17,11 @@ class BankReportsTest {
 
     @Test
     fun `Statement categorisation report has required hidden fields`() {
-        val request = Request(Method.POST, "/statements").body("2016;January;Test;[input/normalised/2016-01_Test_Santander.csv]")
+        val request = Request(Method.POST, "/statements").body("2017;February;Someone;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
 
         val response = skrooge(request)
 
         response shouldMatch hasStatus(Status.OK)
-        response shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"statement-data\" value=\"2016;January;Test;[Santander.csv]\">"))
+        response shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"statement-data\" value=\"2017;February;Someone;[one-known-merchant.csv]\">"))
     }
 }
