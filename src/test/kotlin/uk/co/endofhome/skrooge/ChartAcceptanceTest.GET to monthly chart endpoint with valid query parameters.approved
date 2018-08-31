@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skrooge</title>
+    <script type="text/javascript" src="public/vendor/d3.min.js"></script>
+    <script type="text/javascript" src="public/vendor/c3.min.js"></script>
+    <link href="public/vendor/c3.min.css" rel="stylesheet" type="text/css">
+    <link href="public/vendor/bootstrap.min.css" rel="stylesheet" type="text/css">
+</head>
+<body id="body">
+    <h1>S K R O O G E</h1>
+
+    <h1><span class="month">April</span> <span class="year">2017</span><span class="month-number" hidden>4</span></h1>
+
+    <h3>In your home</h3>
+    <div id="in-your-home"></div>
+
+    <script type="text/javascript" src="public/chart.js"></script>
+</body>
+</html>

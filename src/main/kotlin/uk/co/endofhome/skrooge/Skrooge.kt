@@ -66,7 +66,8 @@ class Skrooge(private val categories: Categories = Categories(),
             "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionReaderWriter, categories.all()).confirm(request) },
             "annual-report/json" bind GET to { request -> AnnualReporter(gson, categories.all(), decisionReaderWriter, toCategoryReports).handle(request) },
-            "monthly-report/json" bind GET to { request -> MonthlyReporter(gson, categories.all(), decisionReaderWriter, toCategoryReports).handle(request) }
+            "monthly-report/json" bind GET to { request -> MonthlyReporter(gson, categories.all(), decisionReaderWriter, toCategoryReports).handle(request) },
+            "web" bind GET to { request -> Charts(request, renderer) }
     )
 }
 
