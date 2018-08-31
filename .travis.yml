@@ -6,4 +6,5 @@ addons:
     packages:
     - oracle-java8-installer
 script:
-- "./gradlew clean test"
+- "./gradlew assemble"
+- "./gradlew check --info"
