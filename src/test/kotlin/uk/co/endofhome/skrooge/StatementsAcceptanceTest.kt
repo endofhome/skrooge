@@ -20,7 +20,7 @@ import org.junit.Test
 import java.io.File
 
 class StatementsAcceptanceTest {
-    val skrooge = Skrooge(mutableListOf()).routes()
+    val skrooge = Skrooge(categoryMappings = mutableListOf()).routes()
     private val helpers = TestHelpers(skrooge)
 
     @Test
@@ -72,7 +72,7 @@ class StatementsAcceptanceTest {
     @Test
     fun `POST with one entry returns a monthly report when recognised merchant`() {
         val categoryMappings = mutableListOf("Pizza Union,Eats and drinks,Meals at work")
-        val localSkrooge = Skrooge(categoryMappings).routes()
+        val localSkrooge = Skrooge(categoryMappings = categoryMappings).routes()
         val requestWithPizzaUnion = Request(POST, "/statements").body("2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
         val response = localSkrooge(requestWithPizzaUnion)
 

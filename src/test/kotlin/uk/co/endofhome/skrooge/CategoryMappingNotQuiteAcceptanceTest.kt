@@ -1,26 +1,31 @@
 package uk.co.endofhome.skrooge
 
-import com.natpryce.hamkrest.*
 import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.containsSubstring
+import com.natpryce.hamkrest.endsWith
+import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.should.shouldMatch
-import org.http4k.core.*
+import org.http4k.core.Body
+import org.http4k.core.ContentType
 import org.http4k.core.Method.POST
+import org.http4k.core.Request
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.TEMPORARY_REDIRECT
 import org.http4k.core.body.form
+import org.http4k.core.with
 import org.http4k.hamkrest.hasBody
 import org.http4k.hamkrest.hasStatus
 import org.http4k.lens.Header
 import org.junit.Test
 
 class CategoryMappingNotQuiteAcceptanceTest {
-    val categoryMappings = mutableListOf("Edgeworld Records,Fun,Tom fun budget")
-    val mappingWriter = StubbedMappingWriter()
-    val originalRequestBody = "2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]"
+    private val categoryMappings = mutableListOf("Edgeworld Records,Fun,Tom fun budget")
+    private val mappingWriter = StubbedMappingWriter()
+    private val originalRequestBody = "2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]"
 
-    val skrooge = Skrooge(categoryMappings, mappingWriter).routes()
-    val helpers = TestHelpers(skrooge)
+    val skrooge = Skrooge(categoryMappings = categoryMappings, mappingWriter = mappingWriter).routes()
+    private val helpers = TestHelpers(skrooge)
 
     @Test
     fun `POST to category-mapping endpoint with empty new-mapping field returns HTTP Bad Request`() {

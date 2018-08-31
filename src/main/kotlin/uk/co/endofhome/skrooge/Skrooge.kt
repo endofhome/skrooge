@@ -44,20 +44,20 @@ import java.time.format.DateTimeFormatter
 
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
-    val app = Skrooge()
+    val app = Skrooge(categories = categories())
                 .routes()
                 .withFilter(DebuggingFilters.PrintRequestAndResponse())
     app.asServer(Jetty(port)).start()
 }
 
-class Skrooge(private val categoryMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList(),
+class Skrooge(private val categories: List<Category> = categories(),
+              private val categoryMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList(),
               private val mappingWriter: MappingWriter = FileSystemMappingWriter(),
-              val decisionReaderWriter: DecisionReaderWriter = FileSystemDecisionReaderReaderWriter()) {
+              private val decisionReaderWriter: DecisionReaderWriter = FileSystemDecisionReaderReaderWriter()) {
 
     private val gson = Gson
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
     private val publicDirectory = static(ResourceLoader.Directory("public"))
-    private val categories = CategoryHelpers.categories()
 
     fun routes() = routes(
             "/public" bind publicDirectory,
