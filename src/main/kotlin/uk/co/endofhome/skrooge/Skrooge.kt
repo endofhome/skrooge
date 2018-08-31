@@ -44,7 +44,7 @@ import java.time.format.DateTimeFormatter
 
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
-    val app = Skrooge(categories = categories())
+    val app = Skrooge()
                 .routes()
                 .withFilter(DebuggingFilters.PrintRequestAndResponse())
     app.asServer(Jetty(port)).start()
@@ -63,15 +63,15 @@ class Skrooge(private val categories: List<Category> = categories(),
             "/public" bind publicDirectory,
             "/" bind GET to { _ -> Statements(categoryMappings).index(renderer) },
             "/statements" bind POST to { request -> Statements(categoryMappings).uploadStatements(request.body, renderer, decisionReaderWriter) },
-            "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer).handle(request) },
+            "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer, categories).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },
-            "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionReaderWriter).confirm(request) },
+            "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionReaderWriter, categories).confirm(request) },
             "annual-report/json" bind GET to { request -> AnnualReporter(gson, categories, decisionReaderWriter, toCategoryReports).handle(request) },
             "monthly-report/json" bind GET to { request -> MonthlyReporter(gson, categories, decisionReaderWriter, toCategoryReports).handle(request) }
     )
 }
 
-class ReportCategorisations(private val decisionReaderWriter: DecisionReaderWriter) {
+class ReportCategorisations(private val decisionReaderWriter: DecisionReaderWriter, val categories: List<Category>) {
     fun confirm(request: Request): Response {
         val webForm = Body.webForm(Validator.Strict)
         val form = webForm.toLens().extract(request)
@@ -88,7 +88,7 @@ class ReportCategorisations(private val decisionReaderWriter: DecisionReaderWrit
                 val amount = it[2].toDouble()
                 val category = it[3]
                 val subCategory = it[4]
-                Decision(Line(date, merchant, amount), Category(category, categories().find { it.title == category }!!.subcategories), SubCategory(subCategory))
+                Decision(Line(date, merchant, amount), Category(category, categories.find { it.title == category }!!.subcategories), SubCategory(subCategory))
             }
         }
 
@@ -181,13 +181,13 @@ object LineFormatter {
             BigDecimal(this).setScale(2, BigDecimal.ROUND_HALF_UP).toString()
 }
 
-class UnknownMerchantHandler(private val renderer: TemplateRenderer) {
+class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val categories: List<Category>) {
     fun handle(request: Request): Response {
         val currentMerchantLens: BiDiLens<Request, String> = Query.required("currentMerchant")
         val outstandingMerchantsLens: BiDiLens<Request, List<String>> = Query.multi.required("outstandingMerchants")
         val originalRequestBodyLens: BiDiLens<Request, String> = Query.required("originalRequestBody")
         val view = Body.view(renderer, ContentType.TEXT_HTML)
-        val currentMerchant = Merchant(currentMerchantLens(request), categories())
+        val currentMerchant = Merchant(currentMerchantLens(request), categories)
         val outstandingMerchants: List<String> = outstandingMerchantsLens(request).flatMap { it.split(",") }
         val originalRequestBody = originalRequestBodyLens(request)
         val unknownMerchants = UnknownMerchants(currentMerchant, outstandingMerchants.joinToString(","), originalRequestBody)
@@ -197,7 +197,7 @@ class UnknownMerchantHandler(private val renderer: TemplateRenderer) {
 }
 
 class StatementDecider(categoryMappings: List<String>) {
-    val mappings = categoryMappings.map {
+    private val mappings = categoryMappings.map {
         val mappingStrings = it.split(",")
         CategoryMapping(mappingStrings[0], mappingStrings[1], mappingStrings[2])
     }

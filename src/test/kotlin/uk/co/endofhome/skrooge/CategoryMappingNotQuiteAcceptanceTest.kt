@@ -25,7 +25,7 @@ class CategoryMappingNotQuiteAcceptanceTest {
     private val mappingWriter = StubbedMappingWriter()
     private val originalRequestBody = "2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]"
 
-    val skrooge = Skrooge(categories, categoryMappings, mappingWriter).routes()
+    private val skrooge = Skrooge(categories, categoryMappings, mappingWriter).routes()
     private val helpers = TestHelpers(skrooge)
 
     @Test

@@ -24,7 +24,7 @@ class ReportCategorisationAcceptanceTest {
     private val decisionWriter = StubbedDecisionReaderWriter()
     private val skrooge = Skrooge(categories = categories, categoryMappings = categoryMappings, decisionReaderWriter = decisionWriter).routes()
 
-    private val originalDecision = Decision(Line(LocalDate.of(2017, 10, 18), "Edgeworld Records", 14.99), Category("Fun", CategoryHelpers.categories().find { it.title == "Fun" }?.subcategories!!), SubCategory("Tom fun budget"))
+    private val originalDecision = Decision(Line(LocalDate.of(2017, 10, 18), "Edgeworld Records", 14.99), Category("Fun", categories.find { it.title == "Fun" }?.subcategories!!), SubCategory("Tom fun budget"))
 
     @Before
     fun setup() {
