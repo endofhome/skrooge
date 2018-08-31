@@ -8,7 +8,7 @@ function sendFakeFormData() {
             body.innerHTML = xhr.responseText;
         }
     };
-    var body = "2017;September;Tom;[src/test/resources/2017-02_Someone_Monzo.csv]";
+    var body = "2017;September;Tom;[input/normalised/2017-02_Someone_Monzo.csv]";
     xhr.send(body);
 }
 
