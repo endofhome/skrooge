@@ -60,8 +60,8 @@ class Skrooge(private val categories: Categories = Categories(),
 
     fun routes() = routes(
             "/public" bind publicDirectory,
-            "/" bind GET to { _ -> Statements(categoryMappings, categories).index(renderer) },
-            "/statements" bind POST to { request -> Statements(categoryMappings, categories).uploadStatements(request.body, renderer, decisionReaderWriter) },
+            "/" bind GET to { _ -> Statements(categories).index(renderer) },
+            "/statements" bind POST to { request -> Statements(categories).uploadStatements(request.body, renderer, decisionReaderWriter) },
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionReaderWriter, categories.all()).confirm(request) },
@@ -98,7 +98,7 @@ class ReportCategorisations(private val decisionReaderWriter: DecisionReaderWrit
     }
 }
 
-class Statements(private val categoryMappings: List<String>, private val categories: Categories) {
+class Statements(private val categories: Categories) {
     private val parser = PretendFormParser()
 
     fun uploadStatements(body: Body, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
@@ -113,7 +113,7 @@ class Statements(private val categoryMappings: List<String>, private val categor
                 BankStatement(
                         YearMonth.of(splitYear, splitMonth),
                         splitUsername,
-                        splitFilename.substringBefore(".csv"), StatementDecider(categoryMappings).process(it.readLines())
+                        splitFilename.substringBefore(".csv"), StatementDecider(categories.categoryMappings).process(it.readLines())
                 )
             }
             val statementsWithUnknownMerchants = processedLines.filter { it.decisions.map { it.category }.contains(null) }
