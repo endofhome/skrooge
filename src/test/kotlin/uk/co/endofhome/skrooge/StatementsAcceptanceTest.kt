@@ -76,7 +76,7 @@ class StatementsAcceptanceTest {
     @Test
     fun `POST with one entry returns a monthly report when recognised merchant`() {
         val categoryMappings = mutableListOf("Pizza Union,Eats and drinks,Meals at work")
-        val localSkrooge = Skrooge(categoryMappings = categoryMappings).routes()
+        val localSkrooge = Skrooge(categoryHelpers, categoryMappings, mappingWriter, decisionReaderWriter).routes()
         val requestWithPizzaUnion = Request(POST, "/statements").body("2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
         val response = localSkrooge(requestWithPizzaUnion)
 
