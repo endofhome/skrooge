@@ -19,13 +19,15 @@ import java.time.Month
 import java.time.Year
 
 class ReportCategorisationAcceptanceTest {
-    val decisionWriter = StubbedDecisionReaderWriter()
-    val skrooge = Skrooge(decisionReaderWriter = decisionWriter).routes()
+    private val categories = CategoryHelpers.categories("src/test/resources/test-schema.json")
+    private val categoryMappings = mutableListOf<String>()
+    private val decisionWriter = StubbedDecisionReaderWriter()
+    private val skrooge = Skrooge(categories = categories, categoryMappings = categoryMappings, decisionReaderWriter = decisionWriter).routes()
 
-    val originalDecision = Decision(Line(LocalDate.of(2017, 10, 18), "Edgeworld Records", 14.99), Category("Fun", CategoryHelpers.categories().find { it.title == "Fun" }?.subcategories!!), SubCategory("Tom fun budget"))
+    private val originalDecision = Decision(Line(LocalDate.of(2017, 10, 18), "Edgeworld Records", 14.99), Category("Fun", CategoryHelpers.categories().find { it.title == "Fun" }?.subcategories!!), SubCategory("Tom fun budget"))
 
     @Before
-    fun `setup`() {
+    fun setup() {
         val statementData = StatementData(Year.of(2017), Month.OCTOBER, "Milford", listOf(File("doesn't matter")))
         val decisions = listOf(originalDecision)
         decisionWriter.write(statementData, decisions)
