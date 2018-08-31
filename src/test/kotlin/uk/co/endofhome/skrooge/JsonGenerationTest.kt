@@ -16,15 +16,16 @@ import java.time.Month.OCTOBER
 import java.time.Year
 
 class JsonGenerationTest {
-    val decisionWriter = StubbedDecisionReaderWriter()
-    val skrooge = Skrooge(decisionReaderWriter = decisionWriter).routes()
+    private val decisionWriter = StubbedDecisionReaderWriter()
+    private val categories = CategoryHelpers.categories("src/test/resources/test-schema.json")
+    val skrooge = Skrooge(categories = categories, decisionReaderWriter = decisionWriter).routes()
 
     // TODO app already works for multiple files, but some tests would be nice
     // TODO to guard against regressions.
     // TODO also, possibly all subcategories should be available, but with 0 values for actual expenditure.
     
     @Before
-    fun `setup`() {
+    fun setup() {
         val statementData = StatementData(Year.of(2017), OCTOBER, "Milford", listOf(File("doesn't matter")))
         val decisions: List<Decision> = emptyList()
         decisionWriter.write(statementData, decisions)
