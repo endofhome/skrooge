@@ -16,9 +16,10 @@ import java.time.Month.OCTOBER
 import java.time.Year
 
 class JsonGenerationTest {
-    private val decisionWriter = StubbedDecisionReaderWriter()
     private val categories = CategoryHelpers.categories("src/test/resources/test-schema.json")
-    val skrooge = Skrooge(categories = categories, decisionReaderWriter = decisionWriter).routes()
+    private val categoryMappings = mutableListOf<String>()
+    private val decisionReaderWriter = StubbedDecisionReaderWriter()
+    private val skrooge = Skrooge(categories = categories, categoryMappings = categoryMappings, decisionReaderWriter = decisionReaderWriter).routes()
 
     // TODO app already works for multiple files, but some tests would be nice
     // TODO to guard against regressions.
@@ -28,7 +29,7 @@ class JsonGenerationTest {
     fun setup() {
         val statementData = StatementData(Year.of(2017), OCTOBER, "Milford", listOf(File("doesn't matter")))
         val decisions: List<Decision> = emptyList()
-        decisionWriter.write(statementData, decisions)
+        decisionReaderWriter.write(statementData, decisions)
     }
 
     @Test
@@ -44,7 +45,7 @@ class JsonGenerationTest {
         val subCategories = subcategoriesFor(categoryTitle)
         val decision = Decision(Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 250.00), Category(categoryTitle, subCategories), subCategories.find { it.name == "Building insurance" })
         val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", emptyList())
-        decisionWriter.write(statementData, listOf(decision))
+        decisionReaderWriter.write(statementData, listOf(decision))
         val request = Request(GET, "/monthly-report/json").query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
@@ -60,7 +61,7 @@ class JsonGenerationTest {
         val decision1 = Decision(Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 250.00), Category(categoryTitle, subCategories), subCategories.find { it.name == "Building insurance" })
         val decision2 = Decision(Line(LocalDate.of(2017, 10, 14), "OIS Removals", 500.00), Category(categoryTitle, subCategories), subCategories.find { it.name == "Building insurance" })
         val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", emptyList())
-        decisionWriter.write(statementData, listOf(decision1, decision2))
+        decisionReaderWriter.write(statementData, listOf(decision1, decision2))
         val request = Request(GET, "/monthly-report/json").query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
@@ -76,7 +77,7 @@ class JsonGenerationTest {
         val decision1 = Decision(Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 250.00), Category(categoryTitle, subCategories), subCategories.find { it.name == "Building insurance" })
         val decision2 = Decision(Line(LocalDate.of(2017, 10, 10), "Some Bank", 300.00), Category(categoryTitle, subCategories), subCategories.find { it.name == "Mortgage" })
         val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", emptyList())
-        decisionWriter.write(statementData, listOf(decision1, decision2))
+        decisionReaderWriter.write(statementData, listOf(decision1, decision2))
         val request = Request(GET, "/monthly-report/json").query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
@@ -95,7 +96,7 @@ class JsonGenerationTest {
         val decision2 = Decision(Line(LocalDate.of(2017, 10, 10), "Some Bank", 100.00), Category(eatsAndDrinks, subCategoriesInYourHome), subCategoriesInYourHome.find { it.name == "Mortgage" })
         val decision3 = Decision(Line(LocalDate.of(2017, 10, 17), "Something in a totally different category", 400.00), Category(eatsAndDrinks, subCategoriesEatsAndDrinks), subCategoriesEatsAndDrinks.find { it.name == "Food" })
         val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", emptyList())
-        decisionWriter.write(statementData, listOf(decision1, decision2, decision3))
+        decisionReaderWriter.write(statementData, listOf(decision1, decision2, decision3))
         val request = Request(GET, "/monthly-report/json").query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
