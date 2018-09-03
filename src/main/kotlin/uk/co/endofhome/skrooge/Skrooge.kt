@@ -47,6 +47,7 @@ fun main(args: Array<String>) {
                 .routes()
                 .withFilter(DebuggingFilters.PrintRequestAndResponse())
     app.asServer(Jetty(port)).start()
+    println("Skrooge has started on http://localhost:$port")
 }
 
 class Skrooge(private val categories: Categories = Categories(),
