@@ -1,0 +1,67 @@
+const year = document.getElementsByClassName("year")[0].textContent;
+const monthNumber = document.getElementsByClassName("month-number")[0].textContent;
+
+const monthlyReportData = async () => {
+    const response = await fetch('http://localhost:5000/monthly-report/json?year=' + year + '&month=' + monthNumber);
+    return await response.json()
+};
+
+const _dataForCategory = (title, categories) => {
+    const matchingCategories = categories.filter(item => item.title === title);
+    if (matchingCategories.length === 1) {
+        return matchingCategories[0].data
+    } else if (matchingCategories.length === 0) {
+        throw {
+            name: 'No matching categories',
+            message: 'No matching categories for title:' + title
+        }
+    } else if (matchingCategories.length > 1) {
+        throw {
+            name: 'Too many matching categories',
+            message: matchingCategories.length + ' matching categories for title: ' + title
+        };
+    }
+};
+
+function generateCategory(title, categories, binding, height) {
+    const dataForCategory = _dataForCategory(title, categories);
+
+    this.c3Data = {
+        bindto: binding,
+        data: {
+            labels: true,
+            json: dataForCategory,
+            keys: {
+                x: 'name',
+                value: ['actual']
+            },
+            type: 'bar',
+            colors: {
+                actual: '#33cc33'
+            }
+        },
+        bar: {
+            width: {
+                ratio: 0.5
+            }
+        },
+        axis: {
+            rotated: true,
+            x: {
+                type: 'category'
+            }
+        }
+    };
+
+    if (height !== null) {
+        this.c3Data.size = {
+            height: height
+        }
+    }
+
+    c3.generate(this.c3Data);
+}
+
+monthlyReportData().then((result => {
+    generateCategory("In your home", result.categories, "#in-your-home", 1000);
+}));
