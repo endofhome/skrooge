@@ -1,3 +1,5 @@
+import colourtron from './colourtron'
+
 const year = document.getElementsByClassName("year")[0].textContent;
 const monthNumber = document.getElementsByClassName("month-number")[0].textContent;
 
@@ -26,7 +28,7 @@ const _dataForCategory = (title, categories) => {
 function generateCategory(title, categories, binding, height) {
     const dataForCategory = _dataForCategory(title, categories);
 
-    this.c3Data = {
+    const c3Data = {
         bindto: binding,
         data: {
             labels: true,
@@ -37,7 +39,7 @@ function generateCategory(title, categories, binding, height) {
             },
             type: 'bar',
             colors: {
-                actual: '#33cc33'
+                actual: colourtron()
             }
         },
         bar: {
@@ -54,12 +56,12 @@ function generateCategory(title, categories, binding, height) {
     };
 
     if (height !== null) {
-        this.c3Data.size = {
+        c3Data.size = {
             height: height
         }
     }
 
-    c3.generate(this.c3Data);
+    c3.generate(c3Data);
 }
 
 monthlyReportData().then((result => {

@@ -44,6 +44,24 @@ dependencies {
     testCompile "com.oneeyedmen:okeydoke:1.1.0"
 }
 
-mainClassName = 'uk.co.endofhome.skrooge.Skrooge.kt'
+task npmInstall(type: Exec) {
+    commandLine "npm", "i"
+}
+
+task npmTest(type: Exec) {
+    dependsOn npmInstall
+    commandLine "npm", "test"
+}
+
+task webpack(type: Exec) {
+    dependsOn npmTest
+    commandLine "$projectDir/node_modules/.bin/webpack"
+}
 
 task stage(dependsOn: ['installDist'])
+
+mainClassName = 'uk.co.endofhome.skrooge.Skrooge.kt'
+
+test {
+    dependsOn webpack
+}

@@ -16,6 +16,6 @@
     <h3>In your home</h3>
     <div id="in-your-home"></div>
 
-    <script type="text/javascript" src="public/chart.js"></script>
+    <script type="text/javascript" src="public/bundle.js"></script>
 </body>
 </html>

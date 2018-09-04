@@ -1,0 +1,27 @@
+{
+  "name": "skrooge",
+  "version": "0.0.1",
+  "description": "Input annual budget and CSV bank statements, get back a report on your expenditure.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/forty9er/skrooge.git"
+  },
+  "author": "Tom Barnsbury",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/forty9er/skrooge/issues"
+  },
+  "homepage": "https://github.com/forty9er/skrooge#readme",
+  "devDependencies": {
+    "jest": "^23.5.0",
+    "webpack": "^4.17.2",
+    "webpack-cli": "^3.1.0"
+  },
+  "dependencies": {
+    "src": "^1.1.2"
+  }
+}
