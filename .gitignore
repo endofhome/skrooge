@@ -14,3 +14,4 @@ category-schema/
 
 src/main/kotlin/uk/co/endofhome/skrooge/scripts/MonzoClient.kt
 src/test/resources/monzo-retail-output.txt
+public/c3-spike.js
