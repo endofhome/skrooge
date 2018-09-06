@@ -11,7 +11,10 @@ class AnnualBudgets(private val budgets: List<AnnualBudget>) {
 
     companion object {
         fun from(budgetDirectory: Path): AnnualBudgets {
-            val budgetsFromFiles = budgetDirectory.toFile().listFiles().map { file ->
+            val budgetsFromFiles = budgetDirectory.toFile()
+                                                  .listFiles()
+                                                  .filter { it.name.endsWith(".json") }
+                                                  .map { file ->
                 val dateInts = file.name
                                             .split('/')
                                             .last()
