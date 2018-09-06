@@ -4,7 +4,8 @@
   "description": "Input annual budget and CSV bank statements, get back a report on your expenditure.",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
