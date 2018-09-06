@@ -39,7 +39,8 @@ function generateCategory(title, categories, binding, height) {
             },
             type: 'bar',
             colors: {
-                actual: colourtron()
+                actual: colourtron(),
+                budget: '#cce5ff'
             }
         },
         bar: {
