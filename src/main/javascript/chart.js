@@ -35,12 +35,11 @@ function generateCategory(title, categories, binding, height) {
             json: dataForCategory,
             keys: {
                 x: 'name',
-                value: ['budget', 'actual']
+                value: ['actual', 'budget']
             },
             type: 'bar',
-            colors: {
-                actual: colourtron(),
-                budget: '#cce5ff'
+            color: (color, d) => {
+                return colourtron(d, dataForCategory)
             }
         },
         bar: {
