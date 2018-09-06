@@ -35,7 +35,7 @@ function generateCategory(title, categories, binding, height) {
             json: dataForCategory,
             keys: {
                 x: 'name',
-                value: ['actual']
+                value: ['budget', 'actual']
             },
             type: 'bar',
             colors: {
