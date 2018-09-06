@@ -9,6 +9,7 @@ import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.junit.Rule
 import org.junit.Test
+import java.nio.file.Paths
 
 
 class ChartAcceptanceTest {
@@ -19,7 +20,7 @@ class ChartAcceptanceTest {
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
     private val mappingWriter = StubbedMappingWriter()
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
-    private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter).routes()
+    private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, Paths.get("src/test/resources/budgets/")).routes()
 
     @Test
     fun `GET to monthly chart endpoint with valid query parameters`() {

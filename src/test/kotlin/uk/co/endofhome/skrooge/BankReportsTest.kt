@@ -8,6 +8,7 @@ import org.http4k.core.Status
 import org.http4k.hamkrest.hasBody
 import org.http4k.hamkrest.hasStatus
 import org.junit.Test
+import java.nio.file.Paths
 
 class BankReportsTest {
 
@@ -15,7 +16,7 @@ class BankReportsTest {
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
     private val mappingWriter = StubbedMappingWriter(categoryMappings)
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
-    private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter).routes()
+    private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, Paths.get("src/test/resources/budgets/")).routes()
 
     @Test
     fun `Statement categorisation report has required hidden fields`() {

@@ -35,6 +35,8 @@ import org.http4k.template.ViewModel
 import org.http4k.template.view
 import java.io.File
 import java.math.BigDecimal
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.Month
 import java.time.Year
@@ -52,12 +54,15 @@ fun main(args: Array<String>) {
 
 class Skrooge(private val categories: Categories = Categories(),
               private val mappingWriter: MappingWriter = FileSystemMappingWriter(),
-              private val decisionReaderWriter: DecisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories)) {
+              private val decisionReaderWriter: DecisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories),
+              budgetDirectory: Path = Paths.get("input/budgets/")) {
 
     private val categoryMappings = categories.categoryMappings
     private val gson = Gson
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
     private val publicDirectory = static(ResourceLoader.Directory("public"))
+    private val annualBudgets = AnnualBudgets.from(budgetDirectory)
+    private val categoryReporter = CategoryReporter(categories.all(), annualBudgets)
 
     fun routes() = routes(
             "/public" bind publicDirectory,
@@ -66,8 +71,8 @@ class Skrooge(private val categories: Categories = Categories(),
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionReaderWriter, categories.all()).confirm(request) },
-            "annual-report/json" bind GET to { request -> AnnualReporter(gson, categories.all(), decisionReaderWriter, toCategoryReports).handle(request) },
-            "monthly-report/json" bind GET to { request -> MonthlyReporter(gson, categories.all(), decisionReaderWriter, toCategoryReports).handle(request) },
+            "annual-report/json" bind GET to { request -> AnnualReporter(gson, decisionReaderWriter, categoryReporter).handle(request) },
+            "monthly-report/json" bind GET to { request -> MonthlyReporter(gson, decisionReaderWriter, categoryReporter).handle(request) },
             "web" bind GET to { request -> Charts(request, renderer) }
     )
 }

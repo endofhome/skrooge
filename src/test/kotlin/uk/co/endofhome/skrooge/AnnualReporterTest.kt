@@ -37,11 +37,10 @@ class AnnualReporterTest {
 
         val reportLens = Body.auto<AnnualReport>().toLens()
         val json = reportLens.extract(response)
-        val categoryReport = CategoryReport("Eats and drinks", listOf(CategoryReportDataItem("Food", 4.99)))
+        val categoryReport = CategoryReport("Eats and drinks", listOf(CategoryReportDataItem("Food", 4.99, 5.0)))
         assertThat(json.startDate, equalTo(LocalDate.of(1978, 11, 10)))
         assertThat(json.categories, equalTo(listOf(categoryReport)))
     }
-
 
     private fun setUpWithOneDecision(): AnnualReporter {
         val statementData = StatementData(Year.of(2018), Month.APRIL, "username", emptyList()) // not sure if this makes much sense
@@ -55,11 +54,17 @@ class AnnualReporterTest {
                 SubCategory("Eating out"),
                 SubCategory("Meals at work")
         )
-        val decisions = listOf(Decision(line, Category("Eats and drinks", subcategories), subcategoryConcerned))
+        val category = Category("Eats and drinks", subcategories)
+        val decisions = listOf(Decision(line, category, subcategoryConcerned))
         val decisionWriter = StubbedDecisionReaderWriter()
         decisionWriter.write(statementData, decisions)
         val categoryMappings = emptyList<String>().toMutableList()
         val categories = Categories("src/test/resources/test-schema.json", categoryMappings).all()
-        return AnnualReporter(Gson, categories, decisionWriter, toCategoryReports)
+        val budget = AnnualBudget(LocalDate.of(1978, 9, 17), listOf(subcategoryConcerned to category to 5.0))
+        val budgets = listOf(budget)
+        val annualBudgets = AnnualBudgets(budgets)
+        val categoryReporter = CategoryReporter(categories, annualBudgets)
+
+        return AnnualReporter(Gson, decisionWriter, categoryReporter)
     }
 }

@@ -18,6 +18,7 @@ import org.http4k.hamkrest.hasBody
 import org.http4k.hamkrest.hasStatus
 import org.http4k.lens.Header
 import org.junit.Test
+import java.nio.file.Paths
 
 class CategoryMappingNotQuiteAcceptanceTest {
     private val categoryMappings = mutableListOf("Edgeworld Records,Fun,Tom fun budget")
@@ -25,7 +26,7 @@ class CategoryMappingNotQuiteAcceptanceTest {
     private val mappingWriter = StubbedMappingWriter()
     private val originalRequestBody = "2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]"
 
-    private val skrooge = Skrooge(categories, mappingWriter).routes()
+    private val skrooge = Skrooge(categories, mappingWriter, budgetDirectory = Paths.get("src/test/resources/budgets/")).routes()
     private val helpers = TestHelpers(skrooge)
 
     @Test

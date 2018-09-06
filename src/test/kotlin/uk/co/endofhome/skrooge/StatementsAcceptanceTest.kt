@@ -25,7 +25,8 @@ class StatementsAcceptanceTest {
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
     private val mappingWriter = StubbedMappingWriter()
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
-    private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter).routes()
+    private val testBudgetDirectory = Paths.get("src/test/resources/budgets/")
+    private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
     private val helpers = TestHelpers(skrooge)
 
     @Test
@@ -57,7 +58,7 @@ class StatementsAcceptanceTest {
     fun `POST with empty csv produces empty output file`() {
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
-        val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter).routes()
+        val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
         val request = Request(POST, "/statements").body("2017;January;Test;[src/test/resources/2017-01_Someone_empty-file.csv]")
 
         localSkrooge(request)
@@ -73,7 +74,7 @@ class StatementsAcceptanceTest {
         val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
-        val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter).routes()
+        val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
         val request = Request(POST, "/statements").body("2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
 
         localSkrooge(request)
@@ -90,7 +91,7 @@ class StatementsAcceptanceTest {
         val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
-        val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter).routes()
+        val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
         val requestWithPizzaUnion = Request(POST, "/statements").body("2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
         val response = localSkrooge(requestWithPizzaUnion)
 

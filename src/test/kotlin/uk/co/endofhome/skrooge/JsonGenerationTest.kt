@@ -1,24 +1,35 @@
 package uk.co.endofhome.skrooge
 
 import com.natpryce.hamkrest.should.shouldMatch
+import com.oneeyedmen.okeydoke.junit.ApprovalsRule
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
-import org.http4k.hamkrest.hasBody
 import org.http4k.hamkrest.hasStatus
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import java.io.File
+import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.Month.OCTOBER
 import java.time.Year
 
 class JsonGenerationTest {
+
+    @Rule
+    @JvmField val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin")
+
     private val categoryMappings = mutableListOf<String>()
-    private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
+    private val testDir = "src/test/resources/"
+    private val categories = Categories("${testDir}test-schema.json", categoryMappings)
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
-    private val skrooge = Skrooge(categories, decisionReaderWriter = decisionReaderWriter).routes()
+    private val skrooge = Skrooge(
+        categories = categories,
+        decisionReaderWriter = decisionReaderWriter,
+        budgetDirectory = Paths.get("${testDir}budgets/")
+    ).routes()
 
     // TODO app already works for multiple files, but some tests would be nice
     // TODO to guard against regressions.
@@ -50,7 +61,7 @@ class JsonGenerationTest {
         val response = skrooge(request)
 
         response shouldMatch hasStatus(OK)
-        response shouldMatch hasBody("{\"year\":2017,\"month\":\"October\",\"monthNumber\":10,\"categories\":[{\"title\":\"In your home\",\"data\":[{\"name\":\"Building insurance\",\"actual\":250.0}]}]}")
+        approver.assertApproved(response.bodyString())
     }
 
     @Test
@@ -66,7 +77,7 @@ class JsonGenerationTest {
         val response = skrooge(request)
 
         response shouldMatch hasStatus(OK)
-        response shouldMatch hasBody("{\"year\":2017,\"month\":\"October\",\"monthNumber\":10,\"categories\":[{\"title\":\"In your home\",\"data\":[{\"name\":\"Building insurance\",\"actual\":750.0}]}]}")
+        approver.assertApproved(response.bodyString())
     }
 
     @Test
@@ -82,7 +93,7 @@ class JsonGenerationTest {
         val response = skrooge(request)
 
         response shouldMatch hasStatus(OK)
-        response shouldMatch hasBody("{\"year\":2017,\"month\":\"October\",\"monthNumber\":10,\"categories\":[{\"title\":\"In your home\",\"data\":[{\"name\":\"Building insurance\",\"actual\":250.0},{\"name\":\"Mortgage\",\"actual\":300.0}]}]}")
+        approver.assertApproved(response.bodyString())
     }
 
     @Test
@@ -92,7 +103,7 @@ class JsonGenerationTest {
         val subCategoriesInYourHome = categories.subcategoriesFor(inYourHome)
         val subCategoriesEatsAndDrinks = categories.subcategoriesFor(eatsAndDrinks)
         val decision1 = Decision(Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 200.00), Category(inYourHome, subCategoriesInYourHome), subCategoriesInYourHome.find { it.name == "Building insurance" })
-        val decision2 = Decision(Line(LocalDate.of(2017, 10, 10), "Some Bank", 100.00), Category(eatsAndDrinks, subCategoriesInYourHome), subCategoriesInYourHome.find { it.name == "Mortgage" })
+        val decision2 = Decision(Line(LocalDate.of(2017, 10, 10), "Some Bank", 100.00), Category(inYourHome, subCategoriesInYourHome), subCategoriesInYourHome.find { it.name == "Mortgage" })
         val decision3 = Decision(Line(LocalDate.of(2017, 10, 17), "Something in a totally different category", 400.00), Category(eatsAndDrinks, subCategoriesEatsAndDrinks), subCategoriesEatsAndDrinks.find { it.name == "Food" })
         val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", emptyList())
         decisionReaderWriter.write(statementData, listOf(decision1, decision2, decision3))
@@ -101,6 +112,6 @@ class JsonGenerationTest {
         val response = skrooge(request)
 
         response shouldMatch hasStatus(OK)
-        response shouldMatch hasBody("{\"year\":2017,\"month\":\"October\",\"monthNumber\":10,\"categories\":[{\"title\":\"In your home\",\"data\":[{\"name\":\"Building insurance\",\"actual\":200.0},{\"name\":\"Mortgage\",\"actual\":100.0}]},{\"title\":\"Eats and drinks\",\"data\":[{\"name\":\"Food\",\"actual\":400.0}]}]}")
+        approver.assertApproved(response.bodyString())
     }
 }

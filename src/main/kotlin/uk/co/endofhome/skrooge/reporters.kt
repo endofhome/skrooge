@@ -5,8 +5,6 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.format.Gson
 import org.http4k.template.ViewModel
-import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.Month
 import java.time.format.DateTimeFormatter
@@ -14,10 +12,9 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 class MonthlyReporter(private val gson: Gson,
-                      private val categories: List<Category>,
                       private val decisionReaderWriter: DecisionReaderWriter,
-                      private val toCategoryReports: Pair<List<Category>, List<Decision>>.() -> List<CategoryReport>)
-{
+                      private val categoryReporter: CategoryReporter) {
+
     fun handle(request: Request): Response {
         val year = request.query("year")!!.toInt()
         val month = Month.of(request.query("month")!!.toInt())
@@ -25,7 +22,7 @@ class MonthlyReporter(private val gson: Gson,
 
         return decisions.let { when {
                 it.isNotEmpty() -> {
-                    val catReports = (categories to decisions).toCategoryReports()
+                    val catReports = categoryReporter.categoryReportsFrom(decisions)
 
                     val jsonReport = MonthlyReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, catReports)
                     val jsonReportJson = gson.asJsonObject(jsonReport)
@@ -40,10 +37,8 @@ class MonthlyReporter(private val gson: Gson,
 
 
 class AnnualReporter(private val gson: Gson,
-                     private val categories: List<Category>,
                      private val decisionReaderWriter: DecisionReaderWriter,
-                     private val toCategoryReports: Pair<List<Category>, List<Decision>>.() -> List<CategoryReport>)
-{
+                     private val categoryReporter: CategoryReporter) {
 
     fun handle(request: Request): Response {
         val startDateString = request.query("startDate")!!
@@ -52,7 +47,7 @@ class AnnualReporter(private val gson: Gson,
 
         return decisions.let { when {
             it.isNotEmpty() -> {
-                val catReports = (categories to decisions).toCategoryReports()
+                val catReports = categoryReporter.categoryReportsFrom(decisions)
                 val jsonReport = AnnualReport(startDate, catReports)
                 val jsonReportJson = gson.asJsonObject(jsonReport)
 
@@ -64,20 +59,5 @@ class AnnualReporter(private val gson: Gson,
     }
 }
 
-data class CategoryReportDataItem(val name: String, val actual: Double)
-data class CategoryReport(val title: String, val data: List<CategoryReportDataItem>)
 data class MonthlyReport(val year: Int, val month: String, val monthNumber: Int, val categories: List<CategoryReport>) : ViewModel
 data class AnnualReport(val startDate: LocalDate, val categories: List<CategoryReport>) : ViewModel
-
-val toCategoryReports: Pair<List<Category>, List<Decision>>.() -> List<CategoryReport> = {
-    val (categories, decisions) = this
-    val catReportDataItems: List<CategoryReportDataItem> = decisions.map {
-        CategoryReportDataItem(it.subCategory!!.name, it.line.amount)
-    }.groupBy { it.name }.map {
-        it.value.reduce { acc, categoryReportDataItem -> CategoryReportDataItem(it.key, acc.actual + categoryReportDataItem.actual) }
-    }.map { it.copy(actual = BigDecimal.valueOf(it.actual).setScale(2, RoundingMode.HALF_UP).toDouble()) }
-
-    categories.map { category ->
-        CategoryReport(category.title, catReportDataItems.filter { category.subcategories.map { it.name }.contains(it.name) })
-    }.filter { it.data.isNotEmpty() }
-}

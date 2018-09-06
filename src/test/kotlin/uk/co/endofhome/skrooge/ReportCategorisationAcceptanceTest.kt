@@ -14,6 +14,7 @@ import org.http4k.lens.Header
 import org.junit.Before
 import org.junit.Test
 import java.io.File
+import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.Month
 import java.time.Year
@@ -22,7 +23,7 @@ class ReportCategorisationAcceptanceTest {
     private val categoryMappings = mutableListOf<String>()
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
     private val decisionWriter = StubbedDecisionReaderWriter()
-    private val skrooge = Skrooge(categories, decisionReaderWriter = decisionWriter).routes()
+    private val skrooge = Skrooge(categories, decisionReaderWriter = decisionWriter, budgetDirectory = Paths.get("src/test/resources/budgets/")).routes()
 
     private val originalDecision =
             Decision(
