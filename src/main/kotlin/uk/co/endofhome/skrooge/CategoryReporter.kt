@@ -5,16 +5,24 @@ import java.math.RoundingMode
 
 class CategoryReporter(val categories: List<Category>, private val annualBudgets: AnnualBudgets) {
 
-    fun categoryReportsFrom(decisions: List<Decision>): List<CategoryReport> {
-        val catReportDataItems: List<CategoryReportDataItem> = decisions.map {
-            val budgetAmount = annualBudgets.valueFor(it.category!!, it.subCategory!!, it.line.date)
-            CategoryReportDataItem(it.subCategory.name, it.line.amount, budgetAmount)
-        }.groupBy { it.name }.map {
-            it.value.reduce { acc, categoryReportDataItem -> CategoryReportDataItem(it.key, acc.actual + categoryReportDataItem.actual, categoryReportDataItem.budget) }
-        }.map { it.copy(actual = BigDecimal.valueOf(it.actual).setScale(2, RoundingMode.HALF_UP).toDouble()) }
+    fun categoryReportsFrom(decisions: List<Decision>, numberOfMonths: Int = 1): List<CategoryReport> {
+        val catReportDataItems: List<CategoryReportDataItem> =
+            decisions.map {
+                        val budgetAmount = annualBudgets.valueFor(it.category!!, it.subCategory!!, it.line.date)
+                        CategoryReportDataItem(it.subCategory.name, it.line.amount, budgetAmount * numberOfMonths) }
+                     .groupBy { it.name }
+                     .map {
+                        it.value.reduce {
+                            acc, categoryReportDataItem ->
+                            CategoryReportDataItem(it.key, acc.actual + categoryReportDataItem.actual, categoryReportDataItem.budget)
+                        }}
+                     .map { it.copy(actual = BigDecimal.valueOf(it.actual).setScale(2, RoundingMode.HALF_UP).toDouble()) }
 
         return categories.map { category ->
-            CategoryReport(category.title, catReportDataItems.filter { category.subcategories.map { it.name }.contains(it.name) })
+            CategoryReport(
+                    category.title,
+                    catReportDataItems.filter { dataItem -> category.subcategories.map { it.name }.contains(dataItem.name) }
+            )
         }.filter { it.data.isNotEmpty() }
     }
 }

@@ -47,7 +47,7 @@ class AnnualReporter(private val gson: Gson,
 
         return decisions.let { when {
             it.isNotEmpty() -> {
-                val catReports = categoryReporter.categoryReportsFrom(decisions)
+                val catReports = categoryReporter.categoryReportsFrom(decisions, 12)
                 val jsonReport = AnnualReport(startDate, catReports)
                 val jsonReportJson = gson.asJsonObject(jsonReport)
 

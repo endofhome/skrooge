@@ -37,7 +37,7 @@ class AnnualReporterTest {
 
         val reportLens = Body.auto<AnnualReport>().toLens()
         val json = reportLens.extract(response)
-        val categoryReport = CategoryReport("Eats and drinks", listOf(CategoryReportDataItem("Food", 4.99, 5.0)))
+        val categoryReport = CategoryReport("Eats and drinks", listOf(CategoryReportDataItem("Food", 4.99, 60.0)))
         assertThat(json.startDate, equalTo(LocalDate.of(1978, 11, 10)))
         assertThat(json.categories, equalTo(listOf(categoryReport)))
     }
