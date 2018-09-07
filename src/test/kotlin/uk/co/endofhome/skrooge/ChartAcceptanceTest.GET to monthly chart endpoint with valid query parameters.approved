@@ -13,8 +13,17 @@
 
     <h1><span class="month">April</span> <span class="year">2017</span><span class="month-number" hidden>4</span></h1>
 
-    <h3>In your home</h3>
     <div id="in-your-home"></div>
+    <div id="insurance"></div>
+    <div id="motoring-and-public-transport"></div>
+    <div id="savings-and-investments"></div>
+    <div id="family"></div>
+    <div id="fun"></div>
+    <div id="health-and-beauty"></div>
+    <div id="clothes"></div>
+    <div id="big-one-offs"></div>
+    <div id="odds-and-sods"></div>
+    <div id="refurbishments"></div>
 
     <script type="text/javascript" src="public/bundle.js"></script>
 </body>
