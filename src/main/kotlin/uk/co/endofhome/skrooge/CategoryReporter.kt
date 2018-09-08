@@ -25,6 +25,15 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
             )
         }.filter { it.data.isNotEmpty() }
     }
+
+    fun overviewFrom(categoryReports: List<CategoryReport>): CategoryReport {
+        val overviewCategoryReport: List<CategoryReportDataItem> =  categoryReports.map { categoryReport ->
+            categoryReport.data.reduce { acc, categoryReportDataItem ->
+                CategoryReportDataItem(categoryReport.title, acc.actual + categoryReportDataItem.actual, acc.budget + categoryReportDataItem.budget)
+            }
+        }
+        return CategoryReport("Overview", overviewCategoryReport)
+    }
 }
 
 data class CategoryReport(val title: String, val data: List<CategoryReportDataItem>)

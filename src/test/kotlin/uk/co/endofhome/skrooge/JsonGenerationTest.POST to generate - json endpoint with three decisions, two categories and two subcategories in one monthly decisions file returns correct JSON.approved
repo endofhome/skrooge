@@ -1,1 +1,47 @@
-{"year":2017,"month":"October","monthNumber":10,"categories":[{"title":"In your home","data":[{"name":"Building insurance","actual":200.0,"budget":2.0},{"name":"Mortgage","actual":100.0,"budget":1.0}]},{"title":"Eats and drinks","data":[{"name":"Food","actual":400.0,"budget":13.0}]}]}
+{
+  "year": 2017,
+  "month": "October",
+  "monthNumber": 10,
+  "overview": {
+    "title": "Overview",
+    "data": [
+      {
+        "name": "In your home",
+        "actual": 300.0,
+        "budget": 3.0
+      },
+      {
+        "name": "Food",
+        "actual": 400.0,
+        "budget": 13.0
+      }
+    ]
+  },
+  "categories": [
+    {
+      "title": "In your home",
+      "data": [
+        {
+          "name": "Building insurance",
+          "actual": 200.0,
+          "budget": 2.0
+        },
+        {
+          "name": "Mortgage",
+          "actual": 100.0,
+          "budget": 1.0
+        }
+      ]
+    },
+    {
+      "title": "Eats and drinks",
+      "data": [
+        {
+          "name": "Food",
+          "actual": 400.0,
+          "budget": 13.0
+        }
+      ]
+    }
+  ]
+}

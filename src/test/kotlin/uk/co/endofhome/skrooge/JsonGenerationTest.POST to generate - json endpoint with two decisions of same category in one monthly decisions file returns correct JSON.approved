@@ -1,1 +1,27 @@
-{"year":2017,"month":"October","monthNumber":10,"categories":[{"title":"In your home","data":[{"name":"Building insurance","actual":750.0,"budget":2.0}]}]}
+{
+  "year": 2017,
+  "month": "October",
+  "monthNumber": 10,
+  "overview": {
+    "title": "Overview",
+    "data": [
+      {
+        "name": "Building insurance",
+        "actual": 750.0,
+        "budget": 2.0
+      }
+    ]
+  },
+  "categories": [
+    {
+      "title": "In your home",
+      "data": [
+        {
+          "name": "Building insurance",
+          "actual": 750.0,
+          "budget": 2.0
+        }
+      ]
+    }
+  ]
+}

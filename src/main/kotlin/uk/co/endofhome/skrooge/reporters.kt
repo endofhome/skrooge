@@ -4,6 +4,7 @@ import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.format.Gson
+import org.http4k.format.Gson.asPrettyJsonString
 import org.http4k.template.ViewModel
 import java.time.LocalDate
 import java.time.Month
@@ -23,11 +24,11 @@ class MonthlyReporter(private val gson: Gson,
         return decisions.let { when {
                 it.isNotEmpty() -> {
                     val catReports = categoryReporter.categoryReportsFrom(decisions)
+                    val overview = categoryReporter.overviewFrom(catReports)
 
-                    val jsonReport = MonthlyReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, catReports)
+                    val jsonReport = MonthlyReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, overview, catReports)
                     val jsonReportJson = gson.asJsonObject(jsonReport)
-
-                    Response(Status.OK).body(jsonReportJson.toString())
+                    Response(Status.OK).body(jsonReportJson.asPrettyJsonString())
                 }
                 else -> Response(Status.BAD_REQUEST)
             }
@@ -51,7 +52,7 @@ class AnnualReporter(private val gson: Gson,
                 val jsonReport = AnnualReport(startDate, catReports)
                 val jsonReportJson = gson.asJsonObject(jsonReport)
 
-                Response(Status.OK).body(jsonReportJson.toString())
+                Response(Status.OK).body(jsonReportJson.asPrettyJsonString())
             }
             else -> Response(Status.BAD_REQUEST)
         }
@@ -59,5 +60,5 @@ class AnnualReporter(private val gson: Gson,
     }
 }
 
-data class MonthlyReport(val year: Int, val month: String, val monthNumber: Int, val categories: List<CategoryReport>) : ViewModel
+data class MonthlyReport(val year: Int, val month: String, val monthNumber: Int, val overview: CategoryReport?, val categories: List<CategoryReport>) : ViewModel
 data class AnnualReport(val startDate: LocalDate, val categories: List<CategoryReport>) : ViewModel
