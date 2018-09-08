@@ -45,7 +45,7 @@ class AnnualBudgets(private val budgets: List<AnnualBudget>) {
         }
     }
 
-    private fun budgetFor(date: LocalDate): AnnualBudget? =
+    fun budgetFor(date: LocalDate): AnnualBudget? =
         budgets.find { annualBudget ->
             date >= annualBudget.startDateInclusive &&
             date < annualBudget.startDateInclusive.plusYears(1)

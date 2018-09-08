@@ -48,7 +48,8 @@ class AnnualReporter(private val gson: Gson,
 
         return decisions.let { when {
             it.isNotEmpty() -> {
-                val catReports = categoryReporter.categoryReportsFrom(decisions, 12)
+                val catReports = categoryReporter.annualCategoryReportsFrom(decisions)
+
                 val jsonReport = AnnualReport(startDate, catReports)
                 val jsonReportJson = gson.asJsonObject(jsonReport)
 
@@ -61,4 +62,6 @@ class AnnualReporter(private val gson: Gson,
 }
 
 data class MonthlyReport(val year: Int, val month: String, val monthNumber: Int, val overview: CategoryReport?, val categories: List<CategoryReport>) : ViewModel
-data class AnnualReport(val startDate: LocalDate, val categories: List<CategoryReport>) : ViewModel
+data class AnnualReport(val startDate: LocalDate, val categories: List<AnnualCategoryReport>) : ViewModel
+data class AnnualCategoryReport(val title: String, val data: List<AnnualCategoryReportDataItem>) : ViewModel
+data class AnnualCategoryReportDataItem(val name: String, val actual: Double, val budget: Double, val annualBudget: Double)
