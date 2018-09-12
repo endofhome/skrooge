@@ -25,7 +25,8 @@ class MonthlyReporter(private val gson: Gson,
                 it.isNotEmpty() -> {
                     val catReports = categoryReporter.categoryReportsFrom(decisions)
                     val overview = categoryReporter.overviewFrom(catReports)
-                    val aggregatedOverview: CategoryReport = aggregate(overview)
+                    val budgetDate = decisions.first().line.date
+                    val aggregatedOverview: CategoryReport = categoryReporter.aggregatedOverviewFrom(overview, budgetDate)
 
                     val jsonReport = MonthlyReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, aggregatedOverview, overview, catReports)
                     val jsonReportJson = gson.asJsonObject(jsonReport)
@@ -34,14 +35,6 @@ class MonthlyReporter(private val gson: Gson,
                 else -> Response(Status.BAD_REQUEST)
             }
         }
-    }
-
-    private fun aggregate(categoryReport: CategoryReport): CategoryReport {
-        val actual = categoryReport.data.map { it.actual }.sum()
-        val budget = categoryReport.data.map { it.budget }.sum()
-        val data = CategoryReportDataItem("Overview", actual, budget)
-
-        return CategoryReport("Aggregated Overview", listOf(data))
     }
 }
 

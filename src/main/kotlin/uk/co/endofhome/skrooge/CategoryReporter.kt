@@ -2,6 +2,7 @@ package uk.co.endofhome.skrooge
 
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.LocalDate
 import java.time.Period
 
 class CategoryReporter(val categories: List<Category>, private val annualBudgets: AnnualBudgets) {
@@ -62,6 +63,15 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
             }
         }
         return CategoryReport("Overview", overviewCategoryReport)
+    }
+
+    fun aggregatedOverviewFrom(categoryReport: CategoryReport, budgetDate: LocalDate): CategoryReport {
+        val relevantBudget = annualBudgets.budgetFor(budgetDate)
+        val actualExpenditure = categoryReport.data.map { it.actual }.sum()
+        val budgetedExpenditure = relevantBudget!!.budgetData.map { it.second }.sum()
+        val data = CategoryReportDataItem("Overview", actualExpenditure, budgetedExpenditure)
+
+        return CategoryReport("Aggregated Overview", listOf(data))
     }
 }
 
