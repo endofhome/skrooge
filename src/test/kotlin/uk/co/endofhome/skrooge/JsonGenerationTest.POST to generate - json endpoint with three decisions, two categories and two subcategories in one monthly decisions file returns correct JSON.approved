@@ -2,6 +2,16 @@
   "year": 2017,
   "month": "October",
   "monthNumber": 10,
+  "aggregateOverview": {
+    "title": "Aggregated Overview",
+    "data": [
+      {
+        "name": "Overview",
+        "actual": 700.0,
+        "budget": 16.0
+      }
+    ]
+  },
   "overview": {
     "title": "Overview",
     "data": [

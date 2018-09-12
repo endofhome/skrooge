@@ -25,14 +25,23 @@ class MonthlyReporter(private val gson: Gson,
                 it.isNotEmpty() -> {
                     val catReports = categoryReporter.categoryReportsFrom(decisions)
                     val overview = categoryReporter.overviewFrom(catReports)
+                    val aggregatedOverview: CategoryReport = aggregate(overview)
 
-                    val jsonReport = MonthlyReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, overview, catReports)
+                    val jsonReport = MonthlyReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, aggregatedOverview, overview, catReports)
                     val jsonReportJson = gson.asJsonObject(jsonReport)
                     Response(Status.OK).body(jsonReportJson.asPrettyJsonString())
                 }
                 else -> Response(Status.BAD_REQUEST)
             }
         }
+    }
+
+    private fun aggregate(categoryReport: CategoryReport): CategoryReport {
+        val actual = categoryReport.data.map { it.actual }.sum()
+        val budget = categoryReport.data.map { it.budget }.sum()
+        val data = CategoryReportDataItem("Overview", actual, budget)
+
+        return CategoryReport("Aggregated Overview", listOf(data))
     }
 }
 
@@ -61,7 +70,7 @@ class AnnualReporter(private val gson: Gson,
     }
 }
 
-data class MonthlyReport(val year: Int, val month: String, val monthNumber: Int, val overview: CategoryReport?, val categories: List<CategoryReport>) : ViewModel
+data class MonthlyReport(val year: Int, val month: String, val monthNumber: Int, val aggregateOverview: CategoryReport?, val overview: CategoryReport?, val categories: List<CategoryReport>) : ViewModel
 data class AnnualReport(val startDate: LocalDate, val categories: List<AnnualCategoryReport>) : ViewModel
 data class AnnualCategoryReport(val title: String, val data: List<AnnualCategoryReportDataItem>) : ViewModel
 data class AnnualCategoryReportDataItem(val name: String, val actual: Double, val budget: Double, val annualBudget: Double)

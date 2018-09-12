@@ -39,7 +39,7 @@ object Charts {
             null -> Response(BAD_REQUEST)
             else -> {
                 val monthName = Month.of(monthValue).getDisplayName(TextStyle.FULL, Locale.UK)
-                val chartView = MonthlyReport(year, monthName, monthValue, null, emptyList())
+                val chartView = MonthlyReport(year, monthName, monthValue, null, null, emptyList())
                 val view = Body.view(renderer, ContentType.TEXT_HTML)
                 Response(Status.OK).with(view of chartView)
             }
