@@ -16,7 +16,7 @@ class MonthlyReporter(private val gson: Gson,
                       private val decisionReaderWriter: DecisionReaderWriter,
                       private val categoryReporter: CategoryReporter) {
 
-    fun handle(request: Request): Response {
+    operator fun invoke(request: Request): Response {
         val year = request.query("year")!!.toInt()
         val month = Month.of(request.query("month")!!.toInt())
         val decisions = decisionReaderWriter.read(year, month)
@@ -43,7 +43,7 @@ class AnnualReporter(private val gson: Gson,
                      private val decisionReaderWriter: DecisionReaderWriter,
                      private val categoryReporter: CategoryReporter) {
 
-    fun handle(request: Request): Response {
+    operator fun invoke(request: Request): Response {
         val startDateString = request.query("startDate")!!
         val startDate = LocalDate.parse(startDateString, DateTimeFormatter.ISO_DATE)
         val decisions = decisionReaderWriter.readForYearStarting(startDate)

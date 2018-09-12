@@ -22,7 +22,7 @@ class AnnualReporterTest {
         val request = Request(Method.GET, "any-url")
                 .query("startDate", "1978-11-01")
 
-        val response = annualReport.handle(request)
+        val response = annualReport(request)
 
         assertThat(response.status, equalTo(Status.OK))
     }
@@ -33,7 +33,7 @@ class AnnualReporterTest {
         val request = Request(Method.GET, "any-url")
                 .query("startDate", "1978-11-01")
 
-        val response = annualReport.handle(request)
+        val response = annualReport(request)
 
         val reportLens = Body.auto<AnnualReport>().toLens()
         val json = reportLens.extract(response)

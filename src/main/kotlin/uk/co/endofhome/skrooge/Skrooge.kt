@@ -63,6 +63,8 @@ class Skrooge(private val categories: Categories = Categories(),
     private val publicDirectory = static(ResourceLoader.Directory("public"))
     private val annualBudgets = AnnualBudgets.from(budgetDirectory)
     private val categoryReporter = CategoryReporter(categories.all(), annualBudgets)
+    private val annualReporter = AnnualReporter(gson, decisionReaderWriter, categoryReporter)
+    private val monthlyReporter = MonthlyReporter(gson, decisionReaderWriter, categoryReporter)
 
     fun routes() = routes(
             "/public" bind publicDirectory,
@@ -71,8 +73,8 @@ class Skrooge(private val categories: Categories = Categories(),
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionReaderWriter, categories.all()).confirm(request) },
-            "annual-report/json" bind GET to { request -> AnnualReporter(gson, decisionReaderWriter, categoryReporter).handle(request) },
-            "monthly-report/json" bind GET to { request -> MonthlyReporter(gson, decisionReaderWriter, categoryReporter).handle(request) },
+            "annual-report/json" bind GET to { request -> annualReporter(request) },
+            "monthly-report/json" bind GET to { request -> monthlyReporter(request) },
             "web" bind GET to { request -> Charts(request, renderer) }
     )
 }
