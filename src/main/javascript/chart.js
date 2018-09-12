@@ -52,6 +52,7 @@ function generateCategory(title, categoryData, binding, height) {
 }
 
 monthlyReportData().then((result => {
+    generateCategory("Aggregate Overview", result.aggregateOverview.data, "#aggregate-overview");
     generateCategory("Overview", result.overview.data, "#month-overview", 1000);
     generateCategory("In your home", dataForCategory("In your home", result.categories), "#in-your-home", 1000);
     generateCategory("Insurance", dataForCategory("Insurance", result.categories), "#insurance");
