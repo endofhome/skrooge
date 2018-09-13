@@ -21,23 +21,22 @@ class MonthlyReporter(private val gson: Gson,
         val month = Month.of(request.query("month")!!.toInt())
         val decisions = decisionReaderWriter.read(year, month)
 
-        return decisions.let { when {
+        return decisions.let {
+            when {
                 it.isNotEmpty() -> {
                     val catReports = categoryReporter.categoryReportsFrom(decisions)
                     val overview = categoryReporter.overviewFrom(catReports)
                     val budgetDate = decisions.first().line.date
                     val aggregatedOverview: CategoryReport = categoryReporter.aggregatedOverviewFrom(overview, budgetDate)
-
-                    val jsonReport = MonthlyReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, aggregatedOverview, overview, catReports)
-                    val jsonReportJson = gson.asJsonObject(jsonReport)
-                    Response(Status.OK).body(jsonReportJson.asPrettyJsonString())
+                    val report = MonthlyReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, aggregatedOverview, overview, catReports)
+                    val reportJson = gson.asJsonObject(report)
+                    Response(Status.OK).body(reportJson.asPrettyJsonString())
                 }
                 else -> Response(Status.BAD_REQUEST)
             }
         }
     }
 }
-
 
 class AnnualReporter(private val gson: Gson,
                      private val decisionReaderWriter: DecisionReaderWriter,
@@ -48,17 +47,16 @@ class AnnualReporter(private val gson: Gson,
         val startDate = LocalDate.parse(startDateString, DateTimeFormatter.ISO_DATE)
         val decisions = decisionReaderWriter.readForYearStarting(startDate)
 
-        return decisions.let { when {
-            it.isNotEmpty() -> {
-                val catReports = categoryReporter.annualCategoryReportsFrom(decisions)
-
-                val jsonReport = AnnualReport(startDate, catReports)
-                val jsonReportJson = gson.asJsonObject(jsonReport)
-
-                Response(Status.OK).body(jsonReportJson.asPrettyJsonString())
+        return decisions.let {
+            when {
+                it.isNotEmpty() -> {
+                    val catReports = categoryReporter.annualCategoryReportsFrom(decisions)
+                    val report = AnnualReport(startDate, catReports)
+                    val reportJson = gson.asJsonObject(report)
+                    Response(Status.OK).body(reportJson.asPrettyJsonString())
+                }
+                else -> Response(Status.BAD_REQUEST)
             }
-            else -> Response(Status.BAD_REQUEST)
-        }
         }
     }
 }
