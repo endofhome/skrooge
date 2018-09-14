@@ -13,17 +13,15 @@ import org.http4k.hamkrest.hasStatus
 import org.http4k.lens.Header
 import org.junit.Before
 import org.junit.Test
-import java.io.File
 import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.Month
-import java.time.Year
 
 class ReportCategorisationAcceptanceTest {
     private val categoryMappings = mutableListOf<String>()
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
-    private val decisionWriter = StubbedDecisionReaderWriter()
-    private val skrooge = Skrooge(categories, decisionReaderWriter = decisionWriter, budgetDirectory = Paths.get("src/test/resources/budgets/")).routes()
+    private val decisionReaderWriter = StubbedDecisionReaderWriter()
+    private val skrooge = Skrooge(categories, decisionReaderWriter = decisionReaderWriter, budgetDirectory = Paths.get("src/test/resources/budgets/")).routes()
 
     private val originalDecision =
             Decision(
@@ -34,9 +32,7 @@ class ReportCategorisationAcceptanceTest {
 
     @Before
     fun setup() {
-        val statementData = StatementData(Year.of(2017), Month.OCTOBER, "Milford", listOf(File("doesn't matter")))
-        val decisions = listOf(originalDecision)
-        decisionWriter.write(statementData, decisions)
+        decisionReaderWriter.files.clear()
     }
 
     @Test
@@ -47,7 +43,7 @@ class ReportCategorisationAcceptanceTest {
                 .form("decisions", "[18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget]")
 
         skrooge(request) shouldMatch hasStatus(CREATED)
-        assertThat(decisionWriter.read(2017, Month.of(10)), equalTo(listOf(originalDecision)))
+        assertThat(decisionReaderWriter.read(2017, Month.of(10)), equalTo(listOf(originalDecision)))
     }
 
     @Test
@@ -65,6 +61,6 @@ class ReportCategorisationAcceptanceTest {
         )
 
         skrooge(request) shouldMatch hasStatus(CREATED)
-        assertThat(decisionWriter.read(2017, Month.of(10)), equalTo(listOf(expectedDecision)))
+        assertThat(decisionReaderWriter.read(2017, Month.of(10)), equalTo(listOf(expectedDecision)))
     }
 }

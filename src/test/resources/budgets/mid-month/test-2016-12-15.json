@@ -1,0 +1,101 @@
+{
+  "yearStart": 2016,
+  "yearEnd": 2017,
+  "categories": [
+    {
+      "title": "In your home",
+      "subcategories": [
+        {"name": "Mortgage", "monthly_budget": 1},
+        {"name": "Building insurance", "monthly_budget": 2},
+        {"name": "Council tax", "monthly_budget": 3},
+        {"name": "Water rates", "monthly_budget": 4},
+        {"name": "Gas", "monthly_budget": 4},
+        {"name": "Electricity", "monthly_budget": 5},
+        {"name": "Household maintenance", "monthly_budget": 6},
+        {"name": "Internet", "monthly_budget": 7},
+        {"name": "TV Licence", "monthly_budget": 8},
+        {"name": "Mobile phone", "monthly_budget": 9}
+      ]
+    },
+    {
+      "title": "Insurance",
+      "subcategories": [
+        {"name": "Travel insurance", "monthly_budget": 10},
+        {"name": "Income protection", "monthly_budget": 11},
+        {"name": "Life insurance", "monthly_budget": 12}
+      ]
+    },
+    {
+      "title": "Eats and drinks",
+      "subcategories": [
+        {"name": "Food", "monthly_budget": 13},
+        {"name": "Eating out", "monthly_budget": 14},
+        {"name": "Meals at work", "monthly_budget": 15}
+      ]
+    },
+    {
+      "title": "Motoring and public transport",
+      "subcategories": [
+        {"name": "Rail/bus/taxi", "monthly_budget": 16},
+        {"name": "Car club subscription", "monthly_budget": 17},
+        {"name": "Car club hires", "monthly_budget": 18}
+      ]
+    },
+    {
+      "title": "Savings and investments",
+      "subcategories": [
+        {"name": "Pension payments", "monthly_budget": 19}
+      ]
+    },
+    {
+      "title": "Family",
+      "subcategories": [
+        {"name": "Childcare", "monthly_budget": 20},
+        {"name": "Nappies/baby extras", "monthly_budget": 21},
+        {"name": "Bert activities", "monthly_budget": 22}
+      ]
+    },
+    {
+      "title": "Fun",
+      "subcategories": [
+        {"name": "Bob fun budget", "monthly_budget": 23},
+        {"name": "Bill fun budget", "monthly_budget": 24}
+      ]
+    },
+    {
+      "title": "Health and beauty",
+      "subcategories": [
+        {"name": "Dentistry", "monthly_budget": 25},
+        {"name": "Haircuts", "monthly_budget": 26},
+        {"name": "Optical bills", "monthly_budget": 27}
+      ]
+    },
+    {
+      "title": "Clothes",
+      "subcategories": [
+        {"name": "Bert clothes", "monthly_budget": 28}
+      ]
+    },
+    {
+      "title": "Big one offs",
+      "subcategories": [
+        {"name": "Christmas", "monthly_budget": 29},
+        {"name": "Summer holiday", "monthly_budget": 30},
+        {"name": "Winter holiday", "monthly_budget": 31},
+        {"name": "Birthdays", "monthly_budget": 32}
+      ]
+    },
+    {
+      "title": "Odds and sods",
+      "subcategories": [
+        {"name": "Charity donations", "monthly_budget": 33}
+      ]
+    },
+    {
+      "title": "Refurbishments",
+      "subcategories": [
+        {"name": "Refurbishments", "monthly_budget": 34}
+      ]
+    }
+  ]
+}

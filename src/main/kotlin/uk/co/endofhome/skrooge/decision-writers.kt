@@ -72,17 +72,16 @@ class FileSystemDecisionReaderReaderWriter(private val categories: Categories, p
 }
 
 class StubbedDecisionReaderWriter : DecisionReaderWriter {
-    private val file: MutableList<Decision> = mutableListOf()
+    val files: MutableList<Decision> = mutableListOf()
 
     override fun write(statementData: StatementData, decisions: List<Decision>) {
-        file.clear()
         decisions.forEach {
-            file.add(it)
+            files.add(it)
         }
     }
 
-    override fun read(year: Int, month: Month) = file.toList()
+    override fun read(year: Int, month: Month) = files.filter { it.line.date.year == year && it.line.date.month == month }.toList()
 
     override fun readForYearStarting(startDate: LocalDate): List<Decision> =
-            file.filter { it.line.date >= startDate && it.line.date < startDate.plusYears(1L) }
+            files.filter { it.line.date >= startDate && it.line.date < startDate.plusYears(1L) }
 }

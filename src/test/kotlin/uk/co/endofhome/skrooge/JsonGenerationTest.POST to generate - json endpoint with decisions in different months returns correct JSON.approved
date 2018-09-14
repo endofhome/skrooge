@@ -1,15 +1,15 @@
 {
   "year": 2017,
-  "month": "October",
-  "monthNumber": 10,
+  "month": "February",
+  "monthNumber": 2,
   "aggregateOverview": {
     "title": "Aggregated Overview",
     "data": {
       "name": "Overview",
-      "actual": 750.0,
-      "yearToDateActual": 750.0,
+      "actual": 2.0,
+      "yearToDateActual": 3.0,
       "budget": 599.0,
-      "yearToDateBudget": 5990.0,
+      "yearToDateBudget": 1198.0,
       "annualBudget": 7188.0
     }
   },
@@ -17,9 +17,9 @@
     "title": "Overview",
     "data": [
       {
-        "name": "Building insurance",
-        "actual": 750.0,
-        "budget": 2.0
+        "name": "Mortgage",
+        "actual": 2.0,
+        "budget": 1.0
       }
     ]
   },
@@ -28,9 +28,9 @@
       "title": "In your home",
       "data": [
         {
-          "name": "Building insurance",
-          "actual": 750.0,
-          "budget": 2.0
+          "name": "Mortgage",
+          "actual": 2.0,
+          "budget": 1.0
         }
       ]
     }

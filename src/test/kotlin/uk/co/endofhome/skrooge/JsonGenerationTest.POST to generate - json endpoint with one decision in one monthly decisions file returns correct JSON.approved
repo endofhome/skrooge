@@ -4,13 +4,14 @@
   "monthNumber": 10,
   "aggregateOverview": {
     "title": "Aggregated Overview",
-    "data": [
-      {
-        "name": "Overview",
-        "actual": 250.0,
-        "budget": 599.0
-      }
-    ]
+    "data": {
+      "name": "Overview",
+      "actual": 250.0,
+      "yearToDateActual": 250.0,
+      "budget": 599.0,
+      "yearToDateBudget": 5990.0,
+      "annualBudget": 7188.0
+    }
   },
   "overview": {
     "title": "Overview",
