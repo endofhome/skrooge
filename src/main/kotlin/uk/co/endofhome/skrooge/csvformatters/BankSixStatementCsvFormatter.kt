@@ -13,7 +13,7 @@ object BankSixStatementCsvFormatter : StatementCsvFormatter {
                 .map {
             val unquoted = it.removeQuotedCommas()
             val split = unquoted.split(",")
-            val date = split[0].split("/").reversed().joinToString("-")
+            val date = split[1].split("/").reversed().joinToString("-")
             val merchant = sanitise(split[3])
             val value = split[4]
 

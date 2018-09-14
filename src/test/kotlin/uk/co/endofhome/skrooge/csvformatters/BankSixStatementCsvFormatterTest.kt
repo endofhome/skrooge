@@ -22,7 +22,7 @@ class BankSixStatementCsvFormatterTest : CsvFormatterTest() {
         val formattedStatement = BankSixStatementCsvFormatter(Paths.get("${bankName}_test_one_line.csv"))
         val expectedFormat =
                 listOf(
-                        "2017-05-22,$merchantFifteen,2.35"
+                        "2017-05-23,$merchantFifteen,2.35"
                 )
         assertThat(formattedStatement, equalTo(expectedFormat))
     }
@@ -32,9 +32,9 @@ class BankSixStatementCsvFormatterTest : CsvFormatterTest() {
         val formattedStatement = BankSixStatementCsvFormatter(Paths.get("${bankName}_test_three_lines.csv"))
         val expectedFormat =
                 listOf(
-                        "2017-05-22,$merchantFifteen,2.35",
+                        "2017-05-23,$merchantFifteen,2.35",
                         "2017-05-19,$merchantThirteen,-645.50",
-                        "2017-05-17,$merchantFourteen,75.68"
+                        "2017-05-18,$merchantFourteen,75.68"
                 )
         assertThat(formattedStatement, equalTo(expectedFormat))
     }
@@ -44,7 +44,7 @@ class BankSixStatementCsvFormatterTest : CsvFormatterTest() {
         val formattedStatement = BankSixStatementCsvFormatter(Paths.get("${bankName}_quoted_line.csv"))
         val expectedFormat =
                 listOf(
-                        "2017-12-12,Bob,23.20"
+                        "2017-12-13,Bob,23.20"
                 )
         assertThat(formattedStatement, equalTo(expectedFormat))
     }
@@ -54,6 +54,8 @@ class BankSixStatementCsvFormatterTest : CsvFormatterTest() {
         val formattedStatement = BankSixStatementCsvFormatter(Paths.get("${bankName}_test_full.csv"))
         val expectedFile = File(BankSixStatementCsvFormatter.normalisedInputsPath().toString() + separator + "2017-05_Test_${bankName.capitalize()}.csv")
         val expected = expectedFile.readLines()
+
+        formattedStatement.forEach { println(it) }
 
         assertThat(formattedStatement, equalTo(expected))
     }
