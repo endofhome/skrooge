@@ -28,9 +28,16 @@ test('returns pale blue for budget column when over budget', () => {
     expect(colourtron(d, dataForCategory)).toBe("#cce5ff");
 });
 
-test('returns pale blue for budget colum if no data in d parameter', () => {
+test('returns pale blue for budget column if no data in d parameter', () => {
     const d = 'budget';
     const dataForCategory = [];
 
     expect(colourtron(d, dataForCategory)).toBe("#cce5ff");
+});
+
+test('returns grey for annual budget column', () => {
+    const d = { index: 0, id: 'annualBudget', value: 150 };
+    const dataForCategory = [ { budget: 175 } ];
+
+    expect(colourtron(d, dataForCategory)).toBe("#808080");
 });

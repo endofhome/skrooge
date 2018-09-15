@@ -10,6 +10,8 @@ const monthlyReportData = async () => {
 };
 
 function generateCategory(title, categoryData, binding, height) {
+    const keysValue = (title === 'Annual Overview') ? ['actual', 'budget', 'annualBudget'] : ['actual', 'budget'];
+
     if (categoryData.length > 0) {
         const c3Data = {
             bindto: binding,
@@ -21,7 +23,7 @@ function generateCategory(title, categoryData, binding, height) {
                 json: categoryData,
                 keys: {
                     x: 'name',
-                    value: ['actual', 'budget']
+                    value: keysValue
                 },
                 type: 'bar',
                 color: (color, d) => {
@@ -51,12 +53,17 @@ function generateCategory(title, categoryData, binding, height) {
     }
 }
 
-const temporarilyReformat = (incorrectlyFormattedData) => {
+const temporarilyReformat2Bars = (incorrectlyFormattedData) => {
     return [{ name: incorrectlyFormattedData.name, actual: incorrectlyFormattedData.actual, budget: incorrectlyFormattedData.budget }]
 };
 
+const temporarilyReformat3Bars = (incorrectlyFormattedData) => {
+    return [{ name: incorrectlyFormattedData.name, actual: incorrectlyFormattedData.yearToDateActual, budget: incorrectlyFormattedData.yearToDateBudget, annualBudget: incorrectlyFormattedData.annualBudget }]
+};
+
 monthlyReportData().then((result => {
-    generateCategory("Aggregate Overview", temporarilyReformat(result.aggregateOverview.data), "#aggregate-overview");
+    generateCategory("Annual Overview", temporarilyReformat3Bars(result.aggregateOverview.data), "#annual-overview");
+    generateCategory("Aggregate Overview", temporarilyReformat2Bars(result.aggregateOverview.data), "#aggregate-overview");
     generateCategory("Overview", result.overview.data, "#month-overview", 1000);
     generateCategory("In your home", dataForCategory("In your home", result.categories), "#in-your-home", 1000);
     generateCategory("Insurance", dataForCategory("Insurance", result.categories), "#insurance");
