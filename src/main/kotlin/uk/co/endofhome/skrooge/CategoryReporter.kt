@@ -36,7 +36,7 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
         val dateOfFirstTransaction = sortedDecisions.first().line.date
         val startDate = annualBudgets.budgetFor(dateOfFirstTransaction)!!.startDateInclusive
         val endDate = sortedDecisions.last().line.date
-        val numberOfMonthsSoFar = Period.between(startDate, endDate).months
+        val numberOfMonthsSoFar = totalMonths(startDate, endDate)
 
         val catReportDataItems: List<AnnualCategoryReportDataItem> =
                 decisions.map {
@@ -72,7 +72,7 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
         val firstBudgetStartDate = firstRelevantBudget!!.startDateInclusive
         val budgetDayOfMonth = firstBudgetStartDate.dayOfMonth
         val lastBudgetEndDate = lastTransactionDate.nextBudgetDate(budgetDayOfMonth)
-        val numberOfMonthsSoFar = Period.between(firstBudgetStartDate, lastBudgetEndDate).months
+        val numberOfMonthsSoFar = totalMonths(firstBudgetStartDate, lastBudgetEndDate)
 
         val actualExpenditure = categoryReport.data.map { it.actual }.sum()
         val yearToDateActual: Double = historicalCategoryReports.flatMap { it.flatMap { it.data } }.map { it.actual }.fold(0.0) { acc, actual -> acc + actual } + actualExpenditure
@@ -83,6 +83,11 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
     }
 
     fun currentBudgetStartDateFor(date: LocalDate): AnnualBudget? = annualBudgets.budgetFor(date)
+
+    private fun totalMonths(startDate: LocalDate, endDate: LocalDate): Int {
+        val period = Period.between(startDate, endDate)
+        return (period.years * 12) + period.months
+    }
 }
 
 private fun LocalDate.nextBudgetDate(budgetDayOfMonth: Int): LocalDate = when {

@@ -1,0 +1,38 @@
+{
+  "year": 2017,
+  "month": "December",
+  "monthNumber": 12,
+  "aggregateOverview": {
+    "title": "Aggregated Overview",
+    "data": {
+      "name": "Overview",
+      "actual": 1.0,
+      "yearToDateActual": 1.0,
+      "budget": 599.0,
+      "yearToDateBudget": 7188.0,
+      "annualBudget": 7188.0
+    }
+  },
+  "overview": {
+    "title": "Overview",
+    "data": [
+      {
+        "name": "Building insurance",
+        "actual": 1.0,
+        "budget": 2.0
+      }
+    ]
+  },
+  "categories": [
+    {
+      "title": "In your home",
+      "data": [
+        {
+          "name": "Building insurance",
+          "actual": 1.0,
+          "budget": 2.0
+        }
+      ]
+    }
+  ]
+}

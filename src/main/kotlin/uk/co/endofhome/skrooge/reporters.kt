@@ -35,7 +35,7 @@ class MonthlyReporter(private val gson: Gson,
                         budgetStartDate != null -> {
                             val startOfPreviousPeriod = dateOfFirstTransaction.previousBudgetDate(budgetStartDate.dayOfMonth).minusMonths(1)
 
-                            catReportsForPreviousMonth(startOfPreviousPeriod, budgetStartDate)
+                            catReportsForPreviousMonths(startOfPreviousPeriod, budgetStartDate)
                         }
                         else -> emptyList()
                     }
@@ -49,19 +49,19 @@ class MonthlyReporter(private val gson: Gson,
         }
     }
 
-    private fun catReportsForPreviousMonth(startOfThisPeriod: LocalDate, budgetStartDate: LocalDate?, catReports: List<List<CategoryReport>> = emptyList()): List<List<CategoryReport>> {
+    private fun catReportsForPreviousMonths(startOfThisPeriod: LocalDate, budgetStartDate: LocalDate?, catReports: List<List<CategoryReport>> = emptyList()): List<List<CategoryReport>> {
         if (startOfThisPeriod < budgetStartDate) return catReports
 
         // Necessary for the time being as decisionReaderWriter.read() method needs to know which file to read.
         // This should happen in some kind of datastore abstraction but the abstractions here are a little poor at the moment.
         val adjustmentValue = when {
-            budgetStartDate!!.dayOfMonth == 1 -> 0L
+            budgetStartDate?.dayOfMonth == 1  -> 0L
             else                              -> 1L
         }
         val adjustedStartOfThisPeriod = startOfThisPeriod.plusMonths(adjustmentValue)
         val lastMonthsDecisions: List<Decision> = decisionReaderWriter.read(adjustedStartOfThisPeriod.year, adjustedStartOfThisPeriod.month)
         val catReportForLastMonth: List<CategoryReport> = categoryReporter.categoryReportsFrom(lastMonthsDecisions)
-        return catReportsForPreviousMonth(startOfThisPeriod.minusMonths(1), budgetStartDate, catReports + listOf(catReportForLastMonth))
+        return catReportsForPreviousMonths(startOfThisPeriod.minusMonths(1), budgetStartDate, catReports + listOf(catReportForLastMonth))
     }
 
     private fun LocalDate.previousBudgetDate(budgetDayOfMonth: Int): LocalDate = when {

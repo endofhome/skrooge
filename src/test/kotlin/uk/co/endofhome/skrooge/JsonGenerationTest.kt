@@ -13,6 +13,7 @@ import org.junit.Test
 import java.io.File
 import java.nio.file.Paths
 import java.time.LocalDate
+import java.time.Month.DECEMBER
 import java.time.Month.FEBRUARY
 import java.time.Month.JANUARY
 import java.time.Month.OCTOBER
@@ -127,6 +128,20 @@ class JsonGenerationTest {
         decisionReaderWriter.write(septemberStatementData, listOf(decision1))
         decisionReaderWriter.write(octoberStatementData, listOf(decision2))
         val request = Request(GET, "/monthly-report/json").query("year", "2017").query("month", "2")
+
+        val response = skrooge(request)
+
+        response shouldMatch hasStatus(OK)
+        approver.assertApproved(response.bodyString())
+    }
+
+    @Test
+    fun `POST to generate - json endpoint for final month in the year shows correct budget total`() {
+        val subCategoriesInYourHome = categories.subcategoriesFor("In your home")
+        val decision1 = Decision(Line(LocalDate.of(2017, 12, 24), "B Dradley Painter and Decorator", 1.00), Category("In your home", subCategoriesInYourHome), subCategoriesInYourHome.find { it.name == "Building insurance" })
+        val decemberStatementData = StatementData(Year.of(2017), DECEMBER, "Tom", emptyList())
+        decisionReaderWriter.write(decemberStatementData, listOf(decision1))
+        val request = Request(GET, "/monthly-report/json").query("year", "2017").query("month", "12")
 
         val response = skrooge(request)
 
