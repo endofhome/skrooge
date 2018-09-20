@@ -9,9 +9,12 @@ const monthlyReportData = async () => {
     return await response.json()
 };
 
-function generateCategory(title, categoryData, binding, height) {
-    const keysValue = (title === 'Annual overview') ? ['actual', 'budget', 'annualBudget'] : ['actual', 'budget'];
+const xAxisValues = {
+    generic: ['actual', 'budget'],
+    annualOverview: ['actual', 'budget', 'annualBudget']
+};
 
+function generateCategory(title, categoryData, binding, xAxisValue, height) {
     if (categoryData.length > 0) {
         const c3Data = {
             bindto: binding,
@@ -23,7 +26,7 @@ function generateCategory(title, categoryData, binding, height) {
                 json: categoryData,
                 keys: {
                     x: 'name',
-                    value: keysValue
+                    value: xAxisValue || xAxisValues.generic
                 },
                 type: 'bar',
                 color: (color, d) => {
@@ -62,10 +65,10 @@ const reformatForMonthOverview = (genericFormatData) => {
 };
 
 monthlyReportData().then((result => {
-    generateCategory("Annual overview", reformatForAnnualOverview(result.aggregateOverview.data), "#annual-overview");
+    generateCategory("Annual overview", reformatForAnnualOverview(result.aggregateOverview.data), "#annual-overview", xAxisValues.annualOverview);
     generateCategory("Month overview", reformatForMonthOverview(result.aggregateOverview.data), "#month-overview");
-    generateCategory("Month breakdown", result.overview.data, "#month-breakdown", 1000);
-    generateCategory("In your home", dataForCategory("In your home", result.categories), "#in-your-home", 1000);
+    generateCategory("Month breakdown", result.overview.data, "#month-breakdown", xAxisValues.generic, 1000);
+    generateCategory("In your home", dataForCategory("In your home", result.categories), "#in-your-home", xAxisValues.generic, 1000);
     generateCategory("Insurance", dataForCategory("Insurance", result.categories), "#insurance");
     generateCategory("Motoring and public transport", dataForCategory("Motoring and public transport", result.categories), "#motoring-and-public-transport");
     generateCategory("Savings and investments", dataForCategory("Savings and investments", result.categories), "#savings-and-investments");
