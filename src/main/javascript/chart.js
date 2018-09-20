@@ -10,7 +10,7 @@ const monthlyReportData = async () => {
 };
 
 function generateCategory(title, categoryData, binding, height) {
-    const keysValue = (title === 'Annual Overview') ? ['actual', 'budget', 'annualBudget'] : ['actual', 'budget'];
+    const keysValue = (title === 'Annual overview') ? ['actual', 'budget', 'annualBudget'] : ['actual', 'budget'];
 
     if (categoryData.length > 0) {
         const c3Data = {
@@ -53,18 +53,18 @@ function generateCategory(title, categoryData, binding, height) {
     }
 }
 
-const temporarilyReformat2Bars = (incorrectlyFormattedData) => {
-    return [{ name: incorrectlyFormattedData.name, actual: incorrectlyFormattedData.actual, budget: incorrectlyFormattedData.budget }]
+const reformatForAnnualOverview = (genericFormatData) => {
+    return [{ name: genericFormatData.name, actual: genericFormatData.yearToDateActual, budget: genericFormatData.yearToDateBudget, annualBudget: genericFormatData.annualBudget }]
 };
 
-const temporarilyReformat3Bars = (incorrectlyFormattedData) => {
-    return [{ name: incorrectlyFormattedData.name, actual: incorrectlyFormattedData.yearToDateActual, budget: incorrectlyFormattedData.yearToDateBudget, annualBudget: incorrectlyFormattedData.annualBudget }]
+const reformatForMonthOverview = (genericFormatData) => {
+    return [{ name: genericFormatData.name, actual: genericFormatData.actual, budget: genericFormatData.budget }]
 };
 
 monthlyReportData().then((result => {
-    generateCategory("Annual Overview", temporarilyReformat3Bars(result.aggregateOverview.data), "#annual-overview");
-    generateCategory("Aggregate Overview", temporarilyReformat2Bars(result.aggregateOverview.data), "#aggregate-overview");
-    generateCategory("Overview", result.overview.data, "#month-overview", 1000);
+    generateCategory("Annual overview", reformatForAnnualOverview(result.aggregateOverview.data), "#annual-overview");
+    generateCategory("Month overview", reformatForMonthOverview(result.aggregateOverview.data), "#month-overview");
+    generateCategory("Month breakdown", result.overview.data, "#month-breakdown", 1000);
     generateCategory("In your home", dataForCategory("In your home", result.categories), "#in-your-home", 1000);
     generateCategory("Insurance", dataForCategory("Insurance", result.categories), "#insurance");
     generateCategory("Motoring and public transport", dataForCategory("Motoring and public transport", result.categories), "#motoring-and-public-transport");
