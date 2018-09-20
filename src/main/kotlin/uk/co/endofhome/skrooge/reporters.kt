@@ -98,7 +98,16 @@ class AnnualReporter(private val gson: Gson,
     }
 }
 
-data class MonthlyReport(val year: Int, val month: String, val monthNumber: Int, val aggregateOverview: AggregateOverviewReport?, val overview: CategoryReport?, val categories: List<CategoryReport>) : ViewModel
+data class MonthlyReport(
+        val year: Int,
+        val month: String,
+        val monthNumber: Int,
+        val aggregateOverview: AggregateOverviewReport?,
+        val overview: CategoryReport?,
+        val categories: List<CategoryReport>,
+        val years: List<Int> = listOf(2017, 2018),
+        val months: List<Int> = (1..12).toList()
+) : ViewModel
 data class AnnualReport(val startDate: LocalDate, val categories: List<AnnualCategoryReport>) : ViewModel
 data class AnnualCategoryReport(val title: String, val data: List<AnnualCategoryReportDataItem>) : ViewModel
 data class AnnualCategoryReportDataItem(val name: String, val actual: Double, val budget: Double, val annualBudget: Double)

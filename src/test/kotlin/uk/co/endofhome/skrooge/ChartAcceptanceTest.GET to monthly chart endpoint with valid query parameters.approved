@@ -12,6 +12,41 @@
     <h1>S K R O O G E</h1>
 
     <h1><span class="month">April</span> <span class="year">2017</span><span class="month-number" hidden>4</span></h1>
+    <div>
+        
+            <span><a href="?year=2017&month=4">2017</a></span>
+        
+            <span><a href="?year=2018&month=4">2018</a></span>
+        
+    </div>
+
+    <div>
+        
+            <span><a href="?year=2017&month=1">1</a></span>
+        
+            <span><a href="?year=2017&month=2">2</a></span>
+        
+            <span><a href="?year=2017&month=3">3</a></span>
+        
+            <span><a href="?year=2017&month=4">4</a></span>
+        
+            <span><a href="?year=2017&month=5">5</a></span>
+        
+            <span><a href="?year=2017&month=6">6</a></span>
+        
+            <span><a href="?year=2017&month=7">7</a></span>
+        
+            <span><a href="?year=2017&month=8">8</a></span>
+        
+            <span><a href="?year=2017&month=9">9</a></span>
+        
+            <span><a href="?year=2017&month=10">10</a></span>
+        
+            <span><a href="?year=2017&month=11">11</a></span>
+        
+            <span><a href="?year=2017&month=12">12</a></span>
+        
+    </div>
 
     <div id="annual-overview"></div>
     <div id="month-overview"></div>

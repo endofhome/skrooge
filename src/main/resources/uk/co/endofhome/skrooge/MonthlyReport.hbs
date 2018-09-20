@@ -12,6 +12,17 @@
     <h1>S K R O O G E</h1>
 
     <h1><span class="month">{{month}}</span> <span class="year">{{year}}</span><span class="month-number" hidden>{{monthNumber}}</span></h1>
+    <div>
+        {{#each years}}
+            <span><a href="?year={{this}}&month={{monthNumber}}">{{this}}</a></span>
+        {{/each}}
+    </div>
+
+    <div>
+        {{#each months}}
+            <span><a href="?year={{year}}&month={{this}}">{{this}}</a></span>
+        {{/each}}
+    </div>
 
     <div id="annual-overview"></div>
     <div id="month-overview"></div>
