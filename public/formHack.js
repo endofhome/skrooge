@@ -1,5 +1,5 @@
 function sendFakeFormData() {
-    var dest = "http://localhost:5000/statements";
+    var dest = "http://localhost:5000/statements-js-hack";
     var xhr = new XMLHttpRequest();
     xhr.open("POST", dest, true);
     xhr.onreadystatechange = function () {

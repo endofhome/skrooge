@@ -34,6 +34,7 @@ dependencies {
     compile "org.http4k:http4k-client-apache:$http4k_version"
     compile group: "org.http4k", name: "http4k-template-handlebars", version: "$http4k_version"
     compile group: "org.http4k", name: "http4k-format-gson", version: "$http4k_version"
+    compile group: "org.http4k", name: "http4k-multipart", version: "3.38.1"
     compile "com.fasterxml.jackson.core:jackson-core:2.9.0"
     compile "com.fasterxml.jackson.core:jackson-databind:2.9.0"
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.0"

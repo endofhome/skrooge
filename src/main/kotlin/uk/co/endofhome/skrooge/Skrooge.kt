@@ -70,6 +70,7 @@ class Skrooge(private val categories: Categories = Categories(),
             "/public" bind publicDirectory,
             "/" bind GET to { _ -> Statements(categories).index(renderer) },
             "/statements" bind POST to { request -> Statements(categories).uploadStatements(request.body, renderer, decisionReaderWriter) },
+            "/statements-js-hack" bind POST to { request -> Statements(categories).uploadStatementsJsHack(request.body, renderer, decisionReaderWriter) },
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionReaderWriter, categories.all()).confirm(request) },
@@ -108,9 +109,14 @@ class ReportCategorisations(private val decisionReaderWriter: DecisionReaderWrit
 }
 
 class Statements(private val categories: Categories) {
-    private val parser = PretendFormParser()
 
     fun uploadStatements(body: Body, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
+        return Response(BAD_REQUEST)
+    }
+
+    fun uploadStatementsJsHack(body: Body, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
+        val parser = PretendFormParser()
+
         try {
             val statementData: StatementData = parser.parse(body)
             val processedLines: List<BankStatement> = statementData.files.map {
