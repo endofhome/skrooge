@@ -5,8 +5,11 @@ import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.should.shouldMatch
 import org.http4k.core.Body
+import org.http4k.core.ContentType
+import org.http4k.core.FormFile
 import org.http4k.core.Method
 import org.http4k.core.Method.POST
+import org.http4k.core.MultipartFormBody
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
@@ -30,24 +33,18 @@ class StatementsAcceptanceTest {
     private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
     private val helpers = TestHelpers(skrooge)
 
-    @Ignore
     @Test
     fun `POST to statements endpoint with empty body returns HTTP Bad Request`() {
-        val request = Request(POST, "/statements").body(Body.EMPTY)
+        val body = MultipartFormBody()
+        val request = Request(POST, "/statements")
+                .header("content-type", "multipart/form-data; boundary=${body.boundary}")
+                .body(body)
         skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
     }
 
     @Test
     fun `JS-HACK POST to statements endpoint with empty body returns HTTP Bad Request`() {
         val request = Request(POST, "/statements-js-hack").body(Body.EMPTY)
-        skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
-    }
-
-    @Ignore
-    @Test
-    fun `POST to statements with incorrect dummy form data returns HTTP Bad Request`() {
-        // Can't receive form data, so will read files from FS instead. Will use a string to represent form.
-        val request = Request(POST, "/statements").body("nonsense")
         skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
     }
 
@@ -58,10 +55,67 @@ class StatementsAcceptanceTest {
         skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
     }
 
-    @Ignore
     @Test
-    fun `POST to statements with a dummy string instead of form data returns HTTP OK`() {
-        val request = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/2017-01_Someone_empty-file.csv]")
+    fun `POST to statements with missing year in form data returns HTTP Bad Request`() {
+        val bankStatement = FormFile("2017-9-Tom-empty-statement-file.csv", ContentType.OCTET_STREAM, "".byteInputStream())
+        val body = MultipartFormBody().plus("month" to "September")
+                                      .plus("user" to "Tom")
+                                      .plus("statement" to bankStatement)
+
+        val request = Request(POST, "/statements")
+                .header("content-type", "multipart/form-data; boundary=${body.boundary}")
+                .body(body)
+        skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
+    }
+
+    @Test
+    fun `POST to statements with missing month in form data returns HTTP Bad Request`() {
+        val bankStatement = FormFile("2017-9-Tom-empty-statement-file.csv", ContentType.OCTET_STREAM, "".byteInputStream())
+        val body = MultipartFormBody().plus("year" to "2017")
+                                      .plus("user" to "Tom")
+                                      .plus("statement" to bankStatement)
+
+        val request = Request(POST, "/statements")
+                .header("content-type", "multipart/form-data; boundary=${body.boundary}")
+                .body(body)
+        skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
+    }
+
+    @Test
+    fun `POST to statements with missing user in form data returns HTTP Bad Request`() {
+        val bankStatement = FormFile("2017-9-Tom-empty-statement-file.csv", ContentType.OCTET_STREAM, "".byteInputStream())
+        val body = MultipartFormBody().plus("year" to "2017")
+                                      .plus("month" to "September")
+                                      .plus("statement" to bankStatement)
+
+        val request = Request(POST, "/statements")
+                .header("content-type", "multipart/form-data; boundary=${body.boundary}")
+                .body(body)
+        skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
+    }
+
+    @Test
+    fun `POST to statements with missing file in form data returns HTTP Bad Request`() {
+        val body = MultipartFormBody().plus("year" to "2017")
+                                      .plus("month" to "September")
+                                      .plus("user" to "Tom")
+
+        val request = Request(POST, "/statements")
+                .header("content-type", "multipart/form-data; boundary=${body.boundary}")
+                .body(body)
+        skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
+    }
+
+    @Test
+    fun `POST to statements with correct form data returns HTTP OK`() {
+        val body = MultipartFormBody().plus("year" to "2017")
+                                      .plus("month" to "September")
+                                      .plus("user" to "Tom")
+                                      .plus("statement" to FormFile("2017-9-Tom-empty-statement-file.csv", ContentType.OCTET_STREAM, "".byteInputStream()))
+
+        val request = Request(POST, "/statements")
+                .header("content-type", "multipart/form-data; boundary=${body.boundary}")
+                .body(body)
         skrooge(request) shouldMatch hasStatus(OK)
     }
 
@@ -84,12 +138,27 @@ class StatementsAcceptanceTest {
         skrooge(request) shouldMatch hasStatus(OK)
     }
 
+    @Ignore
     @Test
     fun `POST with empty csv produces empty output file`() {
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
         val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
         val request = Request(POST, "/statements").body("2017;January;Test;[src/test/resources/2017-01_Someone_empty-file.csv]")
+
+        localSkrooge(request)
+
+        val decisionFile = File("$outputPath/2017-1-Test-decisions-empty-file.csv")
+        val fileContents = decisionFile.readLines()
+        assertThat(fileContents.size, equalTo(0))
+    }
+
+    @Test
+    fun `JS-HACK POST with empty csv produces empty output file`() {
+        val outputPath = Paths.get("src/test/resources/decisions")
+        val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
+        val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
+        val request = Request(POST, "/statements-js-hack").body("2017;January;Test;[src/test/resources/2017-01_Someone_empty-file.csv]")
 
         localSkrooge(request)
 

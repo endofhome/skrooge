@@ -19,9 +19,12 @@ import org.http4k.format.Gson
 import org.http4k.lens.BiDiBodyLens
 import org.http4k.lens.BiDiLens
 import org.http4k.lens.FormField
+import org.http4k.lens.MultipartFormField
+import org.http4k.lens.MultipartFormFile
 import org.http4k.lens.Query
 import org.http4k.lens.Validator
 import org.http4k.lens.WebForm
+import org.http4k.lens.multipartForm
 import org.http4k.lens.webForm
 import org.http4k.routing.ResourceLoader
 import org.http4k.routing.bind
@@ -46,8 +49,8 @@ import java.time.format.DateTimeFormatter
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
     val app = Skrooge()
-                .routes()
-                .withFilter(DebuggingFilters.PrintRequestAndResponse())
+            .routes()
+            .withFilter(DebuggingFilters.PrintRequestAndResponse())
     app.asServer(Jetty(port)).start()
     println("Skrooge has started on http://localhost:$port")
 }
@@ -69,7 +72,7 @@ class Skrooge(private val categories: Categories = Categories(),
     fun routes() = routes(
             "/public" bind publicDirectory,
             "/" bind GET to { _ -> Statements(categories).index(renderer) },
-            "/statements" bind POST to { request -> Statements(categories).uploadStatements(request.body, renderer, decisionReaderWriter) },
+            "/statements" bind POST to { request -> Statements(categories).uploadStatements(request, renderer, decisionReaderWriter) },
             "/statements-js-hack" bind POST to { request -> Statements(categories).uploadStatementsJsHack(request.body, renderer, decisionReaderWriter) },
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },
@@ -110,8 +113,32 @@ class ReportCategorisations(private val decisionReaderWriter: DecisionReaderWrit
 
 class Statements(private val categories: Categories) {
 
-    fun uploadStatements(body: Body, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
-        return Response(BAD_REQUEST)
+    fun uploadStatements(request: Request, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
+        val yearName = "year"
+        val monthName = "month"
+        val userName = "user"
+        val statementName = "statement"
+        val yearLens = MultipartFormField.required(yearName)
+        val monthLens = MultipartFormField.required(monthName)
+        val userLens = MultipartFormField.required(userName)
+        val statementFileLens = MultipartFormFile.required(statementName)
+        val multipartFormBody = Body.multipartForm(Validator.Feedback, yearLens, monthLens, userLens, statementFileLens).toLens()
+
+        val multipartForm = multipartFormBody.extract(request)
+        val fields = multipartForm.fields
+        val files = multipartForm.files
+
+        val year = fields[yearName]?.firstOrNull()
+        val month = fields[monthName]?.firstOrNull()
+        val user = fields[userName]?.firstOrNull()
+        val file = files[statementName]?.firstOrNull()
+
+        val formParts = listOf(year, month, user, file)
+
+        return when {
+            formParts.contains(null) -> Response(BAD_REQUEST)
+            else                     -> Response(OK)
+        }
     }
 
     fun uploadStatementsJsHack(body: Body, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
@@ -157,13 +184,13 @@ class Statements(private val categories: Categories) {
                                 bankStatement.username,
                                 bankStatement.bankName,
                                 bankStatement.decisions.sortedBy { it.line.date }.map { decision ->
-                            FormattedDecision(
-                                    LineFormatter.format(decision.line),
-                                    decision.category,
-                                    decision.subCategory,
-                                    categories.withSelection(decision.subCategory)
-                            )
-                        })
+                                    FormattedDecision(
+                                            LineFormatter.format(decision.line),
+                                            decision.category,
+                                            decision.subCategory,
+                                            categories.withSelection(decision.subCategory)
+                                    )
+                                })
                     })
                     val bankReport = BankReport(
                             bankStatements.statements.first(),
@@ -186,10 +213,10 @@ class Statements(private val categories: Categories) {
 
 object LineFormatter {
     fun format(line: Line) = FormattedLine(
-                line.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                line.merchant,
-                line.amount.roundTo2DecimalPlaces()
-        )
+            line.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+            line.merchant,
+            line.amount.roundTo2DecimalPlaces()
+    )
 
     private fun Double.roundTo2DecimalPlaces() =
             BigDecimal(this).setScale(2, BigDecimal.ROUND_HALF_UP).toString()
