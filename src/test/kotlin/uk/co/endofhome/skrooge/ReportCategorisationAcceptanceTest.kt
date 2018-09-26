@@ -39,7 +39,7 @@ class ReportCategorisationAcceptanceTest {
     fun `POST to reports - categorisations endpoint with no amended decisions writes same decisions`() {
         val request = Request(POST, "/reports/categorisations")
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form("statement-data", "2017;October;Tom;[blah]")
+                .form("statement-data", "2017;October;Tom;SomeBank;[blah]")
                 .form("decisions", "[18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget]")
 
         skrooge(request) shouldMatch hasStatus(CREATED)
@@ -50,7 +50,7 @@ class ReportCategorisationAcceptanceTest {
     fun `POST to reports - categorisations endpoint with amended mappings writes amended mappings`() {
         val request = Request(POST, "/reports/categorisations")
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form("statement-data", "2017;October;Tom;[blah]")
+                .form("statement-data", "2017;October;Tom;SomeBank;[blah]")
                 .form("decisions", "[18/10/2017,Edgeworld Records,14.99,Eats and drinks,Food]")
 
         val expectedCategory = "Eats and drinks"

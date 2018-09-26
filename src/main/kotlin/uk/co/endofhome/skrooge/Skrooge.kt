@@ -19,6 +19,7 @@ import org.http4k.format.Gson
 import org.http4k.lens.BiDiBodyLens
 import org.http4k.lens.BiDiLens
 import org.http4k.lens.FormField
+import org.http4k.lens.MultipartForm
 import org.http4k.lens.MultipartFormField
 import org.http4k.lens.MultipartFormFile
 import org.http4k.lens.Query
@@ -105,8 +106,8 @@ class ReportCategorisations(private val decisionReaderWriter: DecisionReaderWrit
         }
 
         val statementDataString: List<String> = form.fields["statement-data"]!![0].split(";")
-        val statementData = StatementData.fromFormParts(statementDataString)
-        decisionReaderWriter.write(statementData, decisions)
+        val hackStatementData = JsHackStatementData.fromFormParts(statementDataString)
+        decisionReaderWriter.write(hackStatementData.statementData, decisions)
         return Response(Status.CREATED)
     }
 }
@@ -118,34 +119,50 @@ class Statements(private val categories: Categories) {
         val monthName = "month"
         val userName = "user"
         val statementName = "statement"
-        val yearLens = MultipartFormField.required(yearName)
-        val monthLens = MultipartFormField.required(monthName)
-        val userLens = MultipartFormField.required(userName)
-        val statementFileLens = MultipartFormFile.required(statementName)
-        val multipartFormBody = Body.multipartForm(Validator.Feedback, yearLens, monthLens, userLens, statementFileLens).toLens()
-
-        val multipartForm = multipartFormBody.extract(request)
+        val multipartForm = extractFormParts(request, yearName, monthName, userName, statementName)
         val fields = multipartForm.fields
         val files = multipartForm.files
 
         val year = fields[yearName]?.firstOrNull()
         val month = fields[monthName]?.firstOrNull()
         val user = fields[userName]?.firstOrNull()
-        val file = files[statementName]?.firstOrNull()
+        val statement = fields[statementName]?.firstOrNull()
+        val formFile = files[statementName]?.firstOrNull()
 
-        val formParts = listOf(year, month, user, file)
+        val formParts = listOf(year, month, user, statement, formFile)
 
         return when {
             formParts.contains(null) -> Response(BAD_REQUEST)
-            else                     -> Response(OK)
+            else -> {
+                val fileBytes = formFile!!.content.readBytes()
+                val statementFile = File("input/normalised/${year!!}-${format(month)}_${user!!.capitalize()}_$statement.csv")
+                statementFile.writeBytes(fileBytes)
+
+                val statementData = StatementData(Year.parse(year), Month.valueOf(month!!.toUpperCase()), user, statement!!)
+                decisionReaderWriter.write(statementData, emptyList())
+                Response(OK)
+            }
         }
+    }
+
+    private fun format(month: String?) = Month.valueOf(month!!.toUpperCase()).value.toString().padStart(2, '0')
+
+    private fun extractFormParts(request: Request, yearName: String, monthName: String, userName: String, statementName: String): MultipartForm {
+        val yearLens = MultipartFormField.required(yearName)
+        val monthLens = MultipartFormField.required(monthName)
+        val userLens = MultipartFormField.required(userName)
+        val statementNameLens = MultipartFormField.required(statementName)
+        val statementFileLens = MultipartFormFile.required(statementName)
+        val multipartFormBody = Body.multipartForm(Validator.Feedback, yearLens, monthLens, userLens, statementNameLens, statementFileLens).toLens()
+
+        return multipartFormBody.extract(request)
     }
 
     fun uploadStatementsJsHack(body: Body, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
         val parser = PretendFormParser()
 
         try {
-            val statementData: StatementData = parser.parse(body)
+            val statementData: JsHackStatementData = parser.parse(body)
             val processedLines: List<BankStatement> = statementData.files.map {
                 val filenameParts = it.name.split("_")
                 val splitUsername = filenameParts[1]
@@ -155,7 +172,8 @@ class Statements(private val categories: Categories) {
                 BankStatement(
                         YearMonth.of(splitYear, splitMonth),
                         splitUsername,
-                        splitFilename.substringBefore(".csv"), StatementDecider(categories.categoryMappings).process(it.readLines())
+                        splitFilename.substringBefore(".csv"),
+                        StatementDecider(categories.categoryMappings).process(it.readLines())
                 )
             }
             val statementsWithUnknownMerchants = processedLines.filter { it.decisions.map { it.category }.contains(null) }
@@ -176,7 +194,7 @@ class Statements(private val categories: Categories) {
                     Response(SEE_OTHER).header("Location", uri.toString())
                 }
                 false -> {
-                    processedLines.forEach { decisionReaderWriter.write(statementData, it.decisions) }
+                    processedLines.forEach { decisionReaderWriter.write(statementData.statementData, it.decisions) }
                     val bankStatements = BankStatements(processedLines.map { bankStatement ->
                         FormattedBankStatement(
                                 bankStatement.yearMonth.year.toString(),
@@ -304,22 +322,26 @@ class BankReports(private val renderer: TemplateRenderer) {
 }
 
 class PretendFormParser {
-    fun parse(body: Body): StatementData {
+    fun parse(body: Body): JsHackStatementData {
         // delimiting with semi-colons for now as I want a list in the last 'field'
         val params = body.payload.asString().split(";")
-        return StatementData.fromFormParts(params)
+        return JsHackStatementData.fromFormParts(params)
     }
 }
 
-data class StatementData(val year: Year, val month: Month, val username: String, val files: List<File>) {
+data class StatementData(val year: Year, val month: Month, val username: String, val statement: String)
+
+data class JsHackStatementData(val statementData: StatementData, val files: List<File>) {
     companion object {
-        fun fromFormParts(formParts: List<String>): StatementData {
+        fun fromFormParts(formParts: List<String>): JsHackStatementData {
             val year = Year.parse(formParts[0])
             val month = Month.valueOf(formParts[1].toUpperCase())
             val username = formParts[2]
-            val fileStrings: List<String> = formParts[3].substring(1, formParts[3].lastIndex).split(",")
+            val statement = formParts[3]
+            val fileStrings: List<String> = formParts[4].substring(1, formParts[4].lastIndex).split(",")
             val files: List<File> = fileStrings.map { File(it) }
-            return StatementData(year, month, username, files)
+            val statementData = StatementData(year, month, username, statement)
+            return JsHackStatementData(statementData, files)
         }
     }
 }

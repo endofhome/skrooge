@@ -18,7 +18,7 @@ class FileSystemDecisionReaderReaderWriter(private val categories: Categories, p
         val year = statementData.year.toString()
         val month = statementData.month.value
         val username = statementData.username
-        val bank = statementData.files[0].toString().split("_").last().substringBefore(".csv")
+        val bank = statementData.statement
         File("$outputPath/$year-$month-$username-decisions-$bank.csv").printWriter().use { out ->
             decisions.forEach {
                 out.print("${it.line.date},${it.line.merchant},${it.line.amount},${it.category?.title},${it.subCategory?.name}\n")

@@ -111,7 +111,8 @@ class StatementsAcceptanceTest {
         val body = MultipartFormBody().plus("year" to "2017")
                                       .plus("month" to "September")
                                       .plus("user" to "Tom")
-                                      .plus("statement" to FormFile("2017-9-Tom-empty-statement-file.csv", ContentType.OCTET_STREAM, "".byteInputStream()))
+                                      .plus("statement" to "EmptyStatement")
+                                      .plus("statement" to FormFile("2017-9-Tom-EmptyStatement.csv", ContentType.OCTET_STREAM, "".byteInputStream()))
 
         val request = Request(POST, "/statements")
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
@@ -121,36 +122,46 @@ class StatementsAcceptanceTest {
 
     @Test
     fun `JS-HACK POST to statements with a dummy string instead of form data returns HTTP OK`() {
-        val request = Request(POST, "/statements-js-hack").body("2017;September;Tom;[src/test/resources/2017-01_Someone_empty-file.csv]")
+        val request = Request(POST, "/statements-js-hack").body("2017;September;Tom;EmptyFile;[src/test/resources/2017-01_Someone_empty-file.csv]")
         skrooge(request) shouldMatch hasStatus(OK)
     }
 
-    @Ignore
+    @Ignore("Not sure if I want to support this right now.")
     @Test
     fun `POST to statements with multiple dummy files returns HTTP OK`() {
-        val request = Request(POST, "/statements").body("2017;September;Tom;[src/test/resources/2017-01_Someone_empty-file.csv,src/test/resources/2017-01_Someone_empty-file.csv]")
+        val request = Request(POST, "/statements").body("2017;September;Tom;EmptyFile;[src/test/resources/2017-01_Someone_empty-file.csv,src/test/resources/2017-01_Someone_empty-file.csv]")
         skrooge(request) shouldMatch hasStatus(OK)
     }
 
     @Test
     fun `JS-HACK POST to statements with multiple dummy files returns HTTP OK`() {
-        val request = Request(POST, "/statements-js-hack").body("2017;September;Tom;[src/test/resources/2017-01_Someone_empty-file.csv,src/test/resources/2017-01_Someone_empty-file.csv]")
+        val request = Request(POST, "/statements-js-hack").body("2017;September;Tom;EmptyFile;[src/test/resources/2017-01_Someone_empty-file.csv,src/test/resources/2017-01_Someone_empty-file.csv]")
         skrooge(request) shouldMatch hasStatus(OK)
     }
 
-    @Ignore
     @Test
-    fun `POST with empty csv produces empty output file`() {
+    fun `POST with empty csv produces empty statement and decision files`() {
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
         val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
-        val request = Request(POST, "/statements").body("2017;January;Test;[src/test/resources/2017-01_Someone_empty-file.csv]")
+        val body = MultipartFormBody().plus("year" to "2017")
+                                      .plus("month" to "February")
+                                      .plus("user" to "Test")
+                                      .plus("statement" to "EmptyStatement")
+                                      .plus("statement" to FormFile("2017-02_Test_EmptyStatement.csv", ContentType.OCTET_STREAM, "".byteInputStream()))
+        val request = Request(POST, "/statements")
+                .header("content-type", "multipart/form-data; boundary=${body.boundary}")
+                .body(body)
 
         localSkrooge(request)
 
-        val decisionFile = File("$outputPath/2017-1-Test-decisions-empty-file.csv")
-        val fileContents = decisionFile.readLines()
-        assertThat(fileContents.size, equalTo(0))
+        val statementFile = File("input/normalised/2017-02_Test_EmptyStatement.csv")
+        val statementFileContents = statementFile.readLines()
+        assertThat(statementFileContents.size, equalTo(0))
+
+        val decisionFile = File("$outputPath/2017-2-Test-decisions-EmptyStatement.csv")
+        val decisionFileContents = decisionFile.readLines()
+        assertThat(decisionFileContents.size, equalTo(0))
     }
 
     @Test
@@ -158,7 +169,7 @@ class StatementsAcceptanceTest {
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
         val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
-        val request = Request(POST, "/statements-js-hack").body("2017;January;Test;[src/test/resources/2017-01_Someone_empty-file.csv]")
+        val request = Request(POST, "/statements-js-hack").body("2017;January;Test;EmptyFile;[src/test/resources/2017-01_Someone_empty-file.csv]")
 
         localSkrooge(request)
 
@@ -175,7 +186,7 @@ class StatementsAcceptanceTest {
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
         val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
-        val request = Request(POST, "/statements").body("2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
+        val request = Request(POST, "/statements").body("2017;February;Test;OneKnownMerchant;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
 
         localSkrooge(request)
 
@@ -192,7 +203,7 @@ class StatementsAcceptanceTest {
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
         val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
-        val request = Request(POST, "/statements-js-hack").body("2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
+        val request = Request(POST, "/statements-js-hack").body("2017;February;Test;OneKnownMerchant;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
 
         localSkrooge(request)
 
@@ -210,7 +221,7 @@ class StatementsAcceptanceTest {
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
         val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
-        val requestWithPizzaUnion = Request(POST, "/statements").body("2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
+        val requestWithPizzaUnion = Request(POST, "/statements").body("2017;February;Test;OneKnownMerchant;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
         val response = localSkrooge(requestWithPizzaUnion)
 
         response shouldMatch hasStatus(OK)
@@ -227,7 +238,7 @@ class StatementsAcceptanceTest {
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
         val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
-        val requestWithPizzaUnion = Request(POST, "/statements-js-hack").body("2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
+        val requestWithPizzaUnion = Request(POST, "/statements-js-hack").body("2017;February;Test;OneKnownMerchant;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
         val response = localSkrooge(requestWithPizzaUnion)
 
         response shouldMatch hasStatus(OK)
@@ -240,7 +251,7 @@ class StatementsAcceptanceTest {
     @Ignore
     @Test
     fun `POST with one entry returns HTTP See Other when unrecognised merchant`() {
-        val requestWithMcDonalds = Request(POST, "/statements").body("2017;April;Test;[src/test/resources/2017-04_Someone_unknown-merchant.csv]")
+        val requestWithMcDonalds = Request(POST, "/statements").body("2017;April;Test;UnknownMerchant;[src/test/resources/2017-04_Someone_unknown-merchant.csv]")
         val response = skrooge(requestWithMcDonalds)
         response shouldMatch hasStatus(SEE_OTHER)
         response shouldMatch hasHeader("Location", "/unknown-merchant?currentMerchant=McDonalds&outstandingMerchants=&originalRequestBody=2017%3BApril%3BTest%3B%5Bsrc%2Ftest%2Fresources%2F2017-04_Someone_unknown-merchant.csv%5D")
@@ -251,10 +262,10 @@ class StatementsAcceptanceTest {
 
     @Test
     fun `JS-HACK POST with one entry returns HTTP See Other when unrecognised merchant`() {
-        val requestWithMcDonalds = Request(POST, "/statements-js-hack").body("2017;April;Test;[src/test/resources/2017-04_Someone_unknown-merchant.csv]")
+        val requestWithMcDonalds = Request(POST, "/statements-js-hack").body("2017;April;Test;UnknownMerchant;[src/test/resources/2017-04_Someone_unknown-merchant.csv]")
         val response = skrooge(requestWithMcDonalds)
         response shouldMatch hasStatus(SEE_OTHER)
-        response shouldMatch hasHeader("Location", "/unknown-merchant?currentMerchant=McDonalds&outstandingMerchants=&originalRequestBody=2017%3BApril%3BTest%3B%5Bsrc%2Ftest%2Fresources%2F2017-04_Someone_unknown-merchant.csv%5D")
+        response shouldMatch hasHeader("Location", "/unknown-merchant?currentMerchant=McDonalds&outstandingMerchants=&originalRequestBody=2017%3BApril%3BTest%3BUnknownMerchant%3B%5Bsrc%2Ftest%2Fresources%2F2017-04_Someone_unknown-merchant.csv%5D")
 
         val followedResponse = helpers.follow302RedirectResponse(response)
         followedResponse shouldMatch hasBody(containsSubstring("You need to categorise some merchants."))
@@ -263,7 +274,7 @@ class StatementsAcceptanceTest {
     @Ignore
     @Test
     fun `redirect when unrecognised merchant shows correct unrecognised merchant`() {
-        val requestWithMcDonalds = Request(POST, "/statements").body("2017;April;Test;[src/test/resources/2017-04_Someone_unknown-merchant.csv]")
+        val requestWithMcDonalds = Request(POST, "/statements").body("2017;April;Test;UnknownMerchant;[src/test/resources/2017-04_Someone_unknown-merchant.csv]")
         val followedResponse = helpers.follow302RedirectResponse(skrooge(requestWithMcDonalds))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>McDonalds</h3>"))
@@ -271,7 +282,7 @@ class StatementsAcceptanceTest {
 
     @Test
     fun `JS-HACK redirect when unrecognised merchant shows correct unrecognised merchant`() {
-        val requestWithMcDonalds = Request(POST, "/statements-js-hack").body("2017;April;Test;[src/test/resources/2017-04_Someone_unknown-merchant.csv]")
+        val requestWithMcDonalds = Request(POST, "/statements-js-hack").body("2017;April;Test;UnknownMerchant;[src/test/resources/2017-04_Someone_unknown-merchant.csv]")
         val followedResponse = helpers.follow302RedirectResponse(skrooge(requestWithMcDonalds))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>McDonalds</h3>"))
@@ -280,7 +291,7 @@ class StatementsAcceptanceTest {
     @Ignore
     @Test
     fun `redirect when multiple unrecognised merchants shows correct unrecognised merchants`() {
-        val requestWithTwoRecordShops = Request(POST, "/statements").body("2017;March;Tom;[src/test/resources/2017-03_Someone_two-unknown-merchants.csv]")
+        val requestWithTwoRecordShops = Request(POST, "/statements").body("2017;March;Tom;TwoUnknwonMerchants;[src/test/resources/2017-03_Someone_two-unknown-merchants.csv]")
         val followedResponse = helpers.follow302RedirectResponse(skrooge(requestWithTwoRecordShops))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
@@ -289,7 +300,7 @@ class StatementsAcceptanceTest {
 
     @Test
     fun `JS-HACK redirect when multiple unrecognised merchants shows correct unrecognised merchants`() {
-        val requestWithTwoRecordShops = Request(POST, "/statements-js-hack").body("2017;March;Tom;[src/test/resources/2017-03_Someone_two-unknown-merchants.csv]")
+        val requestWithTwoRecordShops = Request(POST, "/statements-js-hack").body("2017;March;Tom;TwoUnknownMerchants;[src/test/resources/2017-03_Someone_two-unknown-merchants.csv]")
         val followedResponse = helpers.follow302RedirectResponse(skrooge(requestWithTwoRecordShops))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
@@ -299,7 +310,7 @@ class StatementsAcceptanceTest {
     @Ignore
     @Test
     fun `redirect when multiple unrecognised merchants and multiple input files`() {
-        val requestWithTwoFilesOfUnknownMerchants = Request(POST, "/statements").body("2017;March;Test;[src/test/resources/2017-03_Someone_two-unknown-merchants.csv,src/test/resources/2017-04_Someone_unknown-merchant.csv]")
+        val requestWithTwoFilesOfUnknownMerchants = Request(POST, "/statements").body("2017;March;Test;TwoUnknownMerchants;[src/test/resources/2017-03_Someone_two-unknown-merchants.csv,src/test/resources/2017-04_Someone_unknown-merchant.csv]")
         val followedResponse = helpers.follow302RedirectResponse(skrooge(requestWithTwoFilesOfUnknownMerchants))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
@@ -308,7 +319,7 @@ class StatementsAcceptanceTest {
 
     @Test
     fun `JS-HACK redirect when multiple unrecognised merchants and multiple input files`() {
-        val requestWithTwoFilesOfUnknownMerchants = Request(POST, "/statements-js-hack").body("2017;March;Test;[src/test/resources/2017-03_Someone_two-unknown-merchants.csv,src/test/resources/2017-04_Someone_unknown-merchant.csv]")
+        val requestWithTwoFilesOfUnknownMerchants = Request(POST, "/statements-js-hack").body("2017;March;Test;TwoUnknownMerchants;[src/test/resources/2017-03_Someone_two-unknown-merchants.csv,src/test/resources/2017-04_Someone_unknown-merchant.csv]")
         val followedResponse = helpers.follow302RedirectResponse(skrooge(requestWithTwoFilesOfUnknownMerchants))
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))

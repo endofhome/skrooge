@@ -43,7 +43,7 @@ class AnnualReporterTest {
     }
 
     private fun setUpWithOneDecision(): AnnualReporter {
-        val statementData = StatementData(Year.of(2018), Month.APRIL, "username", emptyList()) // not sure if this makes much sense
+        val statementData = StatementData(Year.of(2018), Month.APRIL, "username", "some-bank") // not sure if this makes much sense
         val line = Line(
                 LocalDate.parse("1978-11-01", DateTimeFormatter.ISO_DATE),
                 "Woolworths",
