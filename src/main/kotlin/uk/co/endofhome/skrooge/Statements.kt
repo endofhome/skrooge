@@ -47,7 +47,8 @@ class Statements(private val categories: Categories) {
                 statementFile.writeBytes(fileBytes)
 
                 val statementData = StatementData(Year.parse(year), Month.valueOf(month!!.toUpperCase()), user, statement!!)
-                decisionReaderWriter.write(statementData, emptyList())
+                val decisions = StatementDecider(categories.categoryMappings).process(statementFile.readLines())
+                decisionReaderWriter.write(statementData, decisions)
                 Response(Status.OK)
             }
         }

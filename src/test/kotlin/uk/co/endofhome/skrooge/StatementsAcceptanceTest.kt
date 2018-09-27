@@ -178,7 +178,6 @@ class StatementsAcceptanceTest {
         assertThat(fileContents.size, equalTo(0))
     }
 
-    @Ignore
     @Test
     fun `POST with one entry produces output file with one entry when recognised merchant`() {
         val categoryMappings = mutableListOf("Pizza Union,Eats and drinks,Meals at work")
@@ -186,14 +185,28 @@ class StatementsAcceptanceTest {
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
         val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
-        val request = Request(POST, "/statements").body("2017;February;Test;OneKnownMerchant;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
+        val inputStatementContent = "2017-09-17,Pizza Union,5.50\n"
+        val decisionContent = "2017-09-17,Pizza Union,5.5,Eats and drinks,Meals at work\n"
+        val body = MultipartFormBody().plus("year" to "2017")
+                .plus("month" to "February")
+                .plus("user" to "Test")
+                .plus("statement" to "one-known-merchant")
+                .plus("statement" to FormFile("2017-02_Test_one-known-merchant.csv", ContentType.OCTET_STREAM, inputStatementContent.byteInputStream()))
+        val request = Request(POST, "/statements")
+                .header("content-type", "multipart/form-data; boundary=${body.boundary}")
+                .body(body)
 
         localSkrooge(request)
 
+        val statementFile = File("input/normalised/2017-02_Test_one-known-merchant.csv")
+        val statementFileContents = statementFile.readLines()
+        assertThat(statementFileContents.size, equalTo(1))
+        assertThat(statementFileContents[0], equalTo(inputStatementContent.trim()))
+
         val decisionFile = File("$outputPath/2017-2-Test-decisions-one-known-merchant.csv")
-        val fileContents = decisionFile.readLines()
-        assertThat(fileContents.size, equalTo(1))
-        assertThat(fileContents[0], equalTo("2017-09-17,Pizza Union,5.5,Eats and drinks,Meals at work"))
+        val decisionFileContents = decisionFile.readLines()
+        assertThat(decisionFileContents.size, equalTo(1))
+        assertThat(decisionFileContents[0], equalTo(decisionContent.trim()))
     }
 
     @Test
@@ -203,7 +216,7 @@ class StatementsAcceptanceTest {
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
         val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
-        val request = Request(POST, "/statements-js-hack").body("2017;February;Test;OneKnownMerchant;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
+        val request = Request(POST, "/statements-js-hack").body("2017;February;Test;OneKnownMerchant;[src/test/resources/2017-02_Test_one-known-merchant.csv]")
 
         localSkrooge(request)
 
