@@ -2,6 +2,7 @@ package uk.co.endofhome.skrooge
 
 import org.http4k.core.Body
 import org.http4k.core.ContentType
+import org.http4k.core.FormFile
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status
@@ -23,49 +24,23 @@ import java.time.YearMonth
 class Statements(private val categories: Categories) {
 
     fun uploadStatements(request: Request, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
-        val yearName = "year"
-        val monthName = "month"
-        val userName = "user"
-        val statementName = "statement"
-        val multipartForm = extractFormParts(request, yearName, monthName, userName, statementName)
-        val fields = multipartForm.fields
-        val files = multipartForm.files
-
-        val year = fields[yearName]?.firstOrNull()
-        val month = fields[monthName]?.firstOrNull()
-        val user = fields[userName]?.firstOrNull()
-        val statement = fields[statementName]?.firstOrNull()
-        val formFile = files[statementName]?.firstOrNull()
-
-        val formParts = listOf(year, month, user, statement, formFile)
-
-        return when {
-            formParts.contains(null) -> Response(Status.BAD_REQUEST)
-            else -> {
-                val fileBytes = formFile!!.content.readBytes()
-                val statementFile = File("input/normalised/${year!!}-${format(month)}_${user!!.capitalize()}_$statement.csv")
-                statementFile.writeBytes(fileBytes)
-
-                val statementData = StatementData(Year.parse(year), Month.valueOf(month!!.toUpperCase()), user, statement!!)
-                val decisions = StatementDecider(categories.categoryMappings).process(statementFile.readLines())
-                decisionReaderWriter.write(statementData, decisions)
-                Response(Status.OK)
-            }
+        val form = try {
+            FormForNormalisedStatement.from(request)
+        } catch (e: IllegalStateException) {
+            return Response(Status.BAD_REQUEST)
         }
+
+        val (year, month, user, statement, file) = form
+        val fileBytes = file.content.readBytes()
+        val statementFile = File("input/normalised/$year-${format(month)}_${user.capitalize()}_$statement.csv")
+        statementFile.writeBytes(fileBytes)
+
+        val statementData = StatementData(year, month, user, statement)
+        val decisions = StatementDecider(categories.categoryMappings).process(statementFile.readLines())
+        decisionReaderWriter.write(statementData, decisions)
+        return Response(Status.OK)
     }
 
-    private fun format(month: String?) = Month.valueOf(month!!.toUpperCase()).value.toString().padStart(2, '0')
-
-    private fun extractFormParts(request: Request, yearName: String, monthName: String, userName: String, statementName: String): MultipartForm {
-        val yearLens = MultipartFormField.required(yearName)
-        val monthLens = MultipartFormField.required(monthName)
-        val userLens = MultipartFormField.required(userName)
-        val statementNameLens = MultipartFormField.required(statementName)
-        val statementFileLens = MultipartFormFile.required(statementName)
-        val multipartFormBody = Body.multipartForm(Validator.Feedback, yearLens, monthLens, userLens, statementNameLens, statementFileLens).toLens()
-
-        return multipartFormBody.extract(request)
-    }
 
     fun uploadStatementsJsHack(body: Body, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
         val parser = PretendFormParser()
@@ -135,5 +110,52 @@ class Statements(private val categories: Categories) {
         val main = Main("unncessary")
         val view = Body.view(renderer, ContentType.TEXT_HTML)
         return Response(Status.OK).with(view of main)
+    }
+
+    private fun format(month: Month) = month.value.toString().padStart(2, '0')
+}
+
+data class FormForNormalisedStatement(val year: Year, val month: Month, val user: String, val statement: String, val file: FormFile) {
+    companion object {
+        fun from(request: Request) : FormForNormalisedStatement {
+            val yearName = "year"
+            val monthName = "month"
+            val userName = "user"
+            val statementName = "statement"
+            val multipartForm = extractFormParts(request, yearName, monthName, userName, statementName)
+            val fields = multipartForm.fields
+            val files = multipartForm.files
+
+            val year = fields[yearName]?.firstOrNull()
+            val month = fields[monthName]?.firstOrNull()
+            val user = fields[userName]?.firstOrNull()
+            val statement = fields[statementName]?.firstOrNull()
+            val formFile = files[statementName]?.firstOrNull()
+
+            if (year != null && month != null && user != null && statement != null && formFile != null) {
+                return FormForNormalisedStatement(Year.parse(year), Month.valueOf(month.toUpperCase()), user, statement, formFile)
+            } else {
+                throw IllegalStateException(
+                        """Form fields cannot be null, but were:
+                            |year: $year
+                            |month: $month
+                            |user: $user
+                            |statement: $statement
+                            |formFile: $formFile
+                        """.trimMargin()
+                )
+            }
+        }
+
+        private fun extractFormParts(request: Request, yearName: String, monthName: String, userName: String, statementName: String): MultipartForm {
+            val yearLens = MultipartFormField.required(yearName)
+            val monthLens = MultipartFormField.required(monthName)
+            val userLens = MultipartFormField.required(userName)
+            val statementNameLens = MultipartFormField.required(statementName)
+            val statementFileLens = MultipartFormFile.required(statementName)
+            val multipartFormBody = Body.multipartForm(Validator.Feedback, yearLens, monthLens, userLens, statementNameLens, statementFileLens).toLens()
+
+            return multipartFormBody.extract(request)
+        }
     }
 }
