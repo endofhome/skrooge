@@ -30,12 +30,13 @@ import java.util.Locale
 class Statements(private val categories: Categories) {
 
     fun uploadStatements(request: Request, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
-        val (year, month, user, statement, file) = try {
+        val form = try {
             FormForNormalisedStatement.from(request)
         } catch (e: IllegalStateException) {
             return Response(Status.BAD_REQUEST)
         }
 
+        val (year, month, user, statement, file) = form
         val fileBytes = file.content.readBytes()
         val statementFile = File("input/normalised/$year-${format(month)}_${user.capitalize()}_$statement.csv")
         statementFile.writeBytes(fileBytes)
@@ -47,15 +48,14 @@ class Statements(private val categories: Categories) {
         val unknownMerchants: Set<String> = decisions.filter { it.category == null }
                                                      .map { it.line.merchant }
                                                      .toSet()
-        if (unknownMerchants.isNotEmpty()) {
-            val currentMerchant = unknownMerchants.first()
-            val outstandingMerchants = unknownMerchants.drop(1)
-            val uri = Uri.of("/unknown-merchant").query("currentMerchant", currentMerchant)
-                                                 .query("outstandingMerchants", outstandingMerchants.joinToString(","))
-                                                 .query("originalRequestBody", "$year;${month.getDisplayName(TextStyle.FULL, Locale.UK)};$user;$statement")
-            return Response(Status.SEE_OTHER).header("Location", uri.toString())
+        return when {
+            unknownMerchants.isEmpty() -> pleaseReviewYourCategorisations(form, decisions, renderer)
+            else                       -> redirectToUnknownMerchant(form, unknownMerchants)
         }
+    }
 
+    private fun pleaseReviewYourCategorisations(form: FormForNormalisedStatement, decisions: List<Decision>, renderer: TemplateRenderer): Response {
+        val (year, month, user, statement) = form
         val formattedBankStatement = FormattedBankStatement(
                 year.toString(),
                 month.name.toLowerCase().capitalize(),
@@ -77,6 +77,16 @@ class Statements(private val categories: Categories) {
                 emptyList()
         )
         return Response(Status.OK).with(view of reviewCategorisationsViewModel)
+    }
+
+    private fun redirectToUnknownMerchant(form: FormForNormalisedStatement, unknownMerchants: Set<String>): Response {
+        val (year, month, user, statement) = form
+        val currentMerchant = unknownMerchants.first()
+        val outstandingMerchants = unknownMerchants.drop(1)
+        val uri = Uri.of("/unknown-merchant").query("currentMerchant", currentMerchant)
+                .query("outstandingMerchants", outstandingMerchants.joinToString(","))
+                .query("originalRequestBody", "$year;${month.getDisplayName(TextStyle.FULL, Locale.UK)};$user;$statement")
+        return Response(Status.SEE_OTHER).header("Location", uri.toString())
     }
 
     fun uploadStatementsJsHack(body: Body, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
