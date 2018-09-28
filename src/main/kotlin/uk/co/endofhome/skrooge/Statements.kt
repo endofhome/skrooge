@@ -28,13 +28,12 @@ import java.time.format.DateTimeFormatter
 class Statements(private val categories: Categories) {
 
     fun uploadStatements(request: Request, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
-        val form = try {
+        val (year, month, user, statement, file) = try {
             FormForNormalisedStatement.from(request)
         } catch (e: IllegalStateException) {
             return Response(Status.BAD_REQUEST)
         }
 
-        val (year, month, user, statement, file) = form
         val fileBytes = file.content.readBytes()
         val statementFile = File("input/normalised/$year-${format(month)}_${user.capitalize()}_$statement.csv")
         statementFile.writeBytes(fileBytes)
