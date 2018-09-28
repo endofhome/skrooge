@@ -76,7 +76,7 @@ class Skrooge(private val categories: Categories = Categories(),
     private fun index(): Response {
         val templateBasePath = this.javaClass.name.removeSuffix(this.javaClass.simpleName)
                                                   .replace('.', '/')
-        val indexTemplate = "Main"
+        val indexTemplate = "Index"
         val index = object : ViewModel {
             override fun template() = "$templateBasePath$indexTemplate"
         }
