@@ -154,12 +154,6 @@ class Statements(private val categories: Categories) {
         }
     }
 
-    fun index(renderer: TemplateRenderer): Response {
-        val main = Main("unncessary")
-        val view = Body.view(renderer, ContentType.TEXT_HTML)
-        return Response(Status.OK).with(view of main)
-    }
-
     private fun format(month: Month) = month.value.toString().padStart(2, '0')
 }
 

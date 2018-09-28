@@ -62,7 +62,7 @@ class Skrooge(private val categories: Categories = Categories(),
 
     fun routes() = routes(
             "/public" bind publicDirectory,
-            "/" bind GET to { _ -> Statements(categories).index(renderer) },
+            "/" bind GET to { _ -> index() },
             "/statements" bind POST to { request -> Statements(categories).uploadStatements(request, renderer, decisionReaderWriter) },
             "/statements-js-hack" bind POST to { request -> Statements(categories).uploadStatementsJsHack(request.body, renderer, decisionReaderWriter) },
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
@@ -72,6 +72,17 @@ class Skrooge(private val categories: Categories = Categories(),
             "monthly-report/json" bind GET to { request -> monthlyReporter(request) },
             "web" bind GET to { request -> Charts(request, renderer) }
     )
+
+    private fun index(): Response {
+        val templateBasePath = this.javaClass.name.removeSuffix(this.javaClass.simpleName)
+                                                  .replace('.', '/')
+        val indexTemplate = "Main"
+        val index = object : ViewModel {
+            override fun template() = "$templateBasePath$indexTemplate"
+        }
+        val view = Body.view(renderer, ContentType.TEXT_HTML)
+        return Response(Status.OK).with(view of index)
+    }
 }
 
 class ReportCategorisations(private val decisionReaderWriter: DecisionReaderWriter, val categories: List<Category>) {
@@ -187,5 +198,3 @@ data class CategoriesWithSelection(val categories: List<CategoryWithSelection>)
 data class SubCategory(val name: String)
 data class SubCategoryWithSelection(val subCategory: SubCategory, val selector: String)
 data class Decision(val line: Line, val category: Category?, val subCategory: SubCategory?)
-
-data class Main(val unnecessary: String) : ViewModel
