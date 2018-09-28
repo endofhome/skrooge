@@ -11,7 +11,7 @@ import org.junit.Ignore
 import org.junit.Test
 import java.nio.file.Paths
 
-class BankReportsTest {
+class PleaseReviewYourCategorisationsTest {
 
     private val categoryMappings = mutableListOf("Pizza Union,Some category,Some subcategory")
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
