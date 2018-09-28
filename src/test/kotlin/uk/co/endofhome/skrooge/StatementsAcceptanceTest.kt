@@ -282,15 +282,6 @@ class StatementsAcceptanceTest {
         followedResponse shouldMatch hasBody(containsSubstring("You need to categorise some merchants."))
     }
 
-    @Ignore
-    @Test
-    fun `redirect when unrecognised merchant shows correct unrecognised merchant`() {
-        val requestWithMcDonalds = Request(POST, "/statements").body("2017;April;Test;UnknownMerchant;[src/test/resources/2017-04_Someone_unknown-merchant.csv]")
-        val followedResponse = helpers.follow302RedirectResponse(skrooge(requestWithMcDonalds))
-
-        followedResponse shouldMatch hasBody(containsSubstring("<h3>McDonalds</h3>"))
-    }
-
     @Test
     fun `JS-HACK redirect when unrecognised merchant shows correct unrecognised merchant`() {
         val requestWithMcDonalds = Request(POST, "/statements-js-hack").body("2017;April;Test;UnknownMerchant;[src/test/resources/2017-04_Someone_unknown-merchant.csv]")
