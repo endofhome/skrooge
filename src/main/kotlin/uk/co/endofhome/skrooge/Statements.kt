@@ -24,6 +24,8 @@ import java.time.Month
 import java.time.Year
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.Locale
 
 class Statements(private val categories: Categories) {
 
@@ -42,8 +44,16 @@ class Statements(private val categories: Categories) {
         val decisions = StatementDecider(categories.categoryMappings).process(statementFile.readLines())
         decisionReaderWriter.write(statementData, decisions)
 
-        if (decisions.map { it.category }.contains(null)) {
-            throw RuntimeException("There are unknown merchants - this is currently unsupported.")
+        val unknownMerchants: Set<String> = decisions.filter { it.category == null }
+                                                     .map { it.line.merchant }
+                                                     .toSet()
+        if (unknownMerchants.isNotEmpty()) {
+            val currentMerchant = unknownMerchants.first()
+            val outstandingMerchants = unknownMerchants.drop(1)
+            val uri = Uri.of("/unknown-merchant").query("currentMerchant", currentMerchant)
+                                                 .query("outstandingMerchants", outstandingMerchants.joinToString(","))
+                                                 .query("originalRequestBody", "$year;${month.getDisplayName(TextStyle.FULL, Locale.UK)};$user;$statement")
+            return Response(Status.SEE_OTHER).header("Location", uri.toString())
         }
 
         val formattedBankStatement = FormattedBankStatement(

@@ -251,16 +251,24 @@ class StatementsAcceptanceTest {
         response shouldMatch hasBody(containsSubstring("<option value=\"[17/09/2017,Pizza Union,5.50,Eats and drinks,Food]\">Food</option>"))
     }
 
-    @Ignore
     @Test
     fun `POST with one entry returns HTTP See Other when unrecognised merchant`() {
-        val requestWithMcDonalds = Request(POST, "/statements").body("2017;April;Test;UnknownMerchant;[src/test/resources/2017-04_Someone_unknown-merchant.csv]")
+        val inputStatementContent = "2017-09-17,McDonalds,0.99\n"
+        val body = MultipartFormBody().plus("year" to "2017")
+                .plus("month" to "April")
+                .plus("user" to "Test")
+                .plus("statement" to "OneUnknownMerchant")
+                .plus("statement" to FormFile("2017-04_Test_one-unknown-merchant.csv", ContentType.OCTET_STREAM, inputStatementContent.byteInputStream()))
+        val requestWithMcDonalds = Request(POST, "/statements")
+                .header("content-type", "multipart/form-data; boundary=${body.boundary}")
+                .body(body)
+
         val response = skrooge(requestWithMcDonalds)
-        response shouldMatch hasStatus(SEE_OTHER)
-        response shouldMatch hasHeader("Location", "/unknown-merchant?currentMerchant=McDonalds&outstandingMerchants=&originalRequestBody=2017%3BApril%3BTest%3B%5Bsrc%2Ftest%2Fresources%2F2017-04_Someone_unknown-merchant.csv%5D")
+        assertThat(response.status, equalTo(SEE_OTHER))
+        assertThat(response.header("Location"), equalTo("/unknown-merchant?currentMerchant=McDonalds&outstandingMerchants=&originalRequestBody=2017%3BApril%3BTest%3BOneUnknownMerchant"))
 
         val followedResponse = helpers.follow302RedirectResponse(response)
-        followedResponse shouldMatch hasBody(containsSubstring("You need to categorise some merchants."))
+        approver.assertApproved(followedResponse.bodyString())
     }
 
     @Test
