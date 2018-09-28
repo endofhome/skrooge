@@ -114,11 +114,12 @@ class StatementsAcceptanceTest {
 
     @Test
     fun `POST to statements with correct form data returns HTTP OK`() {
+        val formFile = FormFile("2017-9-Tom-EmptyStatement.csv", ContentType.OCTET_STREAM, "".byteInputStream())
         val body = MultipartFormBody().plus("year" to "2017")
                                       .plus("month" to "September")
                                       .plus("user" to "Tom")
                                       .plus("statement" to "EmptyStatement")
-                                      .plus("statement" to FormFile("2017-9-Tom-EmptyStatement.csv", ContentType.OCTET_STREAM, "".byteInputStream()))
+                                      .plus("statement" to formFile)
 
         val request = Request(POST, "/statements")
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
@@ -150,11 +151,12 @@ class StatementsAcceptanceTest {
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
         val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
+        val formFile = FormFile("2017-02_Test_EmptyStatement.csv", ContentType.OCTET_STREAM, "".byteInputStream())
         val body = MultipartFormBody().plus("year" to "2017")
                                       .plus("month" to "February")
                                       .plus("user" to "Test")
                                       .plus("statement" to "EmptyStatement")
-                                      .plus("statement" to FormFile("2017-02_Test_EmptyStatement.csv", ContentType.OCTET_STREAM, "".byteInputStream()))
+                                      .plus("statement" to formFile)
         val request = Request(POST, "/statements")
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
@@ -254,11 +256,12 @@ class StatementsAcceptanceTest {
     @Test
     fun `POST with one entry returns HTTP See Other when unrecognised merchant`() {
         val inputStatementContent = "2017-09-17,McDonalds,0.99\n"
+        val formFile = FormFile("2017-04_Test_one-unknown-merchant.csv", ContentType.OCTET_STREAM, inputStatementContent.byteInputStream())
         val body = MultipartFormBody().plus("year" to "2017")
                 .plus("month" to "April")
                 .plus("user" to "Test")
                 .plus("statement" to "OneUnknownMerchant")
-                .plus("statement" to FormFile("2017-04_Test_one-unknown-merchant.csv", ContentType.OCTET_STREAM, inputStatementContent.byteInputStream()))
+                .plus("statement" to formFile)
         val requestWithMcDonalds = Request(POST, "/statements")
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
@@ -290,14 +293,28 @@ class StatementsAcceptanceTest {
         followedResponse shouldMatch hasBody(containsSubstring("<h3>McDonalds</h3>"))
     }
 
-    @Ignore
     @Test
     fun `redirect when multiple unrecognised merchants shows correct unrecognised merchants`() {
-        val requestWithTwoRecordShops = Request(POST, "/statements").body("2017;March;Tom;TwoUnknwonMerchants;[src/test/resources/2017-03_Someone_two-unknown-merchants.csv]")
-        val followedResponse = helpers.follow302RedirectResponse(skrooge(requestWithTwoRecordShops))
+        val inputStatementContent = """
+            2017-09-17,Rounder Records,14.99
+            2017-09-17,Edgeworld Records,15.99
+        """.trimIndent()
+        val formFile = FormFile(
+                "2017-03_Test_two-unknown-merchants.csv",
+                ContentType.OCTET_STREAM,
+                inputStatementContent.byteInputStream()
+        )
+        val body = MultipartFormBody().plus("year" to "2017")
+                .plus("month" to "March")
+                .plus("user" to "Test")
+                .plus("statement" to "TwoUnknownMerchants")
+                .plus("statement" to formFile)
+        val requestWithTwoRecordShops = Request(POST, "/statements")
+                .header("content-type", "multipart/form-data; boundary=${body.boundary}")
+                .body(body)
 
-        followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
-        followedResponse shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"remaining-vendors\" value=\"Edgeworld Records\">"))
+        val followedResponse = helpers.follow302RedirectResponse(skrooge(requestWithTwoRecordShops))
+        approver.assertApproved(followedResponse.bodyString())
     }
 
     @Test
