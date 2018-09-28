@@ -70,7 +70,7 @@ class CategoryMappingNotQuiteAcceptanceTest {
                 .form("remaining-vendors", "Another vendor")
                 .form("originalRequestBody", originalRequestBody)
 
-        val followedResponse = with(RedirectHelper(skrooge)) { request.followRedirect() }
+        val followedResponse = with(RedirectHelper(skrooge)) { request.handleAndfollowRedirect() }
 
         assertThat(mappingWriter.read().last(), equalTo("DIY Space for London,Fun,Tom fun budget"))
         followedResponse shouldMatch hasStatus(OK)

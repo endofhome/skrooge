@@ -255,12 +255,11 @@ class StatementsAcceptanceTest {
     @Test
     fun `POST with one entry returns HTTP See Other when unrecognised merchant`() {
         val inputStatementContent = "2017-09-17,McDonalds,0.99\n"
-        val formFile = FormFile("2017-04_Test_one-unknown-merchant.csv", ContentType.OCTET_STREAM, inputStatementContent.byteInputStream())
         val body = MultipartFormBody().plus("year" to "2017")
-                .plus("month" to "April")
-                .plus("user" to "Test")
-                .plus("statement" to "OneUnknownMerchant")
-                .plus("statement" to formFile)
+                                      .plus("month" to "April")
+                                      .plus("user" to "Test")
+                                      .plus("statement" to "OneUnknownMerchant")
+                                      .plus("statement" to FormFile("2017-04_Test_one-unknown-merchant.csv", ContentType.OCTET_STREAM, inputStatementContent.byteInputStream()))
         val requestWithMcDonalds = Request(POST, "/statements")
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
@@ -269,7 +268,7 @@ class StatementsAcceptanceTest {
         assertThat(response.status, equalTo(SEE_OTHER))
         assertThat(response.header("Location"), equalTo("/unknown-merchant?currentMerchant=McDonalds&outstandingMerchants=&originalRequestBody=2017%3BApril%3BTest%3BOneUnknownMerchant"))
 
-        val followedResponse = with(RedirectHelper(skrooge)) { requestWithMcDonalds.followRedirect() }
+        val followedResponse = with(RedirectHelper(skrooge)) { response.followRedirect() }
         approver.assertApproved(followedResponse.bodyString())
     }
 
@@ -280,14 +279,14 @@ class StatementsAcceptanceTest {
         response shouldMatch hasStatus(SEE_OTHER)
         response shouldMatch hasHeader("Location", "/unknown-merchant?currentMerchant=McDonalds&outstandingMerchants=&originalRequestBody=2017%3BApril%3BTest%3BUnknownMerchant%3B%5Bsrc%2Ftest%2Fresources%2F2017-04_Someone_unknown-merchant.csv%5D")
 
-        val followedResponse = with(RedirectHelper(skrooge)) { requestWithMcDonalds.followRedirect() }
+        val followedResponse = with(RedirectHelper(skrooge)) { response.followRedirect() }
         followedResponse shouldMatch hasBody(containsSubstring("You need to categorise some merchants."))
     }
 
     @Test
     fun `JS-HACK redirect when unrecognised merchant shows correct unrecognised merchant`() {
         val requestWithMcDonalds = Request(POST, "/statements-js-hack").body("2017;April;Test;UnknownMerchant;[src/test/resources/2017-04_Someone_unknown-merchant.csv]")
-        val followedResponse = with(RedirectHelper(skrooge)) { requestWithMcDonalds.followRedirect() }
+        val followedResponse = with(RedirectHelper(skrooge)) { requestWithMcDonalds.handleAndfollowRedirect() }
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>McDonalds</h3>"))
     }
@@ -312,14 +311,14 @@ class StatementsAcceptanceTest {
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
 
-        val followedResponse = with(RedirectHelper(skrooge)) { requestWithTwoRecordShops.followRedirect() }
+        val followedResponse = with(RedirectHelper(skrooge)) { requestWithTwoRecordShops.handleAndfollowRedirect() }
         approver.assertApproved(followedResponse.bodyString())
     }
 
     @Test
     fun `JS-HACK redirect when multiple unrecognised merchants shows correct unrecognised merchants`() {
         val requestWithTwoRecordShops = Request(POST, "/statements-js-hack").body("2017;March;Tom;TwoUnknownMerchants;[src/test/resources/2017-03_Someone_two-unknown-merchants.csv]")
-        val followedResponse = with(RedirectHelper(skrooge)) { requestWithTwoRecordShops.followRedirect() }
+        val followedResponse = with(RedirectHelper(skrooge)) { requestWithTwoRecordShops.handleAndfollowRedirect() }
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
         followedResponse shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"remaining-vendors\" value=\"Edgeworld Records\">"))
@@ -328,7 +327,7 @@ class StatementsAcceptanceTest {
     @Test
     fun `JS-HACK redirect when multiple unrecognised merchants and multiple input files`() {
         val requestWithTwoFilesOfUnknownMerchants = Request(POST, "/statements-js-hack").body("2017;March;Test;TwoUnknownMerchants;[src/test/resources/2017-03_Someone_two-unknown-merchants.csv,src/test/resources/2017-04_Someone_unknown-merchant.csv]")
-        val followedResponse = with(RedirectHelper(skrooge)) { requestWithTwoFilesOfUnknownMerchants.followRedirect() }
+        val followedResponse = with(RedirectHelper(skrooge)) { requestWithTwoFilesOfUnknownMerchants.handleAndfollowRedirect() }
 
         followedResponse shouldMatch hasBody(containsSubstring("<h3>Rounder Records</h3>"))
         followedResponse shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"remaining-vendors\" value=\"Edgeworld Records,McDonalds\">"))
@@ -336,8 +335,12 @@ class StatementsAcceptanceTest {
 }
 
 class RedirectHelper(val skrooge: RoutingHttpHandler) {
-    fun Request.followRedirect(): Response {
+    fun Request.handleAndfollowRedirect(): Response {
         val initialResponse = skrooge(this)
-        return skrooge(Request(Method.GET, initialResponse.headerValues("location").first()!!))
+        return initialResponse.followRedirect()
+    }
+
+    fun Response.followRedirect(): Response {
+        return skrooge(Request(Method.GET, headerValues("location").first()!!))
     }
 }
