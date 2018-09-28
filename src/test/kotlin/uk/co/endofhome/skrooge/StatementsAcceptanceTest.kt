@@ -29,7 +29,7 @@ import java.nio.file.Paths
 class StatementsAcceptanceTest {
 
     @Rule
-    @JvmField val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin")
+    @JvmField val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals/${this.javaClass.simpleName}")
 
     private val categoryMappings = mutableListOf<String>()
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
