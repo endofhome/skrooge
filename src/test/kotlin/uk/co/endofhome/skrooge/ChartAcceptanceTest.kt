@@ -14,7 +14,7 @@ import java.nio.file.Paths
 
 class ChartAcceptanceTest {
 
-    @Rule @JvmField val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin")
+    @Rule @JvmField val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
 
     private val categoryMappings = mutableListOf<String>()
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)

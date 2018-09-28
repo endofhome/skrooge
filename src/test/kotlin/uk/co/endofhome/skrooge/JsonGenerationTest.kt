@@ -21,7 +21,7 @@ import java.time.Year
 class JsonGenerationTest {
 
     @Rule
-    @JvmField val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin")
+    @JvmField val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
 
     private val categoryMappings = mutableListOf<String>()
     private val testDir = "src/test/resources/"
