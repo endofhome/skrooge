@@ -27,7 +27,6 @@ class CategoryMappingNotQuiteAcceptanceTest {
     private val originalRequestBody = "2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]"
 
     private val skrooge = Skrooge(categories, mappingWriter, budgetDirectory = Paths.get("src/test/resources/budgets/")).routes()
-    private val helpers = TestHelpers(skrooge)
 
     @Test
     fun `POST to category-mapping endpoint with empty new-mapping field returns HTTP Bad Request`() {
@@ -71,8 +70,7 @@ class CategoryMappingNotQuiteAcceptanceTest {
                 .form("remaining-vendors", "Another vendor")
                 .form("originalRequestBody", originalRequestBody)
 
-
-        val followedResponse = helpers.follow302RedirectResponse(skrooge(request))
+        val followedResponse = with(RedirectHelper(skrooge)) { request.followRedirect() }
 
         assertThat(mappingWriter.read().last(), equalTo("DIY Space for London,Fun,Tom fun budget"))
         followedResponse shouldMatch hasStatus(OK)
