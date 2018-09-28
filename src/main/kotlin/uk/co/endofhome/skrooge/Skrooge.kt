@@ -106,9 +106,13 @@ class ReportCategorisations(private val decisionReaderWriter: DecisionReaderWrit
             }
         }
 
-        val statementDataString: List<String> = form.fields["statement-data"]!![0].split(";")
-        val hackStatementData = JsHackStatementData.fromFormParts(statementDataString)
-        decisionReaderWriter.write(hackStatementData.statementData, decisions)
+        val statementDataSplit: List<String> = form.fields["statement-data"]!![0].split(";")
+        val year = Year.parse(statementDataSplit[0])
+        val month = Month.valueOf(statementDataSplit[1])
+        val user = statementDataSplit[2]
+        val statement = statementDataSplit[3]
+        val statementData = StatementData(year, month, user, statement)
+        decisionReaderWriter.write(statementData, decisions)
         return Response(Status.CREATED)
     }
 }
