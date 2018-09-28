@@ -1,6 +1,5 @@
 package uk.co.endofhome.skrooge
 
-import org.http4k.asString
 import org.http4k.core.Body
 import org.http4k.core.ContentType
 import org.http4k.core.Method.GET
@@ -33,15 +32,10 @@ import org.http4k.template.HandlebarsTemplates
 import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
 import org.http4k.template.view
-import java.io.File
-import java.math.BigDecimal
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.Month
-import java.time.Year
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
 
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
@@ -106,17 +100,6 @@ class ReportCategorisations(private val decisionReaderWriter: DecisionReaderWrit
         decisionReaderWriter.write(hackStatementData.statementData, decisions)
         return Response(Status.CREATED)
     }
-}
-
-object LineFormatter {
-    fun format(line: Line) = FormattedLine(
-            line.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-            line.merchant,
-            line.amount.roundTo2DecimalPlaces()
-    )
-
-    private fun Double.roundTo2DecimalPlaces() =
-            BigDecimal(this).setScale(2, BigDecimal.ROUND_HALF_UP).toString()
 }
 
 class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val categories: List<Category>) {
@@ -193,41 +176,9 @@ class CategoryMappings(private val categoryMappings: MutableList<String>, privat
     }
 }
 
-class BankReports(private val renderer: TemplateRenderer) {
-    fun report(bankReport: BankReport): Response {
-        val view = Body.view(renderer, ContentType.TEXT_HTML)
-        return Response(OK).with(view of bankReport)
-    }
-}
-
-class PretendFormParser {
-    fun parse(body: Body): JsHackStatementData {
-        // delimiting with semi-colons for now as I want a list in the last 'field'
-        val params = body.payload.asString().split(";")
-        return JsHackStatementData.fromFormParts(params)
-    }
-}
-
-data class StatementData(val year: Year, val month: Month, val username: String, val statement: String)
-
-data class JsHackStatementData(val statementData: StatementData, val files: List<File>) {
-    companion object {
-        fun fromFormParts(formParts: List<String>): JsHackStatementData {
-            val year = Year.parse(formParts[0])
-            val month = Month.valueOf(formParts[1].toUpperCase())
-            val username = formParts[2]
-            val statement = formParts[3]
-            val fileStrings: List<String> = formParts[4].substring(1, formParts[4].lastIndex).split(",")
-            val files: List<File> = fileStrings.map { File(it) }
-            val statementData = StatementData(year, month, username, statement)
-            return JsHackStatementData(statementData, files)
-        }
-    }
-}
 
 data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
 data class Line(val date: LocalDate, val merchant: String, val amount: Double)
-data class FormattedLine(val date: String, val merchant: String, val amount: String)
 data class UnknownMerchants(val currentMerchant: Merchant, val outstandingMerchants: String, val originalRequestBody: String) : ViewModel
 data class Merchant(val name: String, val categories: List<Category>?)
 data class Category(val title: String, val subcategories: List<SubCategory>)
@@ -235,11 +186,6 @@ data class CategoryWithSelection(val title: String, val subCategories: List<SubC
 data class CategoriesWithSelection(val categories: List<CategoryWithSelection>)
 data class SubCategory(val name: String)
 data class SubCategoryWithSelection(val subCategory: SubCategory, val selector: String)
-data class BankStatement(val yearMonth: YearMonth, val username: String, val bankName: String, val decisions: List<Decision>)
-data class FormattedBankStatement(val year: String, val month: String, val username: String, val bankName: String, val formattedDecisions: List<FormattedDecision>)
-data class BankStatements(val statements: List<FormattedBankStatement>)
 data class Decision(val line: Line, val category: Category?, val subCategory: SubCategory?)
-data class FormattedDecision(val line: FormattedLine, val category: Category?, val subCategory: SubCategory?, val categoriesWithSelection: CategoriesWithSelection)
-data class BankReport(val bankStatement: FormattedBankStatement, val outstandingStatements: List<FormattedBankStatement>) : ViewModel
 
 data class Main(val unnecessary: String) : ViewModel

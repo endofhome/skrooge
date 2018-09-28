@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skrooge</title>
+    <link href="public/vendor/bootstrap.min.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <h1>Please review your categorisations for one-known-merchant</h1>
+    <form action="reports/categorisations" method="post">
+        
+            <h3>17/09/2017, Pizza Union: £5.50
+            <select name="decisions">
+                
+                    <optgroup label="In your home">
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,In your home,Mortgage]">Mortgage</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,In your home,Building insurance]">Building insurance</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,In your home,Council tax]">Council tax</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,In your home,Water rates]">Water rates</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,In your home,Gas]">Gas</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,In your home,Electricity]">Electricity</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,In your home,Household maintenance]">Household maintenance</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,In your home,Internet]">Internet</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,In your home,TV Licence]">TV Licence</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,In your home,Mobile phone]">Mobile phone</option>
+                        
+                    </optgroup>
+                
+                    <optgroup label="Insurance">
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Insurance,Travel insurance]">Travel insurance</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Insurance,Income protection]">Income protection</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Insurance,Life insurance]">Life insurance</option>
+                        
+                    </optgroup>
+                
+                    <optgroup label="Eats and drinks">
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Eats and drinks,Food]">Food</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Eats and drinks,Eating out]">Eating out</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Eats and drinks,Meals at work]" selected>Meals at work</option>
+                        
+                    </optgroup>
+                
+                    <optgroup label="Motoring and public transport">
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Motoring and public transport,Rail/bus/taxi]">Rail/bus/taxi</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Motoring and public transport,Car club subscription]">Car club subscription</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Motoring and public transport,Car club hires]">Car club hires</option>
+                        
+                    </optgroup>
+                
+                    <optgroup label="Savings and investments">
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Savings and investments,Pension payments]">Pension payments</option>
+                        
+                    </optgroup>
+                
+                    <optgroup label="Family">
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Family,Childcare]">Childcare</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Family,Nappies/baby extras]">Nappies/baby extras</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Family,Baby activities]">Baby activities</option>
+                        
+                    </optgroup>
+                
+                    <optgroup label="Fun">
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Fun,Bob fun budget]">Bob fun budget</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Fun,Bill fun budget]">Bill fun budget</option>
+                        
+                    </optgroup>
+                
+                    <optgroup label="Health and beauty">
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Health and beauty,Dentistry]">Dentistry</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Health and beauty,Haircuts]">Haircuts</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Health and beauty,Optical bills]">Optical bills</option>
+                        
+                    </optgroup>
+                
+                    <optgroup label="Clothes">
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Clothes,Baby clothes]">Baby clothes</option>
+                        
+                    </optgroup>
+                
+                    <optgroup label="Big one offs">
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Big one offs,Christmas]">Christmas</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Big one offs,Summer holiday]">Summer holiday</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Big one offs,Winter holiday]">Winter holiday</option>
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Big one offs,Birthdays]">Birthdays</option>
+                        
+                    </optgroup>
+                
+                    <optgroup label="Odds and sods">
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Odds and sods,Charity donations]">Charity donations</option>
+                        
+                    </optgroup>
+                
+                    <optgroup label="Refurbishments">
+                        
+                            <option value="[17/09/2017,Pizza Union,5.50,Refurbishments,Refurbishments]">Refurbishments</option>
+                        
+                    </optgroup>
+                
+            </select>
+            </h3>
+        
+        <input type="hidden" name="statement-data" value="2017;February;Test;[one-known-merchant.csv]">
+        <input type="hidden" name="outstanding-banks" value="[]">
+        <div class="button">
+            <button type="submit">Confirm</button>
+        </div>
+    </form>
+</body>
+</html>

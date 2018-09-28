@@ -4,6 +4,7 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.should.shouldMatch
+import com.oneeyedmen.okeydoke.junit.ApprovalsRule
 import org.http4k.core.Body
 import org.http4k.core.ContentType
 import org.http4k.core.FormFile
@@ -20,11 +21,16 @@ import org.http4k.hamkrest.hasHeader
 import org.http4k.hamkrest.hasStatus
 import org.http4k.routing.RoutingHttpHandler
 import org.junit.Ignore
+import org.junit.Rule
 import org.junit.Test
 import java.io.File
 import java.nio.file.Paths
 
 class StatementsAcceptanceTest {
+
+    @Rule
+    @JvmField val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin")
+
     private val categoryMappings = mutableListOf<String>()
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
     private val mappingWriter = StubbedMappingWriter()
@@ -196,7 +202,7 @@ class StatementsAcceptanceTest {
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
 
-        localSkrooge(request)
+        val response = localSkrooge(request)
 
         val statementFile = File("input/normalised/2017-02_Test_one-known-merchant.csv")
         val statementFileContents = statementFile.readLines()
@@ -207,6 +213,8 @@ class StatementsAcceptanceTest {
         val decisionFileContents = decisionFile.readLines()
         assertThat(decisionFileContents.size, equalTo(1))
         assertThat(decisionFileContents[0], equalTo(decisionContent.trim()))
+
+        approver.assertApproved(response.bodyString())
     }
 
     @Test
@@ -226,24 +234,6 @@ class StatementsAcceptanceTest {
         assertThat(fileContents[0], equalTo("2017-09-17,Pizza Union,5.5,Eats and drinks,Meals at work"))
     }
 
-    @Ignore
-    @Test
-    fun `POST with one entry returns a monthly report when recognised merchant`() {
-        val categoryMappings = mutableListOf("Pizza Union,Eats and drinks,Meals at work")
-        val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
-        val outputPath = Paths.get("src/test/resources/decisions")
-        val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
-        val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
-        val requestWithPizzaUnion = Request(POST, "/statements").body("2017;February;Test;OneKnownMerchant;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
-        val response = localSkrooge(requestWithPizzaUnion)
-
-        response shouldMatch hasStatus(OK)
-        response shouldMatch hasBody(containsSubstring("<h1>Please review your monthly categorisations for one-known-merchant</h1>"))
-        response shouldMatch hasBody(containsSubstring("<h3>17/09/2017, Pizza Union: £5.50"))
-        response shouldMatch hasBody(containsSubstring("<option value=\"[17/09/2017,Pizza Union,5.50,Eats and drinks,Meals at work]\" selected>Meals at work</option>"))
-        response shouldMatch hasBody(containsSubstring("<option value=\"[17/09/2017,Pizza Union,5.50,Eats and drinks,Food]\">Food</option>"))
-    }
-
     @Test
     fun `JS-HACK POST with one entry returns a monthly report when recognised merchant`() {
         val categoryMappings = mutableListOf("Pizza Union,Eats and drinks,Meals at work")
@@ -255,7 +245,7 @@ class StatementsAcceptanceTest {
         val response = localSkrooge(requestWithPizzaUnion)
 
         response shouldMatch hasStatus(OK)
-        response shouldMatch hasBody(containsSubstring("<h1>Please review your monthly categorisations for one-known-merchant</h1>"))
+        response shouldMatch hasBody(containsSubstring("<h1>Please review your categorisations for one-known-merchant</h1>"))
         response shouldMatch hasBody(containsSubstring("<h3>17/09/2017, Pizza Union: £5.50"))
         response shouldMatch hasBody(containsSubstring("<option value=\"[17/09/2017,Pizza Union,5.50,Eats and drinks,Meals at work]\" selected>Meals at work</option>"))
         response shouldMatch hasBody(containsSubstring("<option value=\"[17/09/2017,Pizza Union,5.50,Eats and drinks,Food]\">Food</option>"))

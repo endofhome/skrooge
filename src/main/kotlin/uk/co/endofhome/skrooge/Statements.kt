@@ -1,5 +1,6 @@
 package uk.co.endofhome.skrooge
 
+import org.http4k.asString
 import org.http4k.core.Body
 import org.http4k.core.ContentType
 import org.http4k.core.FormFile
@@ -15,11 +16,14 @@ import org.http4k.lens.MultipartFormFile
 import org.http4k.lens.Validator
 import org.http4k.lens.multipartForm
 import org.http4k.template.TemplateRenderer
+import org.http4k.template.ViewModel
 import org.http4k.template.view
 import java.io.File
+import java.math.BigDecimal
 import java.time.Month
 import java.time.Year
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 
 class Statements(private val categories: Categories) {
 
@@ -38,9 +42,33 @@ class Statements(private val categories: Categories) {
         val statementData = StatementData(year, month, user, statement)
         val decisions = StatementDecider(categories.categoryMappings).process(statementFile.readLines())
         decisionReaderWriter.write(statementData, decisions)
-        return Response(Status.OK)
-    }
 
+        if (decisions.map { it.category }.contains(null)) {
+            throw RuntimeException("There are unknown merchants - this is currently unsupported.")
+        }
+
+        val formattedBankStatement = FormattedBankStatement(
+                year.toString(),
+                month.name.toLowerCase().capitalize(),
+                user,
+                statement,
+                decisions.sortedBy { it.line.date }.map { decision ->
+                    FormattedDecision(
+                            LineFormatter.format(decision.line),
+                            decision.category,
+                            decision.subCategory,
+                            categories.withSelection(decision.subCategory)
+                    )
+                }
+        )
+
+        val view = Body.view(renderer, ContentType.TEXT_HTML)
+        val reviewCategorisationsViewModel = PleaseReviewYourCategorisations(
+                formattedBankStatement,
+                emptyList()
+        )
+        return Response(Status.OK).with(view of reviewCategorisationsViewModel)
+    }
 
     fun uploadStatementsJsHack(body: Body, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
         val parser = PretendFormParser()
@@ -94,11 +122,12 @@ class Statements(private val categories: Categories) {
                                     )
                                 })
                     })
-                    val bankReport = BankReport(
+                    val reviewCategorisationsViewModel = PleaseReviewYourCategorisations(
                             bankStatements.statements.first(),
                             bankStatements.statements.filterIndexed { index, _ -> index != 0 }
                     )
-                    return BankReports(renderer).report(bankReport)
+                    val view = Body.view(renderer, ContentType.TEXT_HTML)
+                    return Response(Status.OK).with(view of reviewCategorisationsViewModel)
                 }
             }
         } catch (e: Exception) {
@@ -117,7 +146,7 @@ class Statements(private val categories: Categories) {
 
 data class FormForNormalisedStatement(val year: Year, val month: Month, val user: String, val statement: String, val file: FormFile) {
     companion object {
-        fun from(request: Request) : FormForNormalisedStatement {
+        fun from(request: Request): FormForNormalisedStatement {
             val yearName = "year"
             val monthName = "month"
             val userName = "user"
@@ -157,5 +186,47 @@ data class FormForNormalisedStatement(val year: Year, val month: Month, val user
 
             return multipartFormBody.extract(request)
         }
+    }
+}
+
+object LineFormatter {
+    fun format(line: Line) = FormattedLine(
+            line.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+            line.merchant,
+            line.amount.roundTo2DecimalPlaces()
+    )
+
+    private fun Double.roundTo2DecimalPlaces() =
+            BigDecimal(this).setScale(2, BigDecimal.ROUND_HALF_UP).toString()
+}
+
+data class PleaseReviewYourCategorisations(val bankStatement: FormattedBankStatement, val outstandingStatements: List<FormattedBankStatement>) : ViewModel
+
+data class BankStatement(val yearMonth: YearMonth, val username: String, val bankName: String, val decisions: List<Decision>)
+data class FormattedBankStatement(val year: String, val month: String, val username: String, val bankName: String, val formattedDecisions: List<FormattedDecision>)
+data class FormattedLine(val date: String, val merchant: String, val amount: String)
+data class BankStatements(val statements: List<FormattedBankStatement>)
+data class FormattedDecision(val line: FormattedLine, val category: Category?, val subCategory: SubCategory?, val categoriesWithSelection: CategoriesWithSelection)
+data class StatementData(val year: Year, val month: Month, val username: String, val statement: String)
+data class JsHackStatementData(val statementData: StatementData, val files: List<File>) {
+    companion object {
+        fun fromFormParts(formParts: List<String>): JsHackStatementData {
+            val year = Year.parse(formParts[0])
+            val month = Month.valueOf(formParts[1].toUpperCase())
+            val username = formParts[2]
+            val statement = formParts[3]
+            val fileStrings: List<String> = formParts[4].substring(1, formParts[4].lastIndex).split(",")
+            val files: List<File> = fileStrings.map { File(it) }
+            val statementData = StatementData(year, month, username, statement)
+            return JsHackStatementData(statementData, files)
+        }
+    }
+}
+
+class PretendFormParser {
+    fun parse(body: Body): JsHackStatementData {
+        // delimiting with semi-colons for now as I want a list in the last 'field'
+        val params = body.payload.asString().split(";")
+        return JsHackStatementData.fromFormParts(params)
     }
 }
