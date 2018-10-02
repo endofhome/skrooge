@@ -61,7 +61,7 @@ class Skrooge(private val categories: Categories = Categories(),
     fun routes() = routes(
             "/public" bind publicDirectory,
             "/" bind GET to { _ -> index() },
-            "/statements" bind POST to { request -> Statements(categories).uploadStatements(request, renderer, decisionReaderWriter) },
+            "/statements" bind POST to { request -> Statements(categories).uploadStatements(request, renderer) },
             "/statements-js-hack" bind POST to { request -> Statements(categories).uploadStatementsJsHack(request.body, renderer, decisionReaderWriter) },
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },

@@ -29,7 +29,7 @@ import java.util.Locale
 
 class Statements(private val categories: Categories) {
 
-    fun uploadStatements(request: Request, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
+    fun uploadStatements(request: Request, renderer: TemplateRenderer): Response {
         val form = try {
             FormForNormalisedStatement.from(request)
         } catch (e: IllegalStateException) {
