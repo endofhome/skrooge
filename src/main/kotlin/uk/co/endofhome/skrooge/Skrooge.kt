@@ -37,9 +37,8 @@ import java.util.Locale.UK
 
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
-    val app = Skrooge()
-            .routes()
-            .withFilter(DebuggingFilters.PrintRequestAndResponse())
+    val app = Skrooge().routes()
+                       .withFilter(DebuggingFilters.PrintRequestAndResponse())
     app.asServer(Jetty(port)).start()
     println("Skrooge has started on http://localhost:$port")
 }
