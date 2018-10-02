@@ -28,6 +28,7 @@ class FileSystemDecisionReaderReaderWriter(private val categories: Categories, p
 
     override fun read(year: Int, month: Month): List<Decision> =
         outputPath.toFile().listFiles()
+                              .filterNot { it.name == ".gitkeep" }
                               .filter {
                                   val filenameSplit = it.name.split("-")
                                   filenameSplit[2] != "Test"
