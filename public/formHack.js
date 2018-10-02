@@ -12,6 +12,6 @@ function sendFakeFormData() {
     xhr.send(body);
 }
 
-document.getElementById("upload").onclick = function () {
+document.getElementById("fake-upload").onclick = function () {
     sendFakeFormData();
 };

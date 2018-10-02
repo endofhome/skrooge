@@ -41,10 +41,7 @@ class Statements(private val categories: Categories) {
         val statementFile = File("input/normalised/$year-${format(month)}_${user.capitalize()}_$statement.csv")
         statementFile.writeBytes(fileBytes)
 
-        val statementData = StatementData(year, month, user, statement)
         val decisions = StatementDecider(categories.categoryMappings).process(statementFile.readLines())
-        decisionReaderWriter.write(statementData, decisions)
-
         val unknownMerchants: Set<String> = decisions.filter { it.category == null }
                                                      .map { it.line.merchant }
                                                      .toSet()

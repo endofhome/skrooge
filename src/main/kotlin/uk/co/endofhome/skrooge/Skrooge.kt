@@ -8,7 +8,6 @@ import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.core.Status.Companion.BAD_REQUEST
-import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
 import org.http4k.core.Uri
 import org.http4k.core.query
@@ -16,9 +15,7 @@ import org.http4k.core.with
 import org.http4k.filter.DebuggingFilters
 import org.http4k.format.Gson
 import org.http4k.lens.BiDiBodyLens
-import org.http4k.lens.BiDiLens
 import org.http4k.lens.FormField
-import org.http4k.lens.Query
 import org.http4k.lens.Validator
 import org.http4k.lens.WebForm
 import org.http4k.lens.webForm
@@ -29,13 +26,14 @@ import org.http4k.routing.static
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import org.http4k.template.HandlebarsTemplates
-import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
 import org.http4k.template.view
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.Month
+import java.time.format.TextStyle
+import java.util.Locale.UK
 
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
@@ -74,62 +72,25 @@ class Skrooge(private val categories: Categories = Categories(),
     )
 
     private fun index(): Response {
-        val templateBasePath = this.javaClass.name.removeSuffix(this.javaClass.simpleName)
-                                                  .replace('.', '/')
-        val indexTemplate = "Index"
-        val index = object : ViewModel {
-            override fun template() = "$templateBasePath$indexTemplate"
-        }
+        val years = listOf(DisplayYear.of("2017"), DisplayYear.of("2018"), DisplayYear.of("2019"))
+        val months = Month.values().map { DisplayMonth.of(it) }
+        val users = listOf(System.getenv("PARTICIPANT_TWO"), System.getenv("PARTICIPANT_ONE"), System.getenv("PARTICIPANT_THREE"))
+        val statementTypes = listOf(
+            StatementType(System.getenv("BANK_FIVE"), System.getenv("BANK_FIVE_DISPLAY_NAME")),
+            StatementType(System.getenv("BANK_SIX"), System.getenv("BANK_SIX_DISPLAY_NAME")),
+            StatementType(System.getenv("BANK_ONE"), System.getenv("BANK_ONE_DISPLAY_NAME")),
+            StatementType(System.getenv("BANK_THREE"), System.getenv("BANK_THREE_DISPLAY_NAME")),
+            StatementType(System.getenv("BANK_FOUR"), System.getenv("BANK_FOUR_DISPLAY_NAME")),
+            StatementType(System.getenv("BANK_TWO"), System.getenv("BANK_TWO_DISPLAY_NAME")),
+            StatementType(System.getenv("BANK_SEVEN"), System.getenv("BANK_SEVEN_DISPLAY_NAME")),
+            StatementType(System.getenv("BANK_EIGHT"), System.getenv("BANK_EIGHT_DISPLAY_NAME"))
+        )
+        val index = Index(years, months, users, statementTypes)
         val view = Body.view(renderer, ContentType.TEXT_HTML)
         return Response(Status.OK).with(view of index)
     }
-}
 
-class ReportCategorisations(private val decisionReaderWriter: DecisionReaderWriter, val categories: List<Category>) {
-    fun confirm(request: Request): Response {
-        val webForm = Body.webForm(Validator.Strict)
-        val form = webForm.toLens().extract(request)
-        val decisionsStrings: List<String>? = form.fields["decisions"]
-        val decisionsSplit: List<List<String>>? = decisionsStrings?.map { it.substring(1, it.lastIndex).split(", ") }
-        val decisions: List<Decision> = decisionsSplit!!.flatMap { decisionLine ->
-            decisionLine.map { it.split(",") }.map {
-                val dateParts = it[0].split("/")
-                val day = Integer.valueOf(dateParts[0])
-                val month = Month.of(Integer.valueOf(dateParts[1]))
-                val year = Integer.valueOf(dateParts[2])
-                val date = LocalDate.of(year, month, day)
-                val merchant = it[1]
-                val amount = it[2].toDouble()
-                val category = it[3]
-                val subCategory = it[4]
-                Decision(Line(date, merchant, amount), Category(category, categories.find { it.title == category }!!.subcategories), SubCategory(subCategory))
-            }
-        }
-
-        val statementDataSplit: List<String> = form.fields["statement-data"]!![0].split(";")
-        val year = Year.parse(statementDataSplit[0])
-        val month = Month.valueOf(statementDataSplit[1])
-        val user = statementDataSplit[2]
-        val statement = statementDataSplit[3]
-        val statementData = StatementData(year, month, user, statement)
-        decisionReaderWriter.write(statementData, decisions)
-        return Response(Status.CREATED)
-    }
-}
-
-class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val categories: List<Category>) {
-    fun handle(request: Request): Response {
-        val currentMerchantLens: BiDiLens<Request, String> = Query.required("currentMerchant")
-        val outstandingMerchantsLens: BiDiLens<Request, List<String>> = Query.multi.required("outstandingMerchants")
-        val originalRequestBodyLens: BiDiLens<Request, String> = Query.required("originalRequestBody")
-        val view = Body.view(renderer, ContentType.TEXT_HTML)
-        val currentMerchant = Merchant(currentMerchantLens(request), categories)
-        val outstandingMerchants: List<String> = outstandingMerchantsLens(request).flatMap { it.split(",") }
-        val originalRequestBody = originalRequestBodyLens(request)
-        val unknownMerchants = UnknownMerchants(currentMerchant, outstandingMerchants.joinToString(","), originalRequestBody)
-
-        return Response(OK).with(view of unknownMerchants)
-    }
+    data class StatementType(val id: String, val displayName: String)
 }
 
 class StatementDecider(categoryMappings: List<String>) {
@@ -194,11 +155,40 @@ class CategoryMappings(private val categoryMappings: MutableList<String>, privat
 
 data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
 data class Line(val date: LocalDate, val merchant: String, val amount: Double)
-data class UnknownMerchants(val currentMerchant: Merchant, val outstandingMerchants: String, val originalRequestBody: String) : ViewModel
-data class Merchant(val name: String, val categories: List<Category>?)
 data class Category(val title: String, val subcategories: List<SubCategory>)
 data class CategoryWithSelection(val title: String, val subCategories: List<SubCategoryWithSelection>)
 data class CategoriesWithSelection(val categories: List<CategoryWithSelection>)
 data class SubCategory(val name: String)
 data class SubCategoryWithSelection(val subCategory: SubCategory, val selector: String)
 data class Decision(val line: Line, val category: Category?, val subCategory: SubCategory?)
+
+data class DisplayYear(val name: String, val selector: String) {
+    companion object {
+        fun of(year: String): DisplayYear = DisplayYear(year, selectedString(year))
+
+        private fun selectedString(year: String): String {
+            val selectedYear = LocalDate.now().year.toString()
+            return when (year) {
+                selectedYear -> " selected"
+                else        -> ""
+            }
+        }
+    }
+}
+
+data class DisplayMonth(val name: String, val selector: String) {
+    companion object {
+        fun of(month: Month): DisplayMonth =
+                DisplayMonth(month.getDisplayName(TextStyle.FULL, UK), selectedString(month))
+
+        private fun selectedString(month: Month): String {
+            val selectedMonth = LocalDate.now().month
+            return when (month) {
+                selectedMonth -> " selected"
+                else          -> ""
+            }
+        }
+    }
+}
+
+data class Index(val years: List<DisplayYear>, val months: List<DisplayMonth>, val users: List<String>, val statementTypes: List<Skrooge.StatementType>) : ViewModel

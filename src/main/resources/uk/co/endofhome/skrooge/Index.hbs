@@ -4,13 +4,68 @@
     <meta charset="UTF-8">
     <title>Skrooge</title>
     <link href="public/vendor/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="public/skrooge.css" rel="stylesheet" type="text/css">
 </head>
 <body id="body">
     <h1>S K R O O G E</h1>
 
-    <h1>Upload your bank statements</h1>
+    <h3>Upload your bank statements</h3>
+
+    <form action="/statements" method="POST" enctype="multipart/form-data">
+        <div>
+            <label for="year">Year</label>
+            <select name="year" id="year">
+                {{#each years}}
+                <option value="{{name}}"{{selector}}>{{name}}</option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div>
+            <label for="month">Month</label>
+            <select name="month" id="month">
+                {{#each months}}
+                    <option value="{{name}}"{{selector}}>{{name}}</option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div>
+            <label for="user">User</label>
+            <select name="user" id="user">
+                {{#each users}}
+                    <option value="{{this}}">{{this}}</option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div>
+            <label for="statement">Statement</label>
+            <select name="statement" id="statement">
+                {{#each statementTypes}}
+                    <option value="{{{id}}}">{{{displayName}}}</option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div>
+            <label for="statement-file" class="visuallyhidden">File</label>
+            <input type="file" name="statement" id="statement-file">
+        </div>
+
+        <br>
+
+        <div>Nb. statements must be normalised before posting.</div>
+
+        <div class="button">
+            <button id="upload" type="submit">Upload statements</button>
+        </div>
+    </form>
+
+    <br> -OR- <br><br>
+
     <div class="button">
-        <button id="upload" type="submit">Upload statements</button>
+        <button id="fake-upload" type="submit">Fake upload using JavaScript</button>
     </div>
     <script type="text/javascript" src="public/formHack.js"></script>
 </body>

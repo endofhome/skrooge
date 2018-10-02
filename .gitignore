@@ -19,3 +19,4 @@ src/main/kotlin/uk/co/endofhome/skrooge/scripts/MonzoClient.kt
 src/main/javascript/c3-spike.js
 src/test/resources/monzo-retail-output.txt
 src/test/resources/decisions/
+src/test/kotlin/approvals/uk/co/endofhome/skrooge/IndexTest.renders index page correctly.approved
