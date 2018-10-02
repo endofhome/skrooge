@@ -1,6 +1,5 @@
 package uk.co.endofhome.skrooge
 
-import org.http4k.asString
 import org.http4k.core.Body
 import org.http4k.core.ContentType
 import org.http4k.core.FormFile
@@ -22,7 +21,6 @@ import java.io.File
 import java.math.BigDecimal
 import java.time.Month
 import java.time.Year
-import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -86,71 +84,6 @@ class Statements(private val categories: Categories) {
         return Response(Status.SEE_OTHER).header("Location", uri.toString())
     }
 
-    fun uploadStatementsJsHack(body: Body, renderer: TemplateRenderer, decisionReaderWriter: DecisionReaderWriter): Response {
-        val parser = PretendFormParser()
-
-        try {
-            val statementData: JsHackStatementData = parser.parse(body)
-            val processedLines: List<BankStatement> = statementData.files.map {
-                val filenameParts = it.name.split("_")
-                val splitUsername = filenameParts[1]
-                val splitFilename = filenameParts[2]
-                val splitYear = Integer.valueOf(filenameParts[0].split("-")[0])
-                val splitMonth = Integer.valueOf(filenameParts[0].split("-")[1])
-                BankStatement(
-                        YearMonth.of(splitYear, splitMonth),
-                        splitUsername,
-                        splitFilename.substringBefore(".csv"),
-                        StatementDecider(categories.categoryMappings).process(it.readLines())
-                )
-            }
-            val statementsWithUnknownMerchants = processedLines.filter { it.decisions.map { it.category }.contains(null) }
-
-            return when (statementsWithUnknownMerchants.isNotEmpty()) {
-                true -> {
-                    val unknownMerchants: Set<String> = statementsWithUnknownMerchants
-                            .flatMap { it.decisions }
-                            .filter { it.category == null }
-                            .map { it.line.merchant }
-                            .toSet()
-                    val currentMerchant = unknownMerchants.first()
-                    val outstandingMerchants = unknownMerchants.filterIndexed { index, _ -> index != 0 }
-                    val uri = Uri.of("/unknown-merchant")
-                            .query("currentMerchant", currentMerchant)
-                            .query("outstandingMerchants", outstandingMerchants.joinToString(","))
-                            .query("originalRequestBody", body.toString())
-                    Response(Status.SEE_OTHER).header("Location", uri.toString())
-                }
-                false -> {
-                    processedLines.forEach { decisionReaderWriter.write(statementData.statementData, it.decisions) }
-                    val bankStatements = BankStatements(processedLines.map { bankStatement ->
-                        FormattedBankStatement(
-                                bankStatement.yearMonth.year.toString(),
-                                bankStatement.yearMonth.month.name.toLowerCase().capitalize(),
-                                bankStatement.username,
-                                bankStatement.bankName,
-                                bankStatement.decisions.sortedBy { it.line.date }.map { decision ->
-                                    FormattedDecision(
-                                            LineFormatter.format(decision.line),
-                                            decision.category,
-                                            decision.subCategory,
-                                            categories.withSelection(decision.subCategory)
-                                    )
-                                })
-                    })
-                    val reviewCategorisationsViewModel = PleaseReviewYourCategorisations(
-                            bankStatements.statements.first(),
-                            bankStatements.statements.filterIndexed { index, _ -> index != 0 }
-                    )
-                    val view = Body.view(renderer, ContentType.TEXT_HTML)
-                    return Response(Status.OK).with(view of reviewCategorisationsViewModel)
-                }
-            }
-        } catch (e: Exception) {
-            return Response(Status.BAD_REQUEST)
-        }
-    }
-
     private fun format(month: Month) = month.value.toString().padStart(2, '0')
 }
 
@@ -212,31 +145,7 @@ object LineFormatter {
 
 data class PleaseReviewYourCategorisations(val bankStatement: FormattedBankStatement, val outstandingStatements: List<FormattedBankStatement>) : ViewModel
 
-data class BankStatement(val yearMonth: YearMonth, val username: String, val bankName: String, val decisions: List<Decision>)
 data class FormattedBankStatement(val year: String, val month: String, val username: String, val bankName: String, val formattedDecisions: List<FormattedDecision>)
 data class FormattedLine(val date: String, val merchant: String, val amount: String)
-data class BankStatements(val statements: List<FormattedBankStatement>)
 data class FormattedDecision(val line: FormattedLine, val category: Category?, val subCategory: SubCategory?, val categoriesWithSelection: CategoriesWithSelection)
 data class StatementData(val year: Year, val month: Month, val username: String, val statement: String)
-data class JsHackStatementData(val statementData: StatementData, val files: List<File>) {
-    companion object {
-        fun fromFormParts(formParts: List<String>): JsHackStatementData {
-            val year = Year.parse(formParts[0])
-            val month = Month.valueOf(formParts[1].toUpperCase())
-            val username = formParts[2]
-            val statement = formParts[3]
-            val fileStrings: List<String> = formParts[4].substring(1, formParts[4].lastIndex).split(",")
-            val files: List<File> = fileStrings.map { File(it) }
-            val statementData = StatementData(year, month, username, statement)
-            return JsHackStatementData(statementData, files)
-        }
-    }
-}
-
-class PretendFormParser {
-    fun parse(body: Body): JsHackStatementData {
-        // delimiting with semi-colons for now as I want a list in the last 'field'
-        val params = body.payload.asString().split(";")
-        return JsHackStatementData.fromFormParts(params)
-    }
-}

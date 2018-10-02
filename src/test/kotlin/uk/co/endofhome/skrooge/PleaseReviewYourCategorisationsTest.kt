@@ -1,17 +1,22 @@
 package uk.co.endofhome.skrooge
 
-import com.natpryce.hamkrest.containsSubstring
-import com.natpryce.hamkrest.should.shouldMatch
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.equalTo
+import com.oneeyedmen.okeydoke.junit.ApprovalsRule
+import org.http4k.core.ContentType
+import org.http4k.core.FormFile
 import org.http4k.core.Method
+import org.http4k.core.MultipartFormBody
 import org.http4k.core.Request
-import org.http4k.core.Status
-import org.http4k.hamkrest.hasBody
-import org.http4k.hamkrest.hasStatus
-import org.junit.Ignore
+import org.http4k.core.Status.Companion.OK
+import org.junit.Rule
 import org.junit.Test
 import java.nio.file.Paths
 
 class PleaseReviewYourCategorisationsTest {
+
+    @Rule
+    @JvmField val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
 
     private val categoryMappings = mutableListOf("Pizza Union,Some category,Some subcategory")
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
@@ -19,24 +24,25 @@ class PleaseReviewYourCategorisationsTest {
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
     private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, Paths.get("src/test/resources/budgets/")).routes()
 
-    @Ignore
     @Test
     fun `Statement categorisation report has required hidden fields`() {
-        val request = Request(Method.POST, "/statements").body("2017;February;Someone;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
+        val formFile = FormFile(
+                "don't care",
+                ContentType.OCTET_STREAM,
+                "".byteInputStream()
+        )
+        val body = MultipartFormBody().plus("year" to "2017")
+                .plus("month" to "February")
+                .plus("user" to "Someone")
+                .plus("statement" to "one-known-merchant")
+                .plus("statement" to formFile)
+        val request = Request(Method.POST, "/statements")
+                .header("content-type", "multipart/form-data; boundary=${body.boundary}")
+                .body(body)
 
         val response = skrooge(request)
 
-        response shouldMatch hasStatus(Status.OK)
-        response shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"statement-data\" value=\"2017;February;Someone;[one-known-merchant.csv]\">"))
-    }
-
-    @Test
-    fun `JS-HACK Statement categorisation report has required hidden fields`() {
-        val request = Request(Method.POST, "/statements-js-hack").body("2017;February;Someone;some-bank;[src/test/resources/2017-02_Someone_one-known-merchant.csv]")
-
-        val response = skrooge(request)
-
-        response shouldMatch hasStatus(Status.OK)
-        response shouldMatch hasBody(containsSubstring("<input type=\"hidden\" name=\"statement-data\" value=\"2017;February;Someone;[one-known-merchant.csv]\">"))
+        assertThat(response.status, equalTo(OK))
+        approver.assertApproved(response.bodyString())
     }
 }

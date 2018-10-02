@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skrooge</title>
+    <link href="public/vendor/bootstrap.min.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <h1>Please review your categorisations for one-known-merchant</h1>
+    <form action="reports/categorisations" method="post">
+        
+        <input type="hidden" name="statement-data" value="2017;February;Someone;[one-known-merchant.csv]">
+        <input type="hidden" name="outstanding-banks" value="[]">
+        <div class="button">
+            <button type="submit">Confirm</button>
+        </div>
+    </form>
+</body>
+</html>
