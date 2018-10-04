@@ -16,9 +16,9 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-class MonthlyReporter(private val gson: Gson,
-                      private val decisionReaderWriter: DecisionReaderWriter,
-                      private val categoryReporter: CategoryReporter) {
+class MonthlyReportHandler(private val gson: Gson,
+                           private val decisionReaderWriter: DecisionReaderWriter,
+                           private val categoryReporter: CategoryReporter) {
 
     operator fun invoke(request: Request): Response {
         val year = request.query("year")!!.toInt()
@@ -79,9 +79,9 @@ class MonthlyReporter(private val gson: Gson,
     }
 }
 
-class AnnualReporter(private val gson: Gson,
-                     private val decisionReaderWriter: DecisionReaderWriter,
-                     private val categoryReporter: CategoryReporter) {
+class AnnualReportHandler(private val gson: Gson,
+                          private val decisionReaderWriter: DecisionReaderWriter,
+                          private val categoryReporter: CategoryReporter) {
 
     operator fun invoke(request: Request): Response {
         val startDateString = request.query("startDate")!!

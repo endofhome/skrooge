@@ -16,7 +16,7 @@ import uk.co.endofhome.skrooge.decisions.FileSystemDecisionReaderReaderWriter
 import java.io.File
 import java.nio.file.Paths
 
-class ReportCategorisationsTest {
+class DecisionsHandlerTest {
 
     private val categoryMappings = mutableListOf<String>()
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)

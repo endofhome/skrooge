@@ -26,7 +26,7 @@ import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
 import java.io.File
 import java.nio.file.Paths
 
-class StatementsAcceptanceTest {
+class StatementsHandlerAcceptanceTest {
 
     @Rule
     @JvmField val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")

@@ -15,17 +15,17 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
 
     fun categoryReportsFrom(decisions: List<Decision>, numberOfMonths: Int = 1): List<CategoryReport> {
         val catReportDataItems: List<CategoryReportDataItem> =
-            decisions.map {
-                        val budgetAmount = annualBudgets.valueFor(it.category!!, it.subCategory!!, it.line.date)
-                CategoryReportDataItem(it.subCategory.name, it.line.amount, budgetAmount * numberOfMonths)
-            }
-                     .groupBy { it.name }
-                     .map {
-                        it.value.reduce {
-                            acc, categoryReportDataItem ->
-                            CategoryReportDataItem(it.key, acc.actual + categoryReportDataItem.actual, categoryReportDataItem.budget)
-                        }}
-                     .map { it.copy(actual = BigDecimal.valueOf(it.actual).setScale(2, RoundingMode.HALF_UP).toDouble()) }
+                decisions.map {
+                    val budgetAmount = annualBudgets.valueFor(it.category!!, it.subCategory!!, it.line.date)
+                    CategoryReportDataItem(it.subCategory.name, it.line.amount, budgetAmount * numberOfMonths)
+                }
+                        .groupBy { it.name }
+                        .map {
+                            it.value.reduce { acc, categoryReportDataItem ->
+                                CategoryReportDataItem(it.key, acc.actual + categoryReportDataItem.actual, categoryReportDataItem.budget)
+                            }
+                        }
+                        .map { it.copy(actual = BigDecimal.valueOf(it.actual).setScale(2, RoundingMode.HALF_UP).toDouble()) }
 
         return categories.map { category ->
             CategoryReport(
@@ -50,10 +50,10 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
                 }
                         .groupBy { it.name }
                         .map {
-                            it.value.reduce {
-                                acc, annualCategoryReportDataItem ->
+                            it.value.reduce { acc, annualCategoryReportDataItem ->
                                 AnnualCategoryReportDataItem(it.key, acc.actual + annualCategoryReportDataItem.actual, annualCategoryReportDataItem.budget, annualCategoryReportDataItem.annualBudget)
-                            }}
+                            }
+                        }
                         .map { it.copy(actual = BigDecimal.valueOf(it.actual).setScale(2, RoundingMode.HALF_UP).toDouble()) }
 
         return categories.map { category ->
@@ -65,7 +65,7 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
     }
 
     fun overviewFrom(categoryReports: List<CategoryReport>): CategoryReport {
-        val overviewCategoryReport: List<CategoryReportDataItem> =  categoryReports.map { categoryReport ->
+        val overviewCategoryReport: List<CategoryReportDataItem> = categoryReports.map { categoryReport ->
             categoryReport.data.reduce { acc, categoryReportDataItem ->
                 CategoryReportDataItem(categoryReport.title, acc.actual + categoryReportDataItem.actual, acc.budget + categoryReportDataItem.budget)
             }
@@ -98,10 +98,10 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
 
 private fun LocalDate.nextBudgetDate(budgetDayOfMonth: Int): LocalDate = when {
     this.dayOfMonth <= budgetDayOfMonth -> LocalDate.of(year, month, budgetDayOfMonth)
-    else                                -> {
+    else -> {
         when {
             this.month == DECEMBER -> LocalDate.of(year.plus(1), JANUARY, budgetDayOfMonth)
-            else                   -> LocalDate.of(year, month.plus(1), budgetDayOfMonth)
+            else -> LocalDate.of(year, month.plus(1), budgetDayOfMonth)
         }
 
     }

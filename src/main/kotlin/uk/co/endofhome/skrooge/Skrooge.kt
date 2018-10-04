@@ -20,17 +20,17 @@ import org.http4k.template.ViewModel
 import org.http4k.template.view
 import uk.co.endofhome.skrooge.categories.AnnualBudgets
 import uk.co.endofhome.skrooge.categories.Categories
-import uk.co.endofhome.skrooge.categories.CategoryMappings
+import uk.co.endofhome.skrooge.categories.CategoryMappingHandler
 import uk.co.endofhome.skrooge.categories.CategoryReporter
 import uk.co.endofhome.skrooge.categories.FileSystemMappingWriter
 import uk.co.endofhome.skrooge.categories.MappingWriter
 import uk.co.endofhome.skrooge.decisions.DecisionReaderWriter
+import uk.co.endofhome.skrooge.decisions.DecisionsHandler
 import uk.co.endofhome.skrooge.decisions.FileSystemDecisionReaderReaderWriter
-import uk.co.endofhome.skrooge.reportcategorisations.ReportCategorisations
-import uk.co.endofhome.skrooge.reports.AnnualReporter
-import uk.co.endofhome.skrooge.reports.BarCharts
-import uk.co.endofhome.skrooge.reports.MonthlyReporter
-import uk.co.endofhome.skrooge.statements.Statements
+import uk.co.endofhome.skrooge.reports.AnnualReportHandler
+import uk.co.endofhome.skrooge.reports.BarChartHandler
+import uk.co.endofhome.skrooge.reports.MonthlyReportHandler
+import uk.co.endofhome.skrooge.statements.StatementsHandler
 import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -58,19 +58,19 @@ class Skrooge(private val categories: Categories = Categories(),
     private val publicDirectory = static(ResourceLoader.Directory("public"))
     private val annualBudgets = AnnualBudgets.from(budgetDirectory)
     private val categoryReporter = CategoryReporter(categories.all(), annualBudgets)
-    private val annualReporter = AnnualReporter(gson, decisionReaderWriter, categoryReporter)
-    private val monthlyReporter = MonthlyReporter(gson, decisionReaderWriter, categoryReporter)
+    private val annualReportHandler = AnnualReportHandler(gson, decisionReaderWriter, categoryReporter)
+    private val monthlyReportHandler = MonthlyReportHandler(gson, decisionReaderWriter, categoryReporter)
 
     fun routes() = routes(
             "/public" bind publicDirectory,
             "/" bind GET to { _ -> index() },
-            "/statements" bind POST to { request -> Statements(categories).upload(request, renderer) },
+            "/statements" bind POST to { request -> StatementsHandler(categories).upload(request, renderer) },
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
-            "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },
-            "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionReaderWriter, categories.all()).confirm(request) },
-            "annual-report/json" bind GET to { request -> annualReporter(request) },
-            "monthly-report/json" bind GET to { request -> monthlyReporter(request) },
-            "web" bind GET to { request -> BarCharts(request, renderer) }
+            "category-mapping" bind POST to { request -> CategoryMappingHandler(categoryMappings, mappingWriter).addCategoryMapping(request) },
+            "reports/categorisations" bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories.all()).confirm(request) },
+            "annual-report/json" bind GET to { request -> annualReportHandler(request) },
+            "monthly-report/json" bind GET to { request -> monthlyReportHandler(request) },
+            "web" bind GET to { request -> BarChartHandler(request, renderer) }
     )
 
     private fun index(): Response {

@@ -13,7 +13,7 @@ import org.http4k.lens.Validator
 import org.http4k.lens.WebForm
 import org.http4k.lens.webForm
 
-class CategoryMappings(private val categoryMappings: MutableList<String>, private val mappingWriter: MappingWriter) {
+class CategoryMappingHandler(private val categoryMappings: MutableList<String>, private val mappingWriter: MappingWriter) {
     fun addCategoryMapping(request: Request): Response {
         val newMappingLens = FormField.required("new-mapping")
         val remainingVendorsLens = FormField.required("remaining-vendors")

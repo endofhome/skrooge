@@ -32,7 +32,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-class Statements(private val categories: Categories) {
+class StatementsHandler(private val categories: Categories) {
 
     fun upload(request: Request, renderer: TemplateRenderer): Response {
         val form = try {

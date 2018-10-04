@@ -21,14 +21,14 @@ import uk.co.endofhome.skrooge.decisions.SubCategory
 import uk.co.endofhome.skrooge.reports.AnnualCategoryReport
 import uk.co.endofhome.skrooge.reports.AnnualCategoryReportDataItem
 import uk.co.endofhome.skrooge.reports.AnnualReport
-import uk.co.endofhome.skrooge.reports.AnnualReporter
+import uk.co.endofhome.skrooge.reports.AnnualReportHandler
 import uk.co.endofhome.skrooge.statements.StatementData
 import java.time.LocalDate
 import java.time.Month
 import java.time.Year
 import java.time.format.DateTimeFormatter
 
-class AnnualReporterTest {
+class AnnualReportHandlerTest {
 
     @Test
     fun `valid request returns OK`() {
@@ -56,7 +56,7 @@ class AnnualReporterTest {
         assertThat(json.categories, equalTo(listOf(categoryReport)))
     }
 
-    private fun setUpWithOneDecision(): AnnualReporter {
+    private fun setUpWithOneDecision(): AnnualReportHandler {
         val statementData = StatementData(Year.of(2018), Month.APRIL, "username", "some-bank") // not sure if this makes much sense
         val line = Line(
                 LocalDate.parse("1978-11-01", DateTimeFormatter.ISO_DATE),
@@ -79,6 +79,6 @@ class AnnualReporterTest {
         val annualBudgets = AnnualBudgets(budgets)
         val categoryReporter = CategoryReporter(categories, annualBudgets)
 
-        return AnnualReporter(Gson, decisionWriter, categoryReporter)
+        return AnnualReportHandler(Gson, decisionWriter, categoryReporter)
     }
 }
