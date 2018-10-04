@@ -19,6 +19,10 @@ import org.http4k.routing.RoutingHttpHandler
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import uk.co.endofhome.skrooge.categories.Categories
+import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
+import uk.co.endofhome.skrooge.decisions.FileSystemDecisionReaderReaderWriter
+import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
 import java.io.File
 import java.nio.file.Paths
 

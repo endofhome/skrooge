@@ -10,6 +10,13 @@ import org.http4k.hamkrest.hasStatus
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import uk.co.endofhome.skrooge.categories.Categories
+import uk.co.endofhome.skrooge.decisions.Category
+import uk.co.endofhome.skrooge.decisions.Decision
+import uk.co.endofhome.skrooge.decisions.FileSystemDecisionReaderReaderWriter
+import uk.co.endofhome.skrooge.decisions.Line
+import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
+import uk.co.endofhome.skrooge.statements.StatementData
 import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.Month.DECEMBER

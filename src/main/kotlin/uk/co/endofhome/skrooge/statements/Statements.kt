@@ -1,4 +1,4 @@
-package uk.co.endofhome.skrooge
+package uk.co.endofhome.skrooge.statements
 
 import org.http4k.core.Body
 import org.http4k.core.ContentType
@@ -17,8 +17,15 @@ import org.http4k.lens.multipartForm
 import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
 import org.http4k.template.view
+import uk.co.endofhome.skrooge.categories.Categories
+import uk.co.endofhome.skrooge.categories.CategoriesWithSelection
+import uk.co.endofhome.skrooge.decisions.Category
+import uk.co.endofhome.skrooge.decisions.Decision
+import uk.co.endofhome.skrooge.decisions.Line
+import uk.co.endofhome.skrooge.decisions.SubCategory
 import java.io.File
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.Month
 import java.time.Year
 import java.time.format.DateTimeFormatter
@@ -27,7 +34,7 @@ import java.util.Locale
 
 class Statements(private val categories: Categories) {
 
-    fun uploadStatements(request: Request, renderer: TemplateRenderer): Response {
+    fun upload(request: Request, renderer: TemplateRenderer): Response {
         val form = try {
             FormForNormalisedStatement.from(request)
         } catch (e: IllegalStateException) {
@@ -132,6 +139,31 @@ data class FormForNormalisedStatement(val year: Year, val month: Month, val user
     }
 }
 
+class StatementDecider(categoryMappings: List<String>) {
+    private val mappings = categoryMappings.map {
+        val mappingStrings = it.split(",")
+        CategoryMapping(mappingStrings[0], mappingStrings[1], mappingStrings[2])
+    }
+
+    fun process(statementData: List<String>) = statementData.map { decide(it) }
+
+    private fun decide(lineString: String): Decision {
+        val lineEntries = lineString.split(",")
+        val dateValues = lineEntries[0].split("-").map { it.toInt() }
+        val line = Line(LocalDate.of(dateValues[0], dateValues[1], dateValues[2]), lineEntries[1], lineEntries[2].toDouble())
+
+        val match = mappings.find { it.purchase.contains(line.merchant) }
+        return when (match) {
+            null -> {
+                Decision(line, null, null)
+            }
+            else -> {
+                Decision(line, Category(match.mainCatgeory, emptyList()), SubCategory(match.subCategory))
+            }
+        }
+    }
+}
+
 object LineFormatter {
     fun format(line: Line) = FormattedLine(
             line.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
@@ -149,3 +181,4 @@ data class FormattedBankStatement(val year: String, val month: String, val usern
 data class FormattedLine(val date: String, val merchant: String, val amount: String)
 data class FormattedDecision(val line: FormattedLine, val category: Category?, val subCategory: SubCategory?, val categoriesWithSelection: CategoriesWithSelection)
 data class StatementData(val year: Year, val month: Month, val username: String, val statement: String)
+data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)

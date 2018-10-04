@@ -18,6 +18,8 @@ import org.http4k.hamkrest.hasBody
 import org.http4k.hamkrest.hasStatus
 import org.http4k.lens.Header
 import org.junit.Test
+import uk.co.endofhome.skrooge.categories.Categories
+import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import java.nio.file.Paths
 
 class CategoryMappingNotQuiteAcceptanceTest {

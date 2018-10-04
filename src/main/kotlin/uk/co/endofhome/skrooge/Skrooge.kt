@@ -4,21 +4,11 @@ import org.http4k.core.Body
 import org.http4k.core.ContentType
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
-import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status
-import org.http4k.core.Status.Companion.BAD_REQUEST
-import org.http4k.core.Status.Companion.SEE_OTHER
-import org.http4k.core.Uri
-import org.http4k.core.query
 import org.http4k.core.with
 import org.http4k.filter.DebuggingFilters
 import org.http4k.format.Gson
-import org.http4k.lens.BiDiBodyLens
-import org.http4k.lens.FormField
-import org.http4k.lens.Validator
-import org.http4k.lens.WebForm
-import org.http4k.lens.webForm
 import org.http4k.routing.ResourceLoader
 import org.http4k.routing.bind
 import org.http4k.routing.routes
@@ -28,6 +18,20 @@ import org.http4k.server.asServer
 import org.http4k.template.HandlebarsTemplates
 import org.http4k.template.ViewModel
 import org.http4k.template.view
+import uk.co.endofhome.skrooge.categories.AnnualBudgets
+import uk.co.endofhome.skrooge.categories.Categories
+import uk.co.endofhome.skrooge.categories.CategoryMappings
+import uk.co.endofhome.skrooge.categories.CategoryReporter
+import uk.co.endofhome.skrooge.categories.FileSystemMappingWriter
+import uk.co.endofhome.skrooge.categories.MappingWriter
+import uk.co.endofhome.skrooge.decisions.DecisionReaderWriter
+import uk.co.endofhome.skrooge.decisions.FileSystemDecisionReaderReaderWriter
+import uk.co.endofhome.skrooge.reportcategorisations.ReportCategorisations
+import uk.co.endofhome.skrooge.reports.AnnualReporter
+import uk.co.endofhome.skrooge.reports.BarCharts
+import uk.co.endofhome.skrooge.reports.MonthlyReporter
+import uk.co.endofhome.skrooge.statements.Statements
+import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDate
@@ -60,13 +64,13 @@ class Skrooge(private val categories: Categories = Categories(),
     fun routes() = routes(
             "/public" bind publicDirectory,
             "/" bind GET to { _ -> index() },
-            "/statements" bind POST to { request -> Statements(categories).uploadStatements(request, renderer) },
+            "/statements" bind POST to { request -> Statements(categories).upload(request, renderer) },
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappings(categoryMappings, mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> ReportCategorisations(decisionReaderWriter, categories.all()).confirm(request) },
             "annual-report/json" bind GET to { request -> annualReporter(request) },
             "monthly-report/json" bind GET to { request -> monthlyReporter(request) },
-            "web" bind GET to { request -> Charts(request, renderer) }
+            "web" bind GET to { request -> BarCharts(request, renderer) }
     )
 
     private fun index(): Response {
@@ -90,75 +94,6 @@ class Skrooge(private val categories: Categories = Categories(),
 
     data class StatementType(val id: String, val displayName: String)
 }
-
-class StatementDecider(categoryMappings: List<String>) {
-    private val mappings = categoryMappings.map {
-        val mappingStrings = it.split(",")
-        CategoryMapping(mappingStrings[0], mappingStrings[1], mappingStrings[2])
-    }
-
-    fun process(statementData: List<String>) = statementData.map { decide(it) }
-
-    private fun decide(lineString: String): Decision {
-        val lineEntries = lineString.split(",")
-        val dateValues = lineEntries[0].split("-").map { it.toInt() }
-        val line = Line(LocalDate.of(dateValues[0], dateValues[1], dateValues[2]), lineEntries[1], lineEntries[2].toDouble())
-
-        val match = mappings.find { it.purchase.contains(line.merchant) }
-        return when (match) {
-            null -> { Decision(line, null, null) }
-            else -> { Decision(line, Category(match.mainCatgeory, emptyList()), SubCategory(match.subCategory)) }
-        }
-    }
-}
-
-class CategoryMappings(private val categoryMappings: MutableList<String>, private val mappingWriter: MappingWriter) {
-    fun addCategoryMapping(request: Request): Response {
-        val newMappingLens = FormField.required("new-mapping")
-        val remainingVendorsLens = FormField.required("remaining-vendors")
-        val originalRequestBodyLens = FormField.required("originalRequestBody")
-        val webForm: BiDiBodyLens<WebForm> = Body.webForm(Validator.Strict, newMappingLens, remainingVendorsLens).toLens()
-        val newMapping = newMappingLens.extract(webForm(request)).split(",")
-        val remainingVendors: List<String> = remainingVendorsLens.extract(webForm(request)).split(",").filter { it.isNotBlank() }
-        val originalRequestBody = Body(originalRequestBodyLens.extract(webForm(request)))
-
-        return newMapping.size.let {
-            when {
-                it < 3 -> Response(BAD_REQUEST)
-                else -> {
-                    val newMappingString = newMapping.joinToString(",")
-                    mappingWriter.write(newMappingString)
-                    categoryMappings.add(newMappingString)
-                    when (remainingVendors.isEmpty()) {
-                        true -> Response(Status.TEMPORARY_REDIRECT)
-                                .header("Location", "/statements")
-                                .header("Method", POST.name)
-                                .body(originalRequestBody)
-                        false -> {
-                            val nextVendor = remainingVendors.first()
-                            val carriedForwardVendors = remainingVendors.filterIndexed { index, _ -> index != 0 }
-                            val uri = Uri.of("/unknown-merchant")
-                                    .query("currentMerchant", nextVendor)
-                                    .query("outstandingMerchants", carriedForwardVendors.joinToString(","))
-                                    .query("originalRequestBody", originalRequestBody.toString())
-                            Response(SEE_OTHER).header("Location", uri.toString())
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-data class CategoryMapping(val purchase: String, val mainCatgeory: String, val subCategory: String)
-data class Line(val date: LocalDate, val merchant: String, val amount: Double)
-data class Category(val title: String, val subcategories: List<SubCategory>)
-data class CategoryWithSelection(val title: String, val subCategories: List<SubCategoryWithSelection>)
-data class CategoriesWithSelection(val categories: List<CategoryWithSelection>)
-data class SubCategory(val name: String)
-data class SubCategoryWithSelection(val subCategory: SubCategory, val selector: String)
-data class Decision(val line: Line, val category: Category?, val subCategory: SubCategory?)
 
 data class DisplayYear(val name: String, val selector: String) {
     companion object {

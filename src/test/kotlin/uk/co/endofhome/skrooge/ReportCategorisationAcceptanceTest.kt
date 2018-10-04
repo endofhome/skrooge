@@ -13,6 +13,12 @@ import org.http4k.hamkrest.hasStatus
 import org.http4k.lens.Header
 import org.junit.Before
 import org.junit.Test
+import uk.co.endofhome.skrooge.categories.Categories
+import uk.co.endofhome.skrooge.decisions.Category
+import uk.co.endofhome.skrooge.decisions.Decision
+import uk.co.endofhome.skrooge.decisions.Line
+import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
+import uk.co.endofhome.skrooge.decisions.SubCategory
 import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.Month

@@ -1,8 +1,10 @@
-package uk.co.endofhome.skrooge
+package uk.co.endofhome.skrooge.categories
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import uk.co.endofhome.skrooge.decisions.Category
+import uk.co.endofhome.skrooge.decisions.SubCategory
 import java.io.File
 
 class Categories(private val schemaFilePath: String = "category-schema/category-schema.json", val categoryMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList()) {
@@ -41,3 +43,7 @@ class Categories(private val schemaFilePath: String = "category-schema/category-
         fun toList() = categories
     }
 }
+
+data class CategoryWithSelection(val title: String, val subCategories: List<SubCategoryWithSelection>)
+data class CategoriesWithSelection(val categories: List<CategoryWithSelection>)
+data class SubCategoryWithSelection(val subCategory: SubCategory, val selector: String)

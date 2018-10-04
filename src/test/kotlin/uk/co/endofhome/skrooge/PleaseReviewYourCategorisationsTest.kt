@@ -11,6 +11,9 @@ import org.http4k.core.Request
 import org.http4k.core.Status.Companion.OK
 import org.junit.Rule
 import org.junit.Test
+import uk.co.endofhome.skrooge.categories.Categories
+import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
+import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
 import java.nio.file.Paths
 
 class PleaseReviewYourCategorisationsTest {

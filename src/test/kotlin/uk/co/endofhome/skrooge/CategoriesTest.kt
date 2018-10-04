@@ -3,6 +3,7 @@ package uk.co.endofhome.skrooge
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import org.junit.Test
+import uk.co.endofhome.skrooge.categories.Categories
 
 class CategoriesTest {
     private val categoryMappings = emptyList<String>().toMutableList()

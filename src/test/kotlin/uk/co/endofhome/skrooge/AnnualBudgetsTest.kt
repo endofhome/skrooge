@@ -3,6 +3,10 @@ package uk.co.endofhome.skrooge
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import org.junit.Test
+import uk.co.endofhome.skrooge.categories.AnnualBudget
+import uk.co.endofhome.skrooge.categories.AnnualBudgets
+import uk.co.endofhome.skrooge.decisions.Category
+import uk.co.endofhome.skrooge.decisions.SubCategory
 import java.time.LocalDate
 import java.time.Month
 
@@ -14,13 +18,13 @@ class AnnualBudgetsTest {
         val category = Category("Category", listOf(subCategory))
         val wrongCategory = Category("Wrong Category", listOf(subCategory))
         val budgets = listOf(
-            AnnualBudget(LocalDate.of(2017, Month.JANUARY, 1),
-                listOf(subCategory to category to 1.99)),
-            AnnualBudget(LocalDate.of(2018, Month.JANUARY, 1),
-                listOf(subCategory to wrongCategory to 50.0,
-                       subCategory to category to 24.99)),
-            AnnualBudget(LocalDate.of(2019, Month.JANUARY, 1),
-                listOf(subCategory to category to 99.99))
+                AnnualBudget(LocalDate.of(2017, Month.JANUARY, 1),
+                        listOf(subCategory to category to 1.99)),
+                AnnualBudget(LocalDate.of(2018, Month.JANUARY, 1),
+                        listOf(subCategory to wrongCategory to 50.0,
+                                subCategory to category to 24.99)),
+                AnnualBudget(LocalDate.of(2019, Month.JANUARY, 1),
+                        listOf(subCategory to category to 99.99))
         )
         val annualBudgets = AnnualBudgets(budgets)
 
@@ -38,10 +42,10 @@ class AnnualBudgetsTest {
         val subCategory = SubCategory("Subcategory")
         val category = Category("Category", listOf(subCategory))
         val budgets = listOf(
-            AnnualBudget(LocalDate.of(2017, Month.JANUARY, 1),
-                listOf(subCategory to category to 1.99)),
-            AnnualBudget(LocalDate.of(2018, Month.JANUARY, 2),
-                listOf(subCategory to category to 1.99))
+                AnnualBudget(LocalDate.of(2017, Month.JANUARY, 1),
+                        listOf(subCategory to category to 1.99)),
+                AnnualBudget(LocalDate.of(2018, Month.JANUARY, 2),
+                        listOf(subCategory to category to 1.99))
         )
         val annualBudgets = AnnualBudgets(budgets)
 

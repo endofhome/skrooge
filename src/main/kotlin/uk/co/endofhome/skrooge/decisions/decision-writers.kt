@@ -1,5 +1,7 @@
-package uk.co.endofhome.skrooge
+package uk.co.endofhome.skrooge.decisions
 
+import uk.co.endofhome.skrooge.categories.Categories
+import uk.co.endofhome.skrooge.statements.StatementData
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -86,3 +88,8 @@ class StubbedDecisionReaderWriter : DecisionReaderWriter {
     override fun readForYearStarting(startDate: LocalDate): List<Decision> =
             files.filter { it.line.date >= startDate && it.line.date < startDate.plusYears(1L) }
 }
+
+data class Line(val date: LocalDate, val merchant: String, val amount: Double)
+data class Category(val title: String, val subcategories: List<SubCategory>)
+data class SubCategory(val name: String)
+data class Decision(val line: Line, val category: Category?, val subCategory: SubCategory?)

@@ -1,4 +1,4 @@
-package uk.co.endofhome.skrooge
+package uk.co.endofhome.skrooge.categories
 
 import java.io.File
 
