@@ -22,7 +22,7 @@ import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import java.nio.file.Paths
 
-class CategoryMappingNotQuiteAcceptanceTest {
+class CategoryMappingTest {
     private val categoryMappings = mutableListOf("Edgeworld Records,Fun,Tom fun budget")
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
     private val mappingWriter = StubbedMappingWriter()
