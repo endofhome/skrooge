@@ -25,7 +25,6 @@ import uk.co.endofhome.skrooge.decisions.Line
 import uk.co.endofhome.skrooge.decisions.SubCategory
 import java.io.File
 import java.math.BigDecimal
-import java.time.LocalDate
 import java.time.Month
 import java.time.Year
 import java.time.format.DateTimeFormatter
@@ -135,31 +134,6 @@ data class FormForNormalisedStatement(val year: Year, val month: Month, val user
             val multipartFormBody = Body.multipartForm(Validator.Feedback, yearLens, monthLens, userLens, statementNameLens, statementFileLens).toLens()
 
             return multipartFormBody.extract(request)
-        }
-    }
-}
-
-class StatementDecider(categoryMappings: List<String>) {
-    private val mappings = categoryMappings.map {
-        val mappingStrings = it.split(",")
-        CategoryMapping(mappingStrings[0], mappingStrings[1], mappingStrings[2])
-    }
-
-    fun process(statementData: List<String>) = statementData.map { decide(it) }
-
-    private fun decide(lineString: String): Decision {
-        val lineEntries = lineString.split(",")
-        val dateValues = lineEntries[0].split("-").map { it.toInt() }
-        val line = Line(LocalDate.of(dateValues[0], dateValues[1], dateValues[2]), lineEntries[1], lineEntries[2].toDouble())
-
-        val match = mappings.find { it.purchase.contains(line.merchant) }
-        return when (match) {
-            null -> {
-                Decision(line, null, null)
-            }
-            else -> {
-                Decision(line, Category(match.mainCatgeory, emptyList()), SubCategory(match.subCategory))
-            }
         }
     }
 }
