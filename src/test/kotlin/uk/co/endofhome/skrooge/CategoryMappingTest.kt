@@ -3,7 +3,6 @@ package uk.co.endofhome.skrooge
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
-import junit.framework.Assert.assertTrue
 import org.http4k.core.Body
 import org.http4k.core.ContentType
 import org.http4k.core.Method.POST
@@ -14,6 +13,7 @@ import org.http4k.core.Status.Companion.TEMPORARY_REDIRECT
 import org.http4k.core.body.form
 import org.http4k.core.with
 import org.http4k.lens.Header
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
