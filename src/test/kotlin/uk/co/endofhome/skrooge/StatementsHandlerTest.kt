@@ -2,7 +2,6 @@ package uk.co.endofhome.skrooge
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
-import com.natpryce.hamkrest.should.shouldMatch
 import com.oneeyedmen.okeydoke.junit.ApprovalsRule
 import org.http4k.core.ContentType
 import org.http4k.core.FormFile
@@ -14,7 +13,6 @@ import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
-import org.http4k.hamkrest.hasStatus
 import org.http4k.routing.RoutingHttpHandler
 import org.junit.Ignore
 import org.junit.Rule
@@ -44,7 +42,7 @@ class StatementsHandlerTest {
         val request = Request(POST, "/statements")
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
-        skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
+        assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
     }
 
     @Test
@@ -57,7 +55,7 @@ class StatementsHandlerTest {
         val request = Request(POST, "/statements")
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
-        skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
+        assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
     }
 
     @Test
@@ -70,7 +68,7 @@ class StatementsHandlerTest {
         val request = Request(POST, "/statements")
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
-        skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
+        assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
     }
 
     @Test
@@ -83,7 +81,7 @@ class StatementsHandlerTest {
         val request = Request(POST, "/statements")
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
-        skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
+        assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
     }
 
     @Test
@@ -95,7 +93,7 @@ class StatementsHandlerTest {
         val request = Request(POST, "/statements")
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
-        skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
+        assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
     }
 
     @Test
@@ -110,14 +108,14 @@ class StatementsHandlerTest {
         val request = Request(POST, "/statements")
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
-        skrooge(request) shouldMatch hasStatus(OK)
+        assertThat(skrooge(request).status, equalTo(OK))
     }
 
     @Ignore("Not sure if I want to support this right now.")
     @Test
     fun `POST to statements with multiple dummy files returns HTTP OK`() {
         val request = Request(POST, "/statements").body("2017;September;Tom;EmptyFile;[src/test/resources/2017-01_Someone_empty-file.csv,src/test/resources/2017-01_Someone_empty-file.csv]")
-        skrooge(request) shouldMatch hasStatus(OK)
+        assertThat(skrooge(request).status, equalTo(OK))
     }
 
     @Test

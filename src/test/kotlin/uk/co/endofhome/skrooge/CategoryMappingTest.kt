@@ -2,9 +2,8 @@ package uk.co.endofhome.skrooge
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.containsSubstring
-import com.natpryce.hamkrest.endsWith
 import com.natpryce.hamkrest.equalTo
-import com.natpryce.hamkrest.should.shouldMatch
+import junit.framework.Assert.assertTrue
 import org.http4k.core.Body
 import org.http4k.core.ContentType
 import org.http4k.core.Method.POST
@@ -14,8 +13,6 @@ import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.TEMPORARY_REDIRECT
 import org.http4k.core.body.form
 import org.http4k.core.with
-import org.http4k.hamkrest.hasBody
-import org.http4k.hamkrest.hasStatus
 import org.http4k.lens.Header
 import org.junit.Test
 import uk.co.endofhome.skrooge.categories.Categories
@@ -38,7 +35,7 @@ class CategoryMappingTest {
                 .form("remaining-vendors", "")
                 .form("originalRequestBody", originalRequestBody)
 
-        skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
+        assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
     }
 
     @Test
@@ -49,7 +46,7 @@ class CategoryMappingTest {
                 .form("remaining-vendors", "")
                 .form("originalRequestBody", originalRequestBody)
 
-        skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
+        assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
     }
 
     @Test
@@ -60,7 +57,7 @@ class CategoryMappingTest {
                 .form("remaining-vendors", "")
                 .form("originalRequestBody", originalRequestBody)
 
-        skrooge(request) shouldMatch hasStatus(TEMPORARY_REDIRECT)
+        assertThat(skrooge(request).status, equalTo(TEMPORARY_REDIRECT))
         assertThat(mappingWriter.read().last(), equalTo("Casbah Records,Fun,Tom fun budget"))
     }
 
@@ -75,9 +72,9 @@ class CategoryMappingTest {
         val followedResponse = with(RedirectHelper(skrooge)) { request.handleAndfollowRedirect() }
 
         assertThat(mappingWriter.read().last(), equalTo("DIY Space for London,Fun,Tom fun budget"))
-        followedResponse shouldMatch hasStatus(OK)
-        followedResponse shouldMatch hasBody(containsSubstring("You need to categorise some merchants."))
-        followedResponse shouldMatch hasBody(containsSubstring("<h3>Another vendor</h3>"))
+        assertThat(followedResponse.status, equalTo(OK))
+        assertThat(followedResponse.bodyString(), containsSubstring("You need to categorise some merchants."))
+        assertThat(followedResponse.bodyString(), containsSubstring("<h3>Another vendor</h3>"))
     }
 
     @Test
@@ -90,9 +87,9 @@ class CategoryMappingTest {
 
         val response = skrooge(request)
 
-        response shouldMatch hasStatus(TEMPORARY_REDIRECT)
-        response.header("Location")!! shouldMatch endsWith("/statements")
-        response.header("Method")!! shouldMatch equalTo("POST")
-        response.body shouldMatch equalTo(Body(originalRequestBody))
+        assertThat(response.status, equalTo(TEMPORARY_REDIRECT))
+        assertThat(response.header("Method")!!, equalTo("POST"))
+        assertTrue(response.header("Location")!!.endsWith("/statements"))
+        assertThat(response.body, equalTo(Body(originalRequestBody)))
     }
 }

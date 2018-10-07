@@ -1,12 +1,12 @@
 package uk.co.endofhome.skrooge
 
-import com.natpryce.hamkrest.should.shouldMatch
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.equalTo
 import com.oneeyedmen.okeydoke.junit.ApprovalsRule
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
-import org.http4k.hamkrest.hasStatus
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -55,7 +55,7 @@ class JsonGenerationTest {
     fun `POST to generate - json endpoint with no monthly data returns BAD REQUEST`() {
         val request = Request(GET, "/monthly-report/json").query("year", "2006").query("month", "10")
 
-        skrooge(request) shouldMatch hasStatus(BAD_REQUEST)
+        assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
     }
 
     @Test
@@ -69,7 +69,7 @@ class JsonGenerationTest {
 
         val response = skrooge(request)
 
-        response shouldMatch hasStatus(OK)
+        assertThat(response.status, equalTo(OK))
         approver.assertApproved(response.bodyString())
     }
 
@@ -85,7 +85,7 @@ class JsonGenerationTest {
 
         val response = skrooge(request)
 
-        response shouldMatch hasStatus(OK)
+        assertThat(skrooge(request).status, equalTo(OK))
         approver.assertApproved(response.bodyString())
     }
 
@@ -101,7 +101,7 @@ class JsonGenerationTest {
 
         val response = skrooge(request)
 
-        response shouldMatch hasStatus(OK)
+        assertThat(skrooge(request).status, equalTo(OK))
         approver.assertApproved(response.bodyString())
     }
 
@@ -120,7 +120,7 @@ class JsonGenerationTest {
 
         val response = skrooge(request)
 
-        response shouldMatch hasStatus(OK)
+        assertThat(skrooge(request).status, equalTo(OK))
         approver.assertApproved(response.bodyString())
     }
 
@@ -137,7 +137,7 @@ class JsonGenerationTest {
 
         val response = skrooge(request)
 
-        response shouldMatch hasStatus(OK)
+        assertThat(skrooge(request).status, equalTo(OK))
         approver.assertApproved(response.bodyString())
     }
 
@@ -151,7 +151,7 @@ class JsonGenerationTest {
 
         val response = skrooge(request)
 
-        response shouldMatch hasStatus(OK)
+        assertThat(skrooge(request).status, equalTo(OK))
         approver.assertApproved(response.bodyString())
     }
 
@@ -176,7 +176,7 @@ class JsonGenerationTest {
 
         val response = localSkrooge(request)
 
-        response shouldMatch hasStatus(OK)
+        assertThat(response.status, equalTo(OK))
         approver.assertApproved(response.bodyString())
     }
 }
