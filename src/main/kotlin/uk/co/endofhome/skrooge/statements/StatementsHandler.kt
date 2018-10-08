@@ -73,10 +73,7 @@ class StatementsHandler(private val categories: Categories) {
         )
 
         val view = Body.view(renderer, ContentType.TEXT_HTML)
-        val reviewCategorisationsViewModel = PleaseReviewYourCategorisations(
-                formattedBankStatement,
-                emptyList()
-        )
+        val reviewCategorisationsViewModel = PleaseReviewYourCategorisations(formattedBankStatement)
         return Response(Status.OK).with(view of reviewCategorisationsViewModel)
     }
 
@@ -150,7 +147,7 @@ object LineFormatter {
             BigDecimal(this).setScale(2, BigDecimal.ROUND_HALF_UP).toString()
 }
 
-data class PleaseReviewYourCategorisations(val bankStatement: FormattedBankStatement, val outstandingStatements: List<FormattedBankStatement>) : ViewModel
+data class PleaseReviewYourCategorisations(val bankStatement: FormattedBankStatement) : ViewModel
 
 data class FormattedBankStatement(val year: String, val month: String, val username: String, val bankName: String, val formattedDecisions: List<FormattedDecision>)
 data class FormattedLine(val date: String, val merchant: String, val amount: String)

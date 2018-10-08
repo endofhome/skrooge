@@ -10,7 +10,6 @@
     <form action="reports/categorisations" method="post">
         
         <input type="hidden" name="statement-data" value="2017;February;Someone;[one-known-merchant.csv]">
-        <input type="hidden" name="outstanding-banks" value="[]">
         <div class="button">
             <button type="submit">Confirm</button>
         </div>
