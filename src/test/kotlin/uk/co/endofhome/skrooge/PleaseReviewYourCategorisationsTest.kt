@@ -38,7 +38,7 @@ class PleaseReviewYourCategorisationsTest {
                 .plus("month" to "February")
                 .plus("user" to "Someone")
                 .plus("statement-name" to "one-known-merchant")
-                .plus("statement" to formFile)
+                .plus("statement-file" to formFile)
         val request = Request(Method.POST, "/statements")
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
