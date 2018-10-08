@@ -50,6 +50,7 @@ class StatementsHandlerTest {
         val bankStatement = FormFile("2017-9-Tom-empty-statement-file.csv", ContentType.OCTET_STREAM, "".byteInputStream())
         val body = MultipartFormBody().plus("month" to "September")
                                       .plus("user" to "Tom")
+                                      .plus("statement" to "EmptyStatement")
                                       .plus("statement" to bankStatement)
 
         val request = Request(POST, "/statements")
@@ -63,6 +64,7 @@ class StatementsHandlerTest {
         val bankStatement = FormFile("2017-9-Tom-empty-statement-file.csv", ContentType.OCTET_STREAM, "".byteInputStream())
         val body = MultipartFormBody().plus("year" to "2017")
                                       .plus("user" to "Tom")
+                                      .plus("statement" to "EmptyStatement")
                                       .plus("statement" to bankStatement)
 
         val request = Request(POST, "/statements")
@@ -76,6 +78,7 @@ class StatementsHandlerTest {
         val bankStatement = FormFile("2017-9-Tom-empty-statement-file.csv", ContentType.OCTET_STREAM, "".byteInputStream())
         val body = MultipartFormBody().plus("year" to "2017")
                                       .plus("month" to "September")
+                                      .plus("statement" to "EmptyStatement")
                                       .plus("statement" to bankStatement)
 
         val request = Request(POST, "/statements")
@@ -85,9 +88,24 @@ class StatementsHandlerTest {
     }
 
     @Test
+    fun `POST to statements with missing statement name in form data returns HTTP Bad Request`() {
+        val bankStatement = FormFile("2017-9-Tom-empty-statement-file.csv", ContentType.OCTET_STREAM, "".byteInputStream())
+        val body = MultipartFormBody().plus("year" to "2017")
+                                      .plus("month" to "September")
+                                      .plus("user" to "Tom")
+                                      .plus("statement" to bankStatement)
+
+        val request = Request(POST, "/statements")
+            .header("content-type", "multipart/form-data; boundary=${body.boundary}")
+            .body(body)
+        assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
+    }
+
+    @Test
     fun `POST to statements with missing file in form data returns HTTP Bad Request`() {
         val body = MultipartFormBody().plus("year" to "2017")
                                       .plus("month" to "September")
+                                      .plus("statement" to "EmptyStatement")
                                       .plus("user" to "Tom")
 
         val request = Request(POST, "/statements")
