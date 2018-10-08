@@ -25,7 +25,7 @@ class StatementDecider(categoryMappings: List<String>) {
                 Decision(line, null, null)
             }
             else -> {
-                Decision(line, Category(match.mainCatgeory, emptyList()), SubCategory(match.subCategory))
+                Decision(line, Category(match.mainCategory, emptyList()), SubCategory(match.subCategory))
             }
         }
     }
