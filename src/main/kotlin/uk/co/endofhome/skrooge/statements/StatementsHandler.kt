@@ -99,8 +99,9 @@ data class FormForNormalisedStatement(val year: Year, val month: Month, val user
             val yearName = "year"
             val monthName = "month"
             val userName = "user"
-            val statementName = "statement"
-            val multipartForm = extractFormParts(request, yearName, monthName, userName, statementName)
+            val statementName = "statement-name"
+            val statementFileName = "statement"
+            val multipartForm = extractFormParts(request, yearName, monthName, userName, statementName, statementFileName)
             val fields = multipartForm.fields
             val files = multipartForm.files
 
@@ -108,7 +109,7 @@ data class FormForNormalisedStatement(val year: Year, val month: Month, val user
             val month = fields[monthName]?.firstOrNull()
             val user = fields[userName]?.firstOrNull()
             val statement = fields[statementName]?.firstOrNull()
-            val formFile = files[statementName]?.firstOrNull()
+            val formFile = files[statementFileName]?.firstOrNull()
 
             if (year != null && month != null && user != null && statement != null && formFile != null) {
                 return FormForNormalisedStatement(Year.parse(year), Month.valueOf(month.toUpperCase()), user, statement, formFile)
@@ -125,12 +126,12 @@ data class FormForNormalisedStatement(val year: Year, val month: Month, val user
             }
         }
 
-        private fun extractFormParts(request: Request, yearName: String, monthName: String, userName: String, statementName: String): MultipartForm {
+        private fun extractFormParts(request: Request, yearName: String, monthName: String, userName: String, statementName: String, statementFileName: String): MultipartForm {
             val yearLens = MultipartFormField.required(yearName)
             val monthLens = MultipartFormField.required(monthName)
             val userLens = MultipartFormField.required(userName)
             val statementNameLens = MultipartFormField.required(statementName)
-            val statementFileLens = MultipartFormFile.required(statementName)
+            val statementFileLens = MultipartFormFile.required(statementFileName)
             val multipartFormBody = Body.multipartForm(Validator.Feedback, yearLens, monthLens, userLens, statementNameLens, statementFileLens).toLens()
 
             return multipartFormBody.extract(request)

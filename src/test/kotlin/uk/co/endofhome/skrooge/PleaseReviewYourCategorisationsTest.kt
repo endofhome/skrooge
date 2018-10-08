@@ -37,7 +37,7 @@ class PleaseReviewYourCategorisationsTest {
         val body = MultipartFormBody().plus("year" to "2017")
                 .plus("month" to "February")
                 .plus("user" to "Someone")
-                .plus("statement" to "one-known-merchant")
+                .plus("statement-name" to "one-known-merchant")
                 .plus("statement" to formFile)
         val request = Request(Method.POST, "/statements")
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
