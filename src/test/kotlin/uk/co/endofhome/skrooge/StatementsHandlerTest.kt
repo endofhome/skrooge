@@ -183,7 +183,7 @@ class StatementsHandlerTest {
     }
 
     @Test
-    fun `POST with one entry returns HTTP See Other when unrecognised merchant`() {
+    fun `POST with one entry returns HTTP See Other when unknown merchant`() {
         val inputStatementContent = "2017-09-17,McDonalds,0.99\n"
         val body = MultipartFormBody().plus("year" to "2017")
                                       .plus("month" to "April")
@@ -203,7 +203,7 @@ class StatementsHandlerTest {
     }
 
     @Test
-    fun `redirect when multiple unrecognised merchants shows correct unrecognised merchants`() {
+    fun `redirect when multiple unknown merchants shows correct unrecognised merchants`() {
         val inputStatementContent = """
             2017-09-17,Rounder Records,14.99
             2017-09-17,Edgeworld Records,15.99
