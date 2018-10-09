@@ -32,9 +32,9 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-class StatementsHandler(private val categories: Categories) {
+class StatementsHandler(private val renderer: TemplateRenderer, val categories: Categories) {
 
-    fun upload(request: Request, renderer: TemplateRenderer): Response {
+    operator fun invoke(request: Request): Response {
         val form = try {
             FormForNormalisedStatement.from(request)
         } catch (e: IllegalStateException) {
@@ -51,12 +51,12 @@ class StatementsHandler(private val categories: Categories) {
                                                      .map { it.line.merchant }
                                                      .toSet()
         return when {
-            unknownMerchants.isEmpty() -> pleaseReviewYourCategorisations(form, decisions, renderer)
+            unknownMerchants.isEmpty() -> pleaseReviewYourCategorisations(form, decisions)
             else                       -> redirectToUnknownMerchant(form, unknownMerchants)
         }
     }
 
-    private fun pleaseReviewYourCategorisations(form: FormForNormalisedStatement, decisions: List<Decision>, renderer: TemplateRenderer): Response {
+    private fun pleaseReviewYourCategorisations(form: FormForNormalisedStatement, decisions: List<Decision>): Response {
         val (year, month, user, statement) = form
         val formattedBankStatement = FormattedBankStatement(
                 year.toString(),
