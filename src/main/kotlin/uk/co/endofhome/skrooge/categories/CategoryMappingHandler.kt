@@ -13,6 +13,7 @@ import org.http4k.lens.Validator
 import org.http4k.lens.WebForm
 import org.http4k.lens.webForm
 import uk.co.endofhome.skrooge.RouteDefinitions.statements
+import uk.co.endofhome.skrooge.RouteDefinitions.unknownMerchant
 
 class CategoryMappingHandler(private val categoryMappings: MutableList<String>, private val mappingWriter: MappingWriter) {
     fun addCategoryMapping(request: Request): Response {
@@ -39,7 +40,7 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
                         false -> {
                             val nextVendor = remainingVendors.first()
                             val carriedForwardVendors = remainingVendors.filterIndexed { index, _ -> index != 0 }
-                            val uri = Uri.of("/unknown-merchant")
+                            val uri = Uri.of(unknownMerchant)
                                     .query("currentMerchant", nextVendor)
                                     .query("outstandingMerchants", carriedForwardVendors.joinToString(","))
                                     .query("originalRequestBody", originalRequestBody.toString())

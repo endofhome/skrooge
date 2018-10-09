@@ -17,6 +17,7 @@ import org.http4k.lens.multipartForm
 import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
 import org.http4k.template.view
+import uk.co.endofhome.skrooge.RouteDefinitions.unknownMerchant
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.CategoriesWithSelection
 import uk.co.endofhome.skrooge.decisions.Category
@@ -81,7 +82,7 @@ class StatementsHandler(private val categories: Categories) {
         val (year, month, user, statement) = form
         val currentMerchant = unknownMerchants.first()
         val outstandingMerchants = unknownMerchants.drop(1)
-        val uri = Uri.of("/unknown-merchant").query("currentMerchant", currentMerchant)
+        val uri = Uri.of(unknownMerchant).query("currentMerchant", currentMerchant)
                 .query("outstandingMerchants", outstandingMerchants.joinToString(","))
                 .query("originalRequestBody", "$year;${month.getDisplayName(TextStyle.FULL, Locale.UK)};$user;$statement")
         return Response(Status.SEE_OTHER).header("Location", uri.toString())
