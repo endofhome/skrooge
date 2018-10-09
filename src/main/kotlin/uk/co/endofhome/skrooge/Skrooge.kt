@@ -11,6 +11,7 @@ import org.http4k.routing.static
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import org.http4k.template.HandlebarsTemplates
+import uk.co.endofhome.skrooge.RouteDefinitions.index
 import uk.co.endofhome.skrooge.RouteDefinitions.statements
 import uk.co.endofhome.skrooge.categories.AnnualBudgets
 import uk.co.endofhome.skrooge.categories.Categories
@@ -48,7 +49,7 @@ class Skrooge(private val categories: Categories = Categories(),
 
     fun routes() = routes(
             "/public" bind static(ResourceLoader.Directory("public")),
-            "/" bind GET to { IndexHandler(renderer).handle() },
+            index bind GET to { IndexHandler(renderer).handle() },
             statements bind POST to { request -> StatementsHandler(categories).upload(request, renderer) },
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappingHandler(categories.categoryMappings, mappingWriter).addCategoryMapping(request) },
@@ -60,5 +61,6 @@ class Skrooge(private val categories: Categories = Categories(),
 }
 
 object RouteDefinitions {
+    const val index = "/"
     const val statements = "/statements"
 }

@@ -6,6 +6,7 @@ import org.http4k.core.Request
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import uk.co.endofhome.skrooge.RouteDefinitions.index
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
@@ -27,7 +28,7 @@ class IndexTest {
     @Ignore("Ignoring as some values are sensitive and provided by env vars")
     @Test
     fun `renders index page correctly`() {
-        val indexRequest = Request(GET, "/")
+        val indexRequest = Request(GET, index)
         val response = skrooge(indexRequest)
 
         approver.assertApproved(response)
