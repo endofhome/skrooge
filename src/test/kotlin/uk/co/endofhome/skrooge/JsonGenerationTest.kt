@@ -39,7 +39,7 @@ class JsonGenerationTest {
         categories = categories,
         decisionReaderWriter = decisionReaderWriter,
         budgetDirectory = Paths.get("${testDir}budgets/")
-    ).routes()
+    ).routes
 
     // TODO app already works for multiple files, but some tests would be nice
     // TODO to guard against regressions.
@@ -164,7 +164,7 @@ class JsonGenerationTest {
                 categories = categories,
                 decisionReaderWriter = localDecisionReaderWriter,
                 budgetDirectory = midMonthBudgetDirectory
-        ).routes()
+        ).routes
 
         val subCategoriesInYourHome = categories.subcategoriesFor("In your home")
         val decision1 = Decision(Line(LocalDate.of(2016, 12, 15), "B Dradley Painter and Decorator", 1.00), Category("In your home", subCategoriesInYourHome), subCategoriesInYourHome.find { it.name == "Building insurance" })

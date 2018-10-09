@@ -35,7 +35,7 @@ class StatementsHandlerTest {
     private val mappingWriter = StubbedMappingWriter()
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
     private val testBudgetDirectory = Paths.get("src/test/resources/budgets/")
-    private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
+    private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes
 
     @Test
     fun `POST to statements endpoint with empty body returns HTTP Bad Request`() {
@@ -162,7 +162,7 @@ class StatementsHandlerTest {
         val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
-        val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
+        val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes
         val inputStatementContent = "2017-09-17,Pizza Union,5.50\n"
         val body = MultipartFormBody().plus("year" to "2017")
                 .plus("month" to "February")

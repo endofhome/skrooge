@@ -25,7 +25,7 @@ class DecisionsHandlerTest {
     private val outputPath = Paths.get("src/test/resources/decisions")
     private val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
     private val testBudgetDirectory = Paths.get("src/test/resources/budgets/")
-    private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
+    private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes
 
     @Test
     fun `POST with valid form data results in HTTP CREATED and new decision file on file system`() {

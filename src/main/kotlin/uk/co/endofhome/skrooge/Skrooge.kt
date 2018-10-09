@@ -37,7 +37,7 @@ import java.nio.file.Paths
 
 fun main(args: Array<String>) {
     val port = if (args.isNotEmpty()) args[0].toInt() else 5000
-    val app = Skrooge().routes()
+    val app = Skrooge().routes
                        .withFilter(DebuggingFilters.PrintRequestAndResponse())
     app.asServer(Jetty(port)).start()
     println("Skrooge has started on http://localhost:$port")
@@ -51,18 +51,20 @@ class Skrooge(private val categories: Categories = Categories(),
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
     private val categoryReporter = CategoryReporter(categories.all(), AnnualBudgets.from(budgetDirectory))
 
-    fun routes() = routes(
-            publicResources bind static(ResourceLoader.Directory("public")),
+    val routes
+        get() =
+            routes(
+                    publicResources bind static(ResourceLoader.Directory("public")),
 
-            index bind GET to { IndexHandler(renderer).handle() },
-            monthlyBarChartReport bind GET to { request -> BarChartHandler(request, renderer) },
+                    index bind GET to { IndexHandler(renderer).handle() },
+                    monthlyBarChartReport bind GET to { request -> BarChartHandler(request, renderer) },
 
-            statements bind POST to { request -> StatementsHandler(categories).upload(request, renderer) },
-            unknownMerchant bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
-            categoryMapping bind POST to { request -> CategoryMappingHandler(categories.categoryMappings, mappingWriter).addCategoryMapping(request) },
-            statementDecisions bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories.all()).confirm(request) },
-            monthlyJsonReport bind GET to { request -> MonthlyReportHandler(decisionReaderWriter, categoryReporter)(request) }
-    )
+                    statements bind POST to { request -> StatementsHandler(categories).upload(request, renderer) },
+                    unknownMerchant bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
+                    categoryMapping bind POST to { request -> CategoryMappingHandler(categories.categoryMappings, mappingWriter).addCategoryMapping(request) },
+                    statementDecisions bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories.all()).confirm(request) },
+                    monthlyJsonReport bind GET to { request -> MonthlyReportHandler(decisionReaderWriter, categoryReporter)(request) }
+            )
 
     object RouteDefinitions {
         const val publicResources = "/public"

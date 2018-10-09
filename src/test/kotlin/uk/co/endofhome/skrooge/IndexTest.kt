@@ -23,7 +23,7 @@ class IndexTest {
     private val mappingWriter = StubbedMappingWriter()
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
     private val testBudgetDirectory = Paths.get("src/test/resources/budgets/")
-    private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes()
+    private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes
 
     @Ignore("Ignoring as some values are sensitive and provided by env vars")
     @Test

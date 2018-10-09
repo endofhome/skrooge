@@ -27,7 +27,7 @@ class CategoryMappingTest {
     private val mappingWriter = StubbedMappingWriter()
     private val originalRequestBody = "2017;February;Test;[src/test/resources/2017-02_Someone_one-known-merchant.csv]"
 
-    private val skrooge = Skrooge(categories, mappingWriter, budgetDirectory = Paths.get("src/test/resources/budgets/")).routes()
+    private val skrooge = Skrooge(categories, mappingWriter, budgetDirectory = Paths.get("src/test/resources/budgets/")).routes
 
     @Test
     fun `POST to category-mapping endpoint with empty new-mapping field returns HTTP Bad Request`() {
