@@ -15,6 +15,7 @@ import uk.co.endofhome.skrooge.RouteDefinitions.categoryMapping
 import uk.co.endofhome.skrooge.RouteDefinitions.index
 import uk.co.endofhome.skrooge.RouteDefinitions.monthlyBarChartReport
 import uk.co.endofhome.skrooge.RouteDefinitions.monthlyJsonReport
+import uk.co.endofhome.skrooge.RouteDefinitions.publicResources
 import uk.co.endofhome.skrooge.RouteDefinitions.statementDecisions
 import uk.co.endofhome.skrooge.RouteDefinitions.statements
 import uk.co.endofhome.skrooge.RouteDefinitions.unknownMerchant
@@ -53,7 +54,7 @@ class Skrooge(private val categories: Categories = Categories(),
     private val categoryReporter = CategoryReporter(categories.all(), AnnualBudgets.from(budgetDirectory))
 
     fun routes() = routes(
-            "/public" bind static(ResourceLoader.Directory("public")),
+            publicResources bind static(ResourceLoader.Directory("public")),
 
             index bind GET to { IndexHandler(renderer).handle() },
             monthlyBarChartReport bind GET to { request -> BarChartHandler(request, renderer) },
@@ -68,6 +69,7 @@ class Skrooge(private val categories: Categories = Categories(),
 }
 
 object RouteDefinitions {
+    const val publicResources = "/public"
     const val index = "/"
     const val statements = "/statements"
     const val unknownMerchant = "/unknown-merchant"
