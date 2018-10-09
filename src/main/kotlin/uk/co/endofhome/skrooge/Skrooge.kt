@@ -13,6 +13,7 @@ import org.http4k.server.asServer
 import org.http4k.template.HandlebarsTemplates
 import uk.co.endofhome.skrooge.RouteDefinitions.categoryMapping
 import uk.co.endofhome.skrooge.RouteDefinitions.index
+import uk.co.endofhome.skrooge.RouteDefinitions.monthlyReport
 import uk.co.endofhome.skrooge.RouteDefinitions.statementDecisions
 import uk.co.endofhome.skrooge.RouteDefinitions.statements
 import uk.co.endofhome.skrooge.RouteDefinitions.unknownMerchant
@@ -52,14 +53,16 @@ class Skrooge(private val categories: Categories = Categories(),
 
     fun routes() = routes(
             "/public" bind static(ResourceLoader.Directory("public")),
+
             index bind GET to { IndexHandler(renderer).handle() },
+            "web" bind GET to { request -> BarChartHandler(request, renderer) },
+
             statements bind POST to { request -> StatementsHandler(categories).upload(request, renderer) },
             unknownMerchant bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
             categoryMapping bind POST to { request -> CategoryMappingHandler(categories.categoryMappings, mappingWriter).addCategoryMapping(request) },
             statementDecisions bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories.all()).confirm(request) },
             "annual-report/json" bind GET to { request -> AnnualReportHandler(Gson, decisionReaderWriter, categoryReporter)(request) },
-            "monthly-report/json" bind GET to { request -> MonthlyReportHandler(Gson, decisionReaderWriter, categoryReporter)(request) },
-            "web" bind GET to { request -> BarChartHandler(request, renderer) }
+            monthlyReport bind GET to { request -> MonthlyReportHandler(Gson, decisionReaderWriter, categoryReporter)(request) }
     )
 }
 
@@ -69,4 +72,5 @@ object RouteDefinitions {
     const val unknownMerchant = "/unknown-merchant"
     const val categoryMapping = "/category-mapping"
     const val statementDecisions = "statement-decisions"
+    const val monthlyReport = "monthly-report/json"
 }
