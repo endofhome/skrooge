@@ -9,6 +9,7 @@ import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.junit.Rule
 import org.junit.Test
+import uk.co.endofhome.skrooge.RouteDefinitions.monthlyBarChartReport
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
@@ -27,7 +28,7 @@ class ChartAcceptanceTest {
 
     @Test
     fun `GET to monthly chart endpoint with valid query parameters`() {
-        val request = Request(GET, "/web").query("year", "2017").query("month", "4")
+        val request = Request(GET, monthlyBarChartReport).query("year", "2017").query("month", "4")
         val response = skrooge(request)
 
         assertThat(response.status, equalTo(OK))
@@ -36,7 +37,7 @@ class ChartAcceptanceTest {
 
     @Test
     fun `GET to monthly chart endpoint with invalid query parameters`() {
-        val request = Request(GET, "/web").query("year", "2017").query("month", "13")
+        val request = Request(GET, monthlyBarChartReport).query("year", "2017").query("month", "13")
         val response = skrooge(request)
 
         assertThat(response.status, equalTo(BAD_REQUEST))
@@ -44,7 +45,7 @@ class ChartAcceptanceTest {
 
     @Test
     fun `GET to monthly chart endpoint with missing year parameter`() {
-        val request = Request(GET, "/web").query("month", "1")
+        val request = Request(GET, monthlyBarChartReport).query("month", "1")
         val response = skrooge(request)
 
         assertThat(response.status, equalTo(BAD_REQUEST))
@@ -52,7 +53,7 @@ class ChartAcceptanceTest {
 
     @Test
     fun `GET to monthly chart endpoint with missing month parameter`() {
-        val request = Request(GET, "/web").query("year", "2017")
+        val request = Request(GET, monthlyBarChartReport).query("year", "2017")
         val response = skrooge(request)
 
         assertThat(response.status, equalTo(BAD_REQUEST))
