@@ -15,6 +15,7 @@ import org.http4k.core.with
 import org.http4k.lens.Header
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import uk.co.endofhome.skrooge.RouteDefinitions.categoryMapping
 import uk.co.endofhome.skrooge.RouteDefinitions.statements
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
@@ -30,7 +31,7 @@ class CategoryMappingTest {
 
     @Test
     fun `POST to category-mapping endpoint with empty new-mapping field returns HTTP Bad Request`() {
-        val request = Request(POST, "/category-mapping")
+        val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("new-mapping", "")
                 .form("remaining-vendors", "")
@@ -41,7 +42,7 @@ class CategoryMappingTest {
 
     @Test
     fun `POST to category-mapping endpoint with non-CSV content returns HTTP Bad Request`() {
-        val request = Request(POST, "/category-mapping")
+        val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("new-mapping", "Casbah Records;Established 1967 in our minds")
                 .form("remaining-vendors", "")
@@ -52,7 +53,7 @@ class CategoryMappingTest {
 
     @Test
     fun `POST to category-mapping endpoint with good CSV content returns HTTP OK and writes new mapping`() {
-        val request = Request(POST, "/category-mapping")
+        val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("new-mapping", "Casbah Records,Fun,Tom fun budget")
                 .form("remaining-vendors", "")
@@ -64,7 +65,7 @@ class CategoryMappingTest {
 
     @Test
     fun `succesful POST to category-mapping redirects back to continue categorisation if necessary`() {
-        val request = Request(POST, "/category-mapping")
+        val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("new-mapping", "DIY Space for London,Fun,Tom fun budget")
                 .form("remaining-vendors", "Another vendor")
@@ -80,7 +81,7 @@ class CategoryMappingTest {
 
     @Test
     fun `when all categories have been mapped a monthly report is available for review`() {
-        val request = Request(POST, "/category-mapping")
+        val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("new-mapping", "Last new mapping,Fun,Tom fun budget")
                 .form("remaining-vendors", "")

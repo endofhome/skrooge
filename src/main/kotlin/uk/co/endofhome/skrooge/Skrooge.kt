@@ -11,6 +11,7 @@ import org.http4k.routing.static
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import org.http4k.template.HandlebarsTemplates
+import uk.co.endofhome.skrooge.RouteDefinitions.categoryMapping
 import uk.co.endofhome.skrooge.RouteDefinitions.index
 import uk.co.endofhome.skrooge.RouteDefinitions.statements
 import uk.co.endofhome.skrooge.RouteDefinitions.unknownMerchant
@@ -53,7 +54,7 @@ class Skrooge(private val categories: Categories = Categories(),
             index bind GET to { IndexHandler(renderer).handle() },
             statements bind POST to { request -> StatementsHandler(categories).upload(request, renderer) },
             unknownMerchant bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
-            "category-mapping" bind POST to { request -> CategoryMappingHandler(categories.categoryMappings, mappingWriter).addCategoryMapping(request) },
+            categoryMapping bind POST to { request -> CategoryMappingHandler(categories.categoryMappings, mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories.all()).confirm(request) },
             "annual-report/json" bind GET to { request -> AnnualReportHandler(Gson, decisionReaderWriter, categoryReporter)(request) },
             "monthly-report/json" bind GET to { request -> MonthlyReportHandler(Gson, decisionReaderWriter, categoryReporter)(request) },
@@ -65,4 +66,5 @@ object RouteDefinitions {
     const val index = "/"
     const val statements = "/statements"
     const val unknownMerchant = "/unknown-merchant"
+    const val categoryMapping = "/category-mapping"
 }
