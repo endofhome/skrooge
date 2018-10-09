@@ -14,8 +14,7 @@ import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
 
-class MonthlyReportHandler(private val gson: Gson,
-                           private val decisionReaderWriter: DecisionReaderWriter,
+class MonthlyReportHandler(private val decisionReaderWriter: DecisionReaderWriter,
                            private val categoryReporter: CategoryReporter) {
 
     operator fun invoke(request: Request): Response {
@@ -43,7 +42,7 @@ class MonthlyReportHandler(private val gson: Gson,
                     }
                     val aggregatedOverview = categoryReporter.aggregatedOverviewFrom(overview, dateOfFirstTransaction, endDate, historicalCategoryReports)
                     val report = MonthlyReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, aggregatedOverview, overview, catReports)
-                    val reportJson = gson.asJsonObject(report)
+                    val reportJson = Gson.asJsonObject(report)
                     Response(Status.OK).body(reportJson.asPrettyJsonString())
                 }
                 else -> Response(Status.BAD_REQUEST)

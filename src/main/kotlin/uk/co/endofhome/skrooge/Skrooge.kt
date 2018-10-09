@@ -3,7 +3,6 @@ package uk.co.endofhome.skrooge
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.filter.DebuggingFilters
-import org.http4k.format.Gson
 import org.http4k.routing.ResourceLoader
 import org.http4k.routing.bind
 import org.http4k.routing.routes
@@ -62,7 +61,7 @@ class Skrooge(private val categories: Categories = Categories(),
             unknownMerchant bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
             categoryMapping bind POST to { request -> CategoryMappingHandler(categories.categoryMappings, mappingWriter).addCategoryMapping(request) },
             statementDecisions bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories.all()).confirm(request) },
-            monthlyJsonReport bind GET to { request -> MonthlyReportHandler(Gson, decisionReaderWriter, categoryReporter)(request) }
+            monthlyJsonReport bind GET to { request -> MonthlyReportHandler(decisionReaderWriter, categoryReporter)(request) }
     )
 }
 
