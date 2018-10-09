@@ -68,5 +68,5 @@ object RouteDefinitions {
     const val statements = "/statements"
     const val unknownMerchant = "/unknown-merchant"
     const val categoryMapping = "/category-mapping"
-    const val statementDecisions = "reports/categorisations"
+    const val statementDecisions = "statement-decisions"
 }

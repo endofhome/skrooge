@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Please review your categorisations for one-known-merchant</h1>
-    <form action="reports/categorisations" method="post">
+    <form action="statement-decisions" method="post">
         
             <h3>17/09/2017, Pizza Union: £5.50
             <select name="decisions">

@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Please review your categorisations for {{bankStatement.bankName}}</h1>
-    <form action="reports/categorisations" method="post">
+    <form action="statement-decisions" method="post">
         {{#each bankStatement.formattedDecisions}}
             <h3>{{line.date}}, {{line.merchant}}: £{{line.amount}}
             <select name="decisions">

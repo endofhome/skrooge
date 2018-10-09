@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Please review your categorisations for one-known-merchant</h1>
-    <form action="reports/categorisations" method="post">
+    <form action="statement-decisions" method="post">
         
         <input type="hidden" name="statement-data" value="2017;February;Someone;[one-known-merchant.csv]">
         <div class="button">
