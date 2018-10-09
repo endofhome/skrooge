@@ -56,7 +56,7 @@ class Skrooge(private val categories: Categories = Categories(),
             routes(
                     publicResources bind static(ResourceLoader.Directory("public")),
 
-                    index bind GET to { IndexHandler(renderer).handle() },
+                    index bind GET to { IndexHandler(renderer)() },
                     monthlyBarChartReport bind GET to { request -> BarChartHandler(request, renderer) },
 
                     statements bind POST to { request -> StatementsHandler(renderer, categories)(request) },

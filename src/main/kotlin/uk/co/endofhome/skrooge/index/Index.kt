@@ -14,7 +14,7 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 class IndexHandler(private val renderer: TemplateRenderer) {
-    fun handle(): Response {
+    operator fun invoke(): Response {
         val years = listOf(DisplayYear.of("2017"), DisplayYear.of("2018"), DisplayYear.of("2019"))
         val months = Month.values().map { DisplayMonth.of(it) }
         val users = listOf(System.getenv("PARTICIPANT_TWO"), System.getenv("PARTICIPANT_ONE"), System.getenv("PARTICIPANT_THREE"))
