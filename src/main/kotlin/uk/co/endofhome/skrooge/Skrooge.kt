@@ -29,7 +29,6 @@ import uk.co.endofhome.skrooge.decisions.DecisionReaderWriter
 import uk.co.endofhome.skrooge.decisions.DecisionsHandler
 import uk.co.endofhome.skrooge.decisions.FileSystemDecisionReaderReaderWriter
 import uk.co.endofhome.skrooge.index.IndexHandler
-import uk.co.endofhome.skrooge.reports.AnnualReportHandler
 import uk.co.endofhome.skrooge.reports.BarChartHandler
 import uk.co.endofhome.skrooge.reports.MonthlyReportHandler
 import uk.co.endofhome.skrooge.statements.StatementsHandler
@@ -63,7 +62,6 @@ class Skrooge(private val categories: Categories = Categories(),
             unknownMerchant bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
             categoryMapping bind POST to { request -> CategoryMappingHandler(categories.categoryMappings, mappingWriter).addCategoryMapping(request) },
             statementDecisions bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories.all()).confirm(request) },
-            "annual-report/json" bind GET to { request -> AnnualReportHandler(Gson, decisionReaderWriter, categoryReporter)(request) },
             monthlyJsonReport bind GET to { request -> MonthlyReportHandler(Gson, decisionReaderWriter, categoryReporter)(request) }
     )
 }

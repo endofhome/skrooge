@@ -5,14 +5,12 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.format.Gson
 import org.http4k.format.Gson.asPrettyJsonString
-import org.http4k.template.ViewModel
 import uk.co.endofhome.skrooge.categories.CategoryReport
 import uk.co.endofhome.skrooge.categories.CategoryReporter
 import uk.co.endofhome.skrooge.decisions.Decision
 import uk.co.endofhome.skrooge.decisions.DecisionReaderWriter
 import java.time.LocalDate
 import java.time.Month
-import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -78,30 +76,3 @@ class MonthlyReportHandler(private val gson: Gson,
         }
     }
 }
-
-class AnnualReportHandler(private val gson: Gson,
-                          private val decisionReaderWriter: DecisionReaderWriter,
-                          private val categoryReporter: CategoryReporter) {
-
-    operator fun invoke(request: Request): Response {
-        val startDateString = request.query("startDate")!!
-        val startDate = LocalDate.parse(startDateString, DateTimeFormatter.ISO_DATE)
-        val decisions = decisionReaderWriter.readForYearStarting(startDate)
-
-        return decisions.let {
-            when {
-                it.isNotEmpty() -> {
-                    val catReports = categoryReporter.annualCategoryReportsFrom(decisions)
-                    val report = AnnualReport(startDate, catReports)
-                    val reportJson = gson.asJsonObject(report)
-                    Response(Status.OK).body(reportJson.asPrettyJsonString())
-                }
-                else -> Response(Status.BAD_REQUEST)
-            }
-        }
-    }
-}
-
-data class AnnualReport(val startDate: LocalDate, val categories: List<AnnualCategoryReport>) : ViewModel
-data class AnnualCategoryReport(val title: String, val data: List<AnnualCategoryReportDataItem>) : ViewModel
-data class AnnualCategoryReportDataItem(val name: String, val actual: Double, val budget: Double, val annualBudget: Double)

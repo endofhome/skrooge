@@ -2,8 +2,6 @@ package uk.co.endofhome.skrooge.categories
 
 import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.decisions.Decision
-import uk.co.endofhome.skrooge.reports.AnnualCategoryReport
-import uk.co.endofhome.skrooge.reports.AnnualCategoryReportDataItem
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
@@ -29,35 +27,6 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
 
         return categories.map { category ->
             CategoryReport(
-                    category.title,
-                    catReportDataItems.filter { dataItem -> category.subcategories.map { it.name }.contains(dataItem.name) }
-            )
-        }.filter { it.data.isNotEmpty() }
-    }
-
-    fun annualCategoryReportsFrom(decisions: List<Decision>): List<AnnualCategoryReport> {
-        val totalNumberOfMonths = 12
-        val sortedDecisions = decisions.sortedBy { it.line.date }
-        val dateOfFirstTransaction = sortedDecisions.first().line.date
-        val startDate = annualBudgets.budgetFor(dateOfFirstTransaction)!!.startDateInclusive
-        val endDate = sortedDecisions.last().line.date
-        val numberOfMonthsSoFar = totalMonths(startDate, endDate)
-
-        val catReportDataItems: List<AnnualCategoryReportDataItem> =
-                decisions.map {
-                    val budgetAmount = annualBudgets.valueFor(it.category!!, it.subCategory!!, it.line.date)
-                    AnnualCategoryReportDataItem(it.subCategory.name, it.line.amount, budgetAmount * numberOfMonthsSoFar, budgetAmount * totalNumberOfMonths)
-                }
-                        .groupBy { it.name }
-                        .map {
-                            it.value.reduce { acc, annualCategoryReportDataItem ->
-                                AnnualCategoryReportDataItem(it.key, acc.actual + annualCategoryReportDataItem.actual, annualCategoryReportDataItem.budget, annualCategoryReportDataItem.annualBudget)
-                            }
-                        }
-                        .map { it.copy(actual = BigDecimal.valueOf(it.actual).setScale(2, RoundingMode.HALF_UP).toDouble()) }
-
-        return categories.map { category ->
-            AnnualCategoryReport(
                     category.title,
                     catReportDataItems.filter { dataItem -> category.subcategories.map { it.name }.contains(dataItem.name) }
             )
