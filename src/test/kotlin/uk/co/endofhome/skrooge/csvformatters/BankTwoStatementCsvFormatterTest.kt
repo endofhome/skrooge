@@ -8,7 +8,7 @@ import java.io.File.separator
 import java.nio.file.Paths
 
 class BankTwoStatementCsvFormatterTest : CsvFormatterTest() {
-    private val bankName = System.getenv("BANK_TWO").toLowerCase()
+    private val bankName = System.getenv("BANK_TWO")
     private val merchantFour = System.getenv("MERCHANT_FOUR")
     private val merchantFive = System.getenv("MERCHANT_FIVE")
     private val merchantSix = System.getenv("MERCHANT_SIX")
