@@ -72,5 +72,5 @@ object RouteDefinitions {
     const val unknownMerchant = "/unknown-merchant"
     const val categoryMapping = "/category-mapping"
     const val statementDecisions = "statement-decisions"
-    const val monthlyReport = "monthly-report/json"
+    const val monthlyReport = "monthly-report"
 }
