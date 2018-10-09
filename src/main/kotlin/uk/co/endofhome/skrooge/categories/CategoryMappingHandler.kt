@@ -12,8 +12,8 @@ import org.http4k.lens.FormField
 import org.http4k.lens.Validator
 import org.http4k.lens.WebForm
 import org.http4k.lens.webForm
-import uk.co.endofhome.skrooge.RouteDefinitions.statements
-import uk.co.endofhome.skrooge.RouteDefinitions.unknownMerchant
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statements
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.unknownMerchant
 
 class CategoryMappingHandler(private val categoryMappings: MutableList<String>, private val mappingWriter: MappingWriter) {
     fun addCategoryMapping(request: Request): Response {

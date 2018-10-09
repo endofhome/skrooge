@@ -17,7 +17,7 @@ import org.http4k.routing.RoutingHttpHandler
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import uk.co.endofhome.skrooge.RouteDefinitions.statements
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statements
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import uk.co.endofhome.skrooge.decisions.FileSystemDecisionReaderReaderWriter

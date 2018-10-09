@@ -15,8 +15,8 @@ import org.http4k.core.with
 import org.http4k.lens.Header
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import uk.co.endofhome.skrooge.RouteDefinitions.categoryMapping
-import uk.co.endofhome.skrooge.RouteDefinitions.statements
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.categoryMapping
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statements
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import java.nio.file.Paths

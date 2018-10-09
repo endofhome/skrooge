@@ -10,14 +10,14 @@ import org.http4k.routing.static
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import org.http4k.template.HandlebarsTemplates
-import uk.co.endofhome.skrooge.RouteDefinitions.categoryMapping
-import uk.co.endofhome.skrooge.RouteDefinitions.index
-import uk.co.endofhome.skrooge.RouteDefinitions.monthlyBarChartReport
-import uk.co.endofhome.skrooge.RouteDefinitions.monthlyJsonReport
-import uk.co.endofhome.skrooge.RouteDefinitions.publicResources
-import uk.co.endofhome.skrooge.RouteDefinitions.statementDecisions
-import uk.co.endofhome.skrooge.RouteDefinitions.statements
-import uk.co.endofhome.skrooge.RouteDefinitions.unknownMerchant
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.categoryMapping
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.index
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.monthlyBarChartReport
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.monthlyJsonReport
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.publicResources
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementDecisions
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statements
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.unknownMerchant
 import uk.co.endofhome.skrooge.categories.AnnualBudgets
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.CategoryMappingHandler
@@ -63,16 +63,16 @@ class Skrooge(private val categories: Categories = Categories(),
             statementDecisions bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories.all()).confirm(request) },
             monthlyJsonReport bind GET to { request -> MonthlyReportHandler(decisionReaderWriter, categoryReporter)(request) }
     )
-}
 
-object RouteDefinitions {
-    const val publicResources = "/public"
-    const val index = "/"
-    const val statements = "/statements"
-    const val unknownMerchant = "/unknown-merchant"
-    const val categoryMapping = "/category-mapping"
-    const val statementDecisions = "statement-decisions"
-    private const val monthlyReport = "monthly-report"
-    const val monthlyJsonReport = "$monthlyReport/json"
-    const val monthlyBarChartReport = "$monthlyReport/bar-chart"
+    object RouteDefinitions {
+        const val publicResources = "/public"
+        const val index = "/"
+        const val statements = "/statements"
+        const val unknownMerchant = "/unknown-merchant"
+        const val categoryMapping = "/category-mapping"
+        const val statementDecisions = "statement-decisions"
+        private const val monthlyReport = "monthly-report"
+        const val monthlyJsonReport = "$monthlyReport/json"
+        const val monthlyBarChartReport = "$monthlyReport/bar-chart"
+    }
 }

@@ -10,7 +10,7 @@ import org.http4k.core.body.form
 import org.http4k.core.with
 import org.http4k.lens.Header
 import org.junit.Test
-import uk.co.endofhome.skrooge.RouteDefinitions.statementDecisions
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementDecisions
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import uk.co.endofhome.skrooge.decisions.FileSystemDecisionReaderReaderWriter
