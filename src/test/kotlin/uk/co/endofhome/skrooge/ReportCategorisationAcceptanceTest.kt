@@ -11,6 +11,7 @@ import org.http4k.core.with
 import org.http4k.lens.Header
 import org.junit.Before
 import org.junit.Test
+import uk.co.endofhome.skrooge.RouteDefinitions.statementDecisions
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.decisions.Decision
@@ -41,7 +42,7 @@ class ReportCategorisationAcceptanceTest {
 
     @Test
     fun `POST to reports - categorisations endpoint with no amended decisions writes same decisions`() {
-        val request = Request(POST, "/reports/categorisations")
+        val request = Request(POST, statementDecisions)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("statement-data", "2017;October;Tom;SomeBank;[blah]")
                 .form("decisions", "[18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget]")
@@ -52,7 +53,7 @@ class ReportCategorisationAcceptanceTest {
 
     @Test
     fun `POST to reports - categorisations endpoint with amended mappings writes amended mappings`() {
-        val request = Request(POST, "/reports/categorisations")
+        val request = Request(POST, statementDecisions)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("statement-data", "2017;October;Tom;SomeBank;[blah]")
                 .form("decisions", "[18/10/2017,Edgeworld Records,14.99,Eats and drinks,Food]")
