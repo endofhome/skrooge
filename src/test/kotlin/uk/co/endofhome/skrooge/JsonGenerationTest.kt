@@ -10,7 +10,7 @@ import org.http4k.core.Status.Companion.OK
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import uk.co.endofhome.skrooge.RouteDefinitions.monthlyReport
+import uk.co.endofhome.skrooge.RouteDefinitions.monthlyJsonReport
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.decisions.Decision
@@ -54,7 +54,7 @@ class JsonGenerationTest {
 
     @Test
     fun `POST to generate - json endpoint with no monthly data returns BAD REQUEST`() {
-        val request = Request(GET, monthlyReport).query("year", "2006").query("month", "10")
+        val request = Request(GET, monthlyJsonReport).query("year", "2006").query("month", "10")
 
         assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
     }
@@ -66,7 +66,7 @@ class JsonGenerationTest {
         val decision = Decision(Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 250.00), Category(categoryTitle, subCategories), subCategories.find { it.name == "Building insurance" })
         val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", "some-bank")
         decisionReaderWriter.write(statementData, listOf(decision))
-        val request = Request(GET, monthlyReport).query("year", "2017").query("month", "10")
+        val request = Request(GET, monthlyJsonReport).query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
 
@@ -82,7 +82,7 @@ class JsonGenerationTest {
         val decision2 = Decision(Line(LocalDate.of(2017, 10, 14), "OIS Removals", 500.00), Category(categoryTitle, subCategories), subCategories.find { it.name == "Building insurance" })
         val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", "some-bank")
         decisionReaderWriter.write(statementData, listOf(decision1, decision2))
-        val request = Request(GET, monthlyReport).query("year", "2017").query("month", "10")
+        val request = Request(GET, monthlyJsonReport).query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
 
@@ -98,7 +98,7 @@ class JsonGenerationTest {
         val decision2 = Decision(Line(LocalDate.of(2017, 10, 10), "Some Bank", 300.00), Category(categoryTitle, subCategories), subCategories.find { it.name == "Mortgage" })
         val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", "some-bank")
         decisionReaderWriter.write(statementData, listOf(decision1, decision2))
-        val request = Request(GET, monthlyReport).query("year", "2017").query("month", "10")
+        val request = Request(GET, monthlyJsonReport).query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
 
@@ -117,7 +117,7 @@ class JsonGenerationTest {
         val decision3 = Decision(Line(LocalDate.of(2017, 10, 17), "Something in a totally different category", 400.00), Category(eatsAndDrinks, subCategoriesEatsAndDrinks), subCategoriesEatsAndDrinks.find { it.name == "Food" })
         val statementData = StatementData(Year.of(2017), OCTOBER, "Tom", "some-bank")
         decisionReaderWriter.write(statementData, listOf(decision1, decision2, decision3))
-        val request = Request(GET, monthlyReport).query("year", "2017").query("month", "10")
+        val request = Request(GET, monthlyJsonReport).query("year", "2017").query("month", "10")
 
         val response = skrooge(request)
 
@@ -134,7 +134,7 @@ class JsonGenerationTest {
         val octoberStatementData = StatementData(Year.of(2017), FEBRUARY, "Tom", "some-bank")
         decisionReaderWriter.write(septemberStatementData, listOf(decision1))
         decisionReaderWriter.write(octoberStatementData, listOf(decision2))
-        val request = Request(GET, monthlyReport).query("year", "2017").query("month", "2")
+        val request = Request(GET, monthlyJsonReport).query("year", "2017").query("month", "2")
 
         val response = skrooge(request)
 
@@ -148,7 +148,7 @@ class JsonGenerationTest {
         val decision1 = Decision(Line(LocalDate.of(2017, 12, 24), "B Dradley Painter and Decorator", 1.00), Category("In your home", subCategoriesInYourHome), subCategoriesInYourHome.find { it.name == "Building insurance" })
         val decemberStatementData = StatementData(Year.of(2017), DECEMBER, "Tom", "some-bank")
         decisionReaderWriter.write(decemberStatementData, listOf(decision1))
-        val request = Request(GET, monthlyReport).query("year", "2017").query("month", "12")
+        val request = Request(GET, monthlyJsonReport).query("year", "2017").query("month", "12")
 
         val response = skrooge(request)
 
@@ -173,7 +173,7 @@ class JsonGenerationTest {
         val februaryStatementData = StatementData(Year.of(2017), FEBRUARY, "Tom", "SomeBank")
         localDecisionReaderWriter.write(januaryStatementData, listOf(decision1))
         localDecisionReaderWriter.write(februaryStatementData, listOf(decision2))
-        val request = Request(GET, monthlyReport).query("year", "2017").query("month", "2")
+        val request = Request(GET, monthlyJsonReport).query("year", "2017").query("month", "2")
 
         val response = localSkrooge(request)
 

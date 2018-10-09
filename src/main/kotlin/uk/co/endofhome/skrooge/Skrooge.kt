@@ -13,7 +13,7 @@ import org.http4k.server.asServer
 import org.http4k.template.HandlebarsTemplates
 import uk.co.endofhome.skrooge.RouteDefinitions.categoryMapping
 import uk.co.endofhome.skrooge.RouteDefinitions.index
-import uk.co.endofhome.skrooge.RouteDefinitions.monthlyReport
+import uk.co.endofhome.skrooge.RouteDefinitions.monthlyJsonReport
 import uk.co.endofhome.skrooge.RouteDefinitions.statementDecisions
 import uk.co.endofhome.skrooge.RouteDefinitions.statements
 import uk.co.endofhome.skrooge.RouteDefinitions.unknownMerchant
@@ -62,7 +62,7 @@ class Skrooge(private val categories: Categories = Categories(),
             categoryMapping bind POST to { request -> CategoryMappingHandler(categories.categoryMappings, mappingWriter).addCategoryMapping(request) },
             statementDecisions bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories.all()).confirm(request) },
             "annual-report/json" bind GET to { request -> AnnualReportHandler(Gson, decisionReaderWriter, categoryReporter)(request) },
-            monthlyReport bind GET to { request -> MonthlyReportHandler(Gson, decisionReaderWriter, categoryReporter)(request) }
+            monthlyJsonReport bind GET to { request -> MonthlyReportHandler(Gson, decisionReaderWriter, categoryReporter)(request) }
     )
 }
 
@@ -73,4 +73,5 @@ object RouteDefinitions {
     const val categoryMapping = "/category-mapping"
     const val statementDecisions = "statement-decisions"
     const val monthlyReport = "monthly-report"
+    const val monthlyJsonReport = "$monthlyReport/json"
 }
