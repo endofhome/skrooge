@@ -11,6 +11,7 @@ import org.http4k.routing.static
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 import org.http4k.template.HandlebarsTemplates
+import uk.co.endofhome.skrooge.RouteDefinitions.statements
 import uk.co.endofhome.skrooge.categories.AnnualBudgets
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.CategoryMappingHandler
@@ -47,8 +48,8 @@ class Skrooge(private val categories: Categories = Categories(),
 
     fun routes() = routes(
             "/public" bind static(ResourceLoader.Directory("public")),
-            "/" bind GET to { _ -> IndexHandler(renderer).handle() },
-            "/statements" bind POST to { request -> StatementsHandler(categories).upload(request, renderer) },
+            "/" bind GET to { IndexHandler(renderer).handle() },
+            statements bind POST to { request -> StatementsHandler(categories).upload(request, renderer) },
             "/unknown-merchant" bind GET to { request -> UnknownMerchantHandler(renderer, categories.all()).handle(request) },
             "category-mapping" bind POST to { request -> CategoryMappingHandler(categories.categoryMappings, mappingWriter).addCategoryMapping(request) },
             "reports/categorisations" bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories.all()).confirm(request) },
@@ -56,4 +57,8 @@ class Skrooge(private val categories: Categories = Categories(),
             "monthly-report/json" bind GET to { request -> MonthlyReportHandler(Gson, decisionReaderWriter, categoryReporter)(request) },
             "web" bind GET to { request -> BarChartHandler(request, renderer) }
     )
+}
+
+object RouteDefinitions {
+    const val statements = "/statements"
 }

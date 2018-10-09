@@ -17,6 +17,7 @@ import org.http4k.routing.RoutingHttpHandler
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import uk.co.endofhome.skrooge.RouteDefinitions.statements
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import uk.co.endofhome.skrooge.decisions.FileSystemDecisionReaderReaderWriter
@@ -39,7 +40,7 @@ class StatementsHandlerTest {
     @Test
     fun `POST to statements endpoint with empty body returns HTTP Bad Request`() {
         val body = MultipartFormBody()
-        val request = Request(POST, "/statements")
+        val request = Request(POST, statements)
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
         assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
@@ -53,7 +54,7 @@ class StatementsHandlerTest {
                                       .plus("statement-name" to "EmptyStatement")
                                       .plus("statement-file" to bankStatement)
 
-        val request = Request(POST, "/statements")
+        val request = Request(POST, statements)
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
         assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
@@ -67,7 +68,7 @@ class StatementsHandlerTest {
                                       .plus("statement-name" to "EmptyStatement")
                                       .plus("statement-file" to bankStatement)
 
-        val request = Request(POST, "/statements")
+        val request = Request(POST, statements)
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
         assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
@@ -81,7 +82,7 @@ class StatementsHandlerTest {
                                       .plus("statement-name" to "EmptyStatement")
                                       .plus("statement-file" to bankStatement)
 
-        val request = Request(POST, "/statements")
+        val request = Request(POST, statements)
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
         assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
@@ -95,7 +96,7 @@ class StatementsHandlerTest {
                                       .plus("user" to "Tom")
                                       .plus("statement-file" to bankStatement)
 
-        val request = Request(POST, "/statements")
+        val request = Request(POST, statements)
             .header("content-type", "multipart/form-data; boundary=${body.boundary}")
             .body(body)
         assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
@@ -108,7 +109,7 @@ class StatementsHandlerTest {
                                       .plus("statement-name" to "EmptyStatement")
                                       .plus("user" to "Tom")
 
-        val request = Request(POST, "/statements")
+        val request = Request(POST, statements)
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
         assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
@@ -123,7 +124,7 @@ class StatementsHandlerTest {
                                       .plus("statement-name" to "EmptyStatement")
                                       .plus("statement-file" to formFile)
 
-        val request = Request(POST, "/statements")
+        val request = Request(POST, statements)
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
         assertThat(skrooge(request).status, equalTo(OK))
@@ -132,7 +133,7 @@ class StatementsHandlerTest {
     @Ignore("Not sure if I want to support this right now.")
     @Test
     fun `POST to statements with multiple dummy files returns HTTP OK`() {
-        val request = Request(POST, "/statements").body("2017;September;Tom;EmptyFile;[src/test/resources/2017-01_Someone_empty-file.csv,src/test/resources/2017-01_Someone_empty-file.csv]")
+        val request = Request(POST, statements).body("2017;September;Tom;EmptyFile;[src/test/resources/2017-01_Someone_empty-file.csv,src/test/resources/2017-01_Someone_empty-file.csv]")
         assertThat(skrooge(request).status, equalTo(OK))
     }
 
@@ -144,7 +145,7 @@ class StatementsHandlerTest {
                                       .plus("user" to "Test")
                                       .plus("statement-name" to "EmptyStatement")
                                       .plus("statement-file" to formFile)
-        val request = Request(POST, "/statements")
+        val request = Request(POST, statements)
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
 
@@ -168,7 +169,7 @@ class StatementsHandlerTest {
                 .plus("user" to "Test")
                 .plus("statement-name" to "one-known-merchant")
                 .plus("statement-file" to FormFile("2017-02_Test_one-known-merchant.csv", ContentType.OCTET_STREAM, inputStatementContent.byteInputStream()))
-        val request = Request(POST, "/statements")
+        val request = Request(POST, statements)
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
 
@@ -190,7 +191,7 @@ class StatementsHandlerTest {
                                       .plus("user" to "Test")
                                       .plus("statement-name" to "OneUnknownMerchant")
                                       .plus("statement-file" to FormFile("2017-04_Test_one-unknown-merchant.csv", ContentType.OCTET_STREAM, inputStatementContent.byteInputStream()))
-        val requestWithMcDonalds = Request(POST, "/statements")
+        val requestWithMcDonalds = Request(POST, statements)
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
 
@@ -218,7 +219,7 @@ class StatementsHandlerTest {
                 .plus("user" to "Test")
                 .plus("statement-name" to "TwoUnknownMerchants")
                 .plus("statement-file" to formFile)
-        val requestWithTwoRecordShops = Request(POST, "/statements")
+        val requestWithTwoRecordShops = Request(POST, statements)
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
 

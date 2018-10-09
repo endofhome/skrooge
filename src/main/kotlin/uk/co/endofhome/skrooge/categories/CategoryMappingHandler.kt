@@ -12,6 +12,7 @@ import org.http4k.lens.FormField
 import org.http4k.lens.Validator
 import org.http4k.lens.WebForm
 import org.http4k.lens.webForm
+import uk.co.endofhome.skrooge.RouteDefinitions.statements
 
 class CategoryMappingHandler(private val categoryMappings: MutableList<String>, private val mappingWriter: MappingWriter) {
     fun addCategoryMapping(request: Request): Response {
@@ -32,7 +33,7 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
                     categoryMappings.add(newMappingString)
                     when (remainingVendors.isEmpty()) {
                         true -> Response(Status.TEMPORARY_REDIRECT)
-                                .header("Location", "/statements")
+                                .header("Location", statements)
                                 .header("Method", Method.POST.name)
                                 .body(originalRequestBody)
                         false -> {

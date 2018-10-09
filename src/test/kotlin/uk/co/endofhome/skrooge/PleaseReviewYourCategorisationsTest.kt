@@ -11,6 +11,7 @@ import org.http4k.core.Request
 import org.http4k.core.Status.Companion.OK
 import org.junit.Rule
 import org.junit.Test
+import uk.co.endofhome.skrooge.RouteDefinitions.statements
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
@@ -39,7 +40,7 @@ class PleaseReviewYourCategorisationsTest {
                 .plus("user" to "Someone")
                 .plus("statement-name" to "one-known-merchant")
                 .plus("statement-file" to formFile)
-        val request = Request(Method.POST, "/statements")
+        val request = Request(Method.POST, statements)
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
 
