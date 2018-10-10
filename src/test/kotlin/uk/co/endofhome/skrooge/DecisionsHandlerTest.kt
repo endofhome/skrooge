@@ -8,7 +8,7 @@ import org.http4k.core.Request
 import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.body.form
 import org.http4k.core.with
-import org.http4k.lens.Header
+import org.http4k.lens.Header.Common.CONTENT_TYPE
 import org.junit.Test
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementDecisions
 import uk.co.endofhome.skrooge.categories.Categories
@@ -31,7 +31,7 @@ class DecisionsHandlerTest {
     fun `POST with valid form data results in HTTP CREATED and new decision file on file system`() {
 
         val request = Request(Method.POST, statementDecisions)
-                .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+                .with(CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("decisions", "[29/12/2016,National Lottery,10,Fun,Test fun budget]")
                 .form("statement-data", "2016;December;Test;SomeBank")
 
