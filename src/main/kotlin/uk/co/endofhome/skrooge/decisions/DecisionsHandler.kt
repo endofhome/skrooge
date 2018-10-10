@@ -12,7 +12,7 @@ import java.time.Month
 import java.time.Year
 
 class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, val categories: List<Category>) {
-    fun confirm(request: Request): Response {
+    operator fun invoke(request: Request): Response {
         val webForm = Body.webForm(Validator.Strict)
         val form = webForm.toLens().extract(request)
         val decisionsStrings: List<String>? = form.fields["decisions"]

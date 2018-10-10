@@ -62,7 +62,7 @@ class Skrooge(private val categories: Categories = Categories(),
                     statements bind POST to { request -> StatementsHandler(renderer, categories)(request) },
                     unknownMerchant bind GET to { request -> UnknownMerchantHandler(renderer, categories.all())(request) },
                     categoryMapping bind POST to { request -> CategoryMappingHandler(categories.categoryMappings, mappingWriter).addCategoryMapping(request) },
-                    statementDecisions bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories.all()).confirm(request) },
+                    statementDecisions bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories.all())(request) },
                     monthlyJsonReport bind GET to { request -> MonthlyReportHandler(decisionReaderWriter, categoryReporter)(request) }
             )
 
