@@ -5,6 +5,8 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.format.Gson
 import org.http4k.format.Gson.asPrettyJsonString
+import org.http4k.template.ViewModel
+import uk.co.endofhome.skrooge.categories.AggregateOverviewReport
 import uk.co.endofhome.skrooge.categories.CategoryReport
 import uk.co.endofhome.skrooge.categories.CategoryReporter
 import uk.co.endofhome.skrooge.decisions.Decision
@@ -41,7 +43,7 @@ class MonthlyReportHandler(private val decisionReaderWriter: DecisionReaderWrite
                         else -> emptyList()
                     }
                     val aggregatedOverview = categoryReporter.aggregatedOverviewFrom(overview, dateOfFirstTransaction, endDate, historicalCategoryReports)
-                    val report = MonthlyReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, aggregatedOverview, overview, catReports)
+                    val report = MonthlyJsonReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, aggregatedOverview, overview, catReports)
                     val reportJson = Gson.asJsonObject(report)
                     Response(Status.OK).body(reportJson.asPrettyJsonString())
                 }
@@ -75,3 +77,12 @@ class MonthlyReportHandler(private val decisionReaderWriter: DecisionReaderWrite
         }
     }
 }
+
+data class MonthlyJsonReport(
+        val year: Int,
+        val month: String,
+        val monthNumber: Int,
+        val aggregateOverview: AggregateOverviewReport?,
+        val overview: CategoryReport?,
+        val categories: List<CategoryReport>
+) : ViewModel

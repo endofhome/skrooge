@@ -10,8 +10,6 @@ import org.http4k.core.with
 import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
 import org.http4k.template.view
-import uk.co.endofhome.skrooge.categories.AggregateOverviewReport
-import uk.co.endofhome.skrooge.categories.CategoryReport
 import java.time.Month
 import java.time.YearMonth
 import java.time.format.TextStyle
@@ -42,7 +40,7 @@ class BarChartHandler(private val renderer: TemplateRenderer) {
             null -> Response(BAD_REQUEST)
             else -> {
                 val monthName = Month.of(monthValue).getDisplayName(TextStyle.FULL, Locale.UK)
-                val chartView = MonthlyReport(year, monthName, monthValue, null, null, emptyList())
+                val chartView = MonthlyBarChartReport(year, monthName, monthValue)
                 val view = Body.view(renderer, ContentType.TEXT_HTML)
                 Response(Status.OK).with(view of chartView)
             }
@@ -50,13 +48,10 @@ class BarChartHandler(private val renderer: TemplateRenderer) {
     }
 }
 
-data class MonthlyReport(
+data class MonthlyBarChartReport(
         val year: Int,
         val month: String,
         val monthNumber: Int,
-        val aggregateOverview: AggregateOverviewReport?,
-        val overview: CategoryReport?,
-        val categories: List<CategoryReport>,
         val years: List<Int> = listOf(2017, 2018),
         val months: List<Int> = (1..12).toList()
 ) : ViewModel
