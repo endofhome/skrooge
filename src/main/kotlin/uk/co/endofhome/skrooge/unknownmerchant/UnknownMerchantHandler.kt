@@ -14,7 +14,7 @@ import org.http4k.template.view
 import uk.co.endofhome.skrooge.decisions.Category
 
 class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val categories: List<Category>) {
-    fun handle(request: Request): Response {
+    operator fun invoke(request: Request): Response {
         val currentMerchantLens: BiDiLens<Request, String> = Query.required("currentMerchant")
         val outstandingMerchantsLens: BiDiLens<Request, List<String>> = Query.multi.required("outstandingMerchants")
         val originalRequestBodyLens: BiDiLens<Request, String> = Query.required("originalRequestBody")
