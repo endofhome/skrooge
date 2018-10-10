@@ -57,7 +57,7 @@ class Skrooge(private val categories: Categories = Categories(),
                     publicResources bind static(ResourceLoader.Directory("public")),
 
                     index bind GET to { IndexHandler(renderer)() },
-                    monthlyBarChartReport bind GET to { request -> BarChartHandler(request, renderer) },
+                    monthlyBarChartReport bind GET to { request -> BarChartHandler(renderer)(request) },
 
                     statements bind POST to { request -> StatementsHandler(renderer, categories)(request) },
                     unknownMerchant bind GET to { request -> UnknownMerchantHandler(renderer, categories.all())(request) },

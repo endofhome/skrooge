@@ -17,8 +17,8 @@ import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
 
-object BarChartHandler {
-    operator fun invoke(request: Request, renderer: TemplateRenderer): Response {
+class BarChartHandler(private val renderer: TemplateRenderer) {
+    operator fun invoke(request: Request): Response {
         val year: String? = request.query("year")
         val month: String? = request.query("month")
         return when {
