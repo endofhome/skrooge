@@ -16,7 +16,7 @@ import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statements
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.unknownMerchant
 
 class CategoryMappingHandler(private val categoryMappings: MutableList<String>, private val mappingWriter: MappingWriter) {
-    fun addCategoryMapping(request: Request): Response {
+    operator fun invoke(request: Request): Response {
         val newMappingLens = FormField.required("new-mapping")
         val remainingVendorsLens = FormField.required("remaining-vendors")
         val originalRequestBodyLens = FormField.required("originalRequestBody")
