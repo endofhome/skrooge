@@ -8,7 +8,11 @@ import java.time.Month
 fun main(args: Array<String>) {
 
     val bankStatementFormatter = BankOneStatementCsvFormatter
-    val statementFileName = "bank_accountType_monthName_year.csv"
+    val bank = "bank"
+    val accountType = "accountType"
+    val monthName = "monthName"
+    val year = "year"
+    val statementFileName = "${bank}_${accountType}_${monthName}_$year.csv"
 
     val formattedStatement = bankStatementFormatter.invoke(Paths.get(statementFileName))
     formattedStatement.forEach {
