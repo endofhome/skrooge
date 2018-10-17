@@ -4,6 +4,7 @@ import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.filter.DebuggingFilters
 import org.http4k.routing.ResourceLoader
+import org.http4k.routing.RoutingHttpHandler
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.routing.static
@@ -16,7 +17,8 @@ import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.monthlyBarChartReport
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.monthlyJsonReport
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.publicResources
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementDecisions
-import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statements
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementsWithFileContents
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementsWithFilePath
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.unknownMerchant
 import uk.co.endofhome.skrooge.categories.AnnualBudgets
 import uk.co.endofhome.skrooge.categories.Categories
@@ -46,30 +48,33 @@ fun main(args: Array<String>) {
 class Skrooge(private val categories: Categories = Categories(),
               private val mappingWriter: MappingWriter = FileSystemMappingWriter(),
               private val decisionReaderWriter: DecisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories),
-              budgetDirectory: Path = Paths.get("input/budgets/")) {
+              budgetDirectory: Path = Paths.get("input/budgets/"),
+              normalisedStatementsDirectory: Path = Paths.get("input/normalised/")) {
 
     private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
     private val categoryReporter = CategoryReporter(categories.all(), AnnualBudgets.from(budgetDirectory))
+    private val statementsHandler = StatementsHandler(renderer, categories, normalisedStatementsDirectory)
 
-    val routes
-        get() =
-            routes(
-                    publicResources bind static(ResourceLoader.Directory("public")),
+    val routes: RoutingHttpHandler
+        get() = routes(
+            publicResources bind static(ResourceLoader.Directory("public")),
 
-                    index bind GET to { IndexHandler(renderer)() },
-                    monthlyBarChartReport bind GET to { request -> BarChartHandler(renderer)(request) },
+            index bind GET to { IndexHandler(renderer)() },
+            monthlyBarChartReport bind GET to { request -> BarChartHandler(renderer)(request) },
 
-                    statements bind POST to { request -> StatementsHandler(renderer, categories)(request) },
-                    unknownMerchant bind GET to { request -> UnknownMerchantHandler(renderer, categories.all())(request) },
-                    categoryMapping bind POST to { request -> CategoryMappingHandler(categories.categoryMappings, mappingWriter)(request) },
-                    statementDecisions bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories.all())(request) },
-                    monthlyJsonReport bind GET to { request -> MonthlyReportHandler(decisionReaderWriter, categoryReporter)(request) }
-            )
+            statementsWithFileContents bind POST to { request -> statementsHandler.withFileContents(request) },
+            statementsWithFilePath bind POST to { request -> statementsHandler.withFilePath(request) },
+            unknownMerchant bind GET to { request -> UnknownMerchantHandler(renderer, categories.all())(request) },
+            categoryMapping bind POST to { request -> CategoryMappingHandler(categories.categoryMappings, mappingWriter)(request) },
+            statementDecisions bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories.all())(request) },
+            monthlyJsonReport bind GET to { request -> MonthlyReportHandler(decisionReaderWriter, categoryReporter)(request) }
+        )
 
     object RouteDefinitions {
         const val publicResources = "/public"
         const val index = "/"
-        const val statements = "/statements"
+        const val statementsWithFileContents = "/statements"
+        const val statementsWithFilePath = "/statements-with-path"
         const val unknownMerchant = "/unknown-merchant"
         const val categoryMapping = "/category-mapping"
         const val statementDecisions = "statement-decisions"

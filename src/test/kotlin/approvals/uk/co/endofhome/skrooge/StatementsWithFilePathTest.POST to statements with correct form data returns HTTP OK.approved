@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skrooge</title>
+    <link href="public/vendor/bootstrap.min.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <h1>Please review your categorisations for EmptyStatement</h1>
+    <form action="statement-decisions" method="post">
+        
+        <input type="hidden" name="statement-data" value="2017;September;Tom;EmptyStatement.csv">
+        <div class="button">
+            <button type="submit">Confirm</button>
+        </div>
+    </form>
+</body>
+</html>

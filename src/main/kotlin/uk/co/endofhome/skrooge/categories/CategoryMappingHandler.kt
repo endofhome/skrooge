@@ -12,7 +12,7 @@ import org.http4k.lens.FormField
 import org.http4k.lens.Validator
 import org.http4k.lens.WebForm
 import org.http4k.lens.webForm
-import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statements
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementsWithFilePath
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.unknownMerchant
 
 class CategoryMappingHandler(private val categoryMappings: MutableList<String>, private val mappingWriter: MappingWriter) {
@@ -34,7 +34,7 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
                     categoryMappings.add(newMappingString)
                     when (remainingVendors.isEmpty()) {
                         true -> Response(Status.TEMPORARY_REDIRECT)
-                                .header("Location", statements)
+                                .header("Location", statementsWithFilePath)
                                 .header("Method", Method.POST.name)
                                 .body(originalRequestBody)
                         false -> {
