@@ -230,7 +230,7 @@ class RedirectHelper(val skrooge: RoutingHttpHandler) {
 
     fun Response.followRedirect(request: Request? = null): Response {
         val (redirectMethod, body, headers) = when (status.code) {
-            307 -> request?.let { Triple(it.method, this.body, deriveHeaders(this, it)) } ?: throw RuntimeException("No request provided.")
+            307 -> request?.let { Triple(it.method, it.body, deriveHeaders(this, it)) } ?: throw RuntimeException("No request provided.")
             303 -> Triple(Method.GET, Body.EMPTY, emptyList())
             else -> throw RuntimeException("Don't care about any other status codes at the moment.")
         }
