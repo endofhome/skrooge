@@ -14,6 +14,7 @@ import org.http4k.lens.MultipartForm
 import org.http4k.lens.MultipartFormField
 import org.http4k.lens.MultipartFormFile
 import org.http4k.lens.Validator
+import org.http4k.lens.WebForm
 import org.http4k.lens.multipartForm
 import org.http4k.lens.webForm
 import org.http4k.template.TemplateRenderer
@@ -122,7 +123,7 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
         fun fromMultiPart(request: Request, normalisedStatements: Path): FormForNormalisedStatement {
             val statementName = "statement-name"
             val statementFile = "statement-file"
-            val multipartForm = extractFormParts(request, yearName, monthName, userName, statementName, statementFile)
+            val multipartForm = extractMultiPartForm(request, statementName, statementFile)
             val fields = multipartForm.fields
             val files = multipartForm.files
 
@@ -152,25 +153,9 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
         }
 
         fun fromUrlEncoded(request: Request): FormForNormalisedStatement {
-            if (request.body.stream.use { it.readBytes() }.isEmpty()) {
-                throw IllegalStateException("Request body is empty")
-            }
-
-            val yearLens = FormField.required(yearName)
-            val monthLens = FormField.required(monthName)
-            val userLens = FormField.required(userName)
-            val statementNameLens = FormField.required(statement)
             val statementFilePathKey = "statement-file-path"
-            val statementPathLens = FormField.required(statementFilePathKey)
-            val webForm = Body.webForm(
-                    Validator.Feedback,
-                    yearLens,
-                    monthLens,
-                    userLens,
-                    statementNameLens,
-                    statementPathLens
-            )
-            val form = webForm.toLens().extract(request)
+            val form = extractUrlEncodedForm(request, statementFilePathKey)
+
             val year = form.fields[yearName]?.firstOrNull()
             val month = form.fields[monthName]?.firstOrNull()
             val user = form.fields[userName]?.firstOrNull()
@@ -180,6 +165,7 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
             if (year != null && month != null && user != null && statementName != null && statementFilePath != null) {
                 val statementMetadata = StatementMetadata(Year.of(year.toInt()), Month.valueOf(month.toUpperCase()), user, statementName)
                 val file = File(statementFilePath)
+
                 return FormForNormalisedStatement(statementMetadata, file)
             } else {
                 throw IllegalStateException(
@@ -204,13 +190,37 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
             return file
         }
 
-        private fun extractFormParts(request: Request, yearName: String, monthName: String, userName: String, statementName: String, statementFile: String): MultipartForm {
+        private fun extractUrlEncodedForm(request: Request, statementFilePathKey: String): WebForm {
+            val yearLens = FormField.required(yearName)
+            val monthLens = FormField.required(monthName)
+            val userLens = FormField.required(userName)
+            val statementNameLens = FormField.required(statement)
+            val statementPathLens = FormField.required(statementFilePathKey)
+            val webForm = Body.webForm(
+                    Validator.Feedback,
+                    yearLens,
+                    monthLens,
+                    userLens,
+                    statementNameLens,
+                    statementPathLens
+            )
+            return webForm.toLens().extract(request)
+        }
+
+        private fun extractMultiPartForm(request: Request, statementName: String, statementFile: String): MultipartForm {
             val yearLens = MultipartFormField.required(yearName)
             val monthLens = MultipartFormField.required(monthName)
             val userLens = MultipartFormField.required(userName)
             val statementNameLens = MultipartFormField.required(statementName)
             val statementFileLens = MultipartFormFile.required(statementFile)
-            val multipartFormBody = Body.multipartForm(Validator.Feedback, yearLens, monthLens, userLens, statementNameLens, statementFileLens).toLens()
+            val multipartFormBody = Body.multipartForm(
+                    Validator.Feedback,
+                    yearLens,
+                    monthLens,
+                    userLens,
+                    statementNameLens,
+                    statementFileLens
+            ).toLens()
 
             return multipartFormBody.extract(request)
         }
