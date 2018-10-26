@@ -44,21 +44,12 @@ class StatementsHandler(private val renderer: TemplateRenderer, val categories: 
 
     fun withFileContents(request: Request): Response {
         val form = try {
-            FormForNormalisedStatement.from(request)
+            FormForNormalisedStatement.fromMultiPart(request, normalisedStatements)
         } catch (e: IllegalStateException) {
             return Response(Status.BAD_REQUEST)
         }
 
-        val (statementMetadata, file) = form
-        val (year, month, user, statement) = statementMetadata
-        val fileBytes = file.content.use { inputStream ->
-            inputStream.readBytes()
-        }
-
-        val statementFile = File("$normalisedStatements$year-${format(month)}_${user.capitalize()}_$statement.csv")
-        statementFile.writeBytes(fileBytes)
-
-        return routeForStatement(statementMetadata, statementFile)
+        return routeForStatement(form.statementMetadata, form.file)
     }
 
     fun withFilePath(request: Request): Response {
@@ -142,8 +133,6 @@ class StatementsHandler(private val renderer: TemplateRenderer, val categories: 
                 .query("originalRequestBody", "$year;${month.getDisplayName(TextStyle.FULL, Locale.UK)};$user;$statement")
         return Response(Status.SEE_OTHER).header("Location", uri.toString())
     }
-
-    private fun format(month: Month) = month.value.toString().padStart(2, '0')
 }
 
 object LineFormatter {
@@ -157,10 +146,9 @@ object LineFormatter {
         BigDecimal(this).setScale(2, BigDecimal.ROUND_HALF_UP).toString()
 }
 
-data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, val file: FormFile) {
+data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, val file: File) {
     companion object {
-
-        fun from(request: Request): FormForNormalisedStatement {
+        fun fromMultiPart(request: Request, normalisedStatements: Path): FormForNormalisedStatement {
             val statementName = "statement-name"
             val statementFile = "statement-file"
             val multipartForm = extractFormParts(request, yearName, monthName, userName, statementName, statementFile)
@@ -168,19 +156,22 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
             val files = multipartForm.files
 
             val year = fields[yearName]?.firstOrNull()
-            val month = fields[monthName]?.firstOrNull()
+            val monthString = fields[monthName]?.firstOrNull()
             val user = fields[userName]?.firstOrNull()
             val statement = fields[statementName]?.firstOrNull()
             val formFile = files[statementFile]?.firstOrNull()
 
-            if (year != null && month != null && user != null && statement != null && formFile != null) {
-                val statementMetadata = StatementMetadata(Year.parse(year), Month.valueOf(month.toUpperCase()), user, statement)
-                return FormForNormalisedStatement(statementMetadata, formFile)
+            if (year != null && monthString != null && user != null && statement != null && formFile != null) {
+                val month = Month.valueOf(monthString.toUpperCase())
+                val statementMetadata = StatementMetadata(Year.parse(year), month, user, statement)
+                val file = writeFileToFileSystem(statementMetadata, formFile, normalisedStatements)
+
+                return FormForNormalisedStatement(statementMetadata, file)
             } else {
                 throw IllegalStateException(
                         """Form fields cannot be null, but were:
                             |year: $year
-                            |month: $month
+                            |month: $monthString
                             |user: $user
                             |statement: $statement
                             |formFile: $formFile
@@ -188,6 +179,17 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
                 )
             }
         }
+
+        private fun writeFileToFileSystem(statementMetadata: StatementMetadata, formFile: FormFile, normalisedStatements: Path): File {
+            val (year, month, user, statement) = statementMetadata
+            val fileBytes = formFile.content.use { inputStream ->
+                inputStream.readBytes()
+            }
+            val file = File("$normalisedStatements/$year-${format(month)}_${user.capitalize()}_$statement.csv")
+            file.writeBytes(fileBytes)
+            return file
+        }
+
         private fun extractFormParts(request: Request, yearName: String, monthName: String, userName: String, statementName: String, statementFile: String): MultipartForm {
             val yearLens = MultipartFormField.required(yearName)
             val monthLens = MultipartFormField.required(monthName)
@@ -198,6 +200,8 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
 
             return multipartFormBody.extract(request)
         }
+
+        private fun format(month: Month) = month.value.toString().padStart(2, '0')
     }
 
 }
