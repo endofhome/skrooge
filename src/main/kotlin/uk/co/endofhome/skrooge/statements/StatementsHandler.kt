@@ -6,7 +6,6 @@ import org.http4k.core.FormFile
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status
-import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Uri
 import org.http4k.core.query
 import org.http4k.core.with
@@ -53,41 +52,13 @@ class StatementsHandler(private val renderer: TemplateRenderer, val categories: 
     }
 
     fun withFilePath(request: Request): Response {
-        val yearLens = FormField.required(yearName)
-        val monthLens = FormField.required(monthName)
-        val userLens = FormField.required(userName)
-        val statementNameLens = FormField.required(statement)
-        val statementFilePathKey = "statement-file-path"
-        val statementPathLens = FormField.required(statementFilePathKey)
-        val webForm = Body.webForm(
-                Validator.Feedback,
-                yearLens,
-                monthLens,
-                userLens,
-                statementNameLens,
-                statementPathLens
-        )
-        val form = webForm.toLens().extract(request)
-        val year = form.fields[yearName]?.firstOrNull()
-        val month = form.fields[monthName]?.firstOrNull()
-        val user = form.fields[userName]?.firstOrNull()
-        val statementName = form.fields[statement]?.firstOrNull()
-        val statementFilePath = form.fields[statementFilePathKey]?.firstOrNull()
-
-        return if (
-                request.body.stream.use { it.readBytes() }.isEmpty() ||
-                year == null                                         ||
-                month == null                                        ||
-                user == null                                         ||
-                statementName == null                                ||
-                statementFilePath == null
-        ) {
-            Response(BAD_REQUEST)
-        } else {
-            val statementMetadata = StatementMetadata(Year.of(year.toInt()), Month.valueOf(month.toUpperCase()), user, statementName)
-            val file = File(statementFilePath)
-            routeForStatement(statementMetadata, file)
+        val form = try {
+            FormForNormalisedStatement.fromUrlEncoded(request)
+        } catch (e: IllegalStateException) {
+            return Response(Status.BAD_REQUEST)
         }
+
+        return routeForStatement(form.statementMetadata, form.file)
     }
 
     private fun routeForStatement(statementMetadata: StatementMetadata, statementFile: File): Response {
@@ -180,6 +151,49 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
             }
         }
 
+        fun fromUrlEncoded(request: Request): FormForNormalisedStatement {
+            if (request.body.stream.use { it.readBytes() }.isEmpty()) {
+                throw IllegalStateException("Request body is empty")
+            }
+
+            val yearLens = FormField.required(yearName)
+            val monthLens = FormField.required(monthName)
+            val userLens = FormField.required(userName)
+            val statementNameLens = FormField.required(statement)
+            val statementFilePathKey = "statement-file-path"
+            val statementPathLens = FormField.required(statementFilePathKey)
+            val webForm = Body.webForm(
+                    Validator.Feedback,
+                    yearLens,
+                    monthLens,
+                    userLens,
+                    statementNameLens,
+                    statementPathLens
+            )
+            val form = webForm.toLens().extract(request)
+            val year = form.fields[yearName]?.firstOrNull()
+            val month = form.fields[monthName]?.firstOrNull()
+            val user = form.fields[userName]?.firstOrNull()
+            val statementName = form.fields[statement]?.firstOrNull()
+            val statementFilePath = form.fields[statementFilePathKey]?.firstOrNull()
+
+            if (year != null && month != null && user != null && statementName != null && statementFilePath != null) {
+                val statementMetadata = StatementMetadata(Year.of(year.toInt()), Month.valueOf(month.toUpperCase()), user, statementName)
+                val file = File(statementFilePath)
+                return FormForNormalisedStatement(statementMetadata, file)
+            } else {
+                throw IllegalStateException(
+                        """Form fields cannot be null, but were:
+                            |year: $year
+                            |month: $month
+                            |user: $user
+                            |statement: $statement
+                            |statementFilePath: $statementFilePath
+                        """.trimMargin()
+                )
+            }
+        }
+
         private fun writeFileToFileSystem(statementMetadata: StatementMetadata, formFile: FormFile, normalisedStatements: Path): File {
             val (year, month, user, statement) = statementMetadata
             val fileBytes = formFile.content.use { inputStream ->
@@ -203,8 +217,8 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
 
         private fun format(month: Month) = month.value.toString().padStart(2, '0')
     }
-
 }
+
 data class StatementMetadata(val year: Year, val month: Month, val user: String, val statement: String) {
     companion object {
         const val yearName = "year"
