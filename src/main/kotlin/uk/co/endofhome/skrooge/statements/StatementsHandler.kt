@@ -120,17 +120,15 @@ object LineFormatter {
 
 data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, val file: File) {
     companion object {
+        private const val statementName = "statement-name"
+        private const val statementFile = "statement-file"
+        private const val statementFilePathKey = "statement-file-path"
+
         fun fromMultiPart(request: Request, normalisedStatements: Path): FormForNormalisedStatement {
-            val statementName = "statement-name"
-            val statementFile = "statement-file"
             val multipartForm = extractMultiPartForm(request, statementName, statementFile)
             val fields = multipartForm.fields
             val files = multipartForm.files
-
-            val year = fields[yearName]?.firstOrNull()
-            val monthString = fields[monthName]?.firstOrNull()
-            val user = fields[userName]?.firstOrNull()
-            val statement = fields[statementName]?.firstOrNull()
+            val (year, monthString, user, statement) = fields.values()
             val formFile = files[statementFile]?.firstOrNull()
 
             if (year != null && monthString != null && user != null && statement != null && formFile != null) {
@@ -153,17 +151,11 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
         }
 
         fun fromUrlEncoded(request: Request): FormForNormalisedStatement {
-            val statementFilePathKey = "statement-file-path"
             val form = extractUrlEncodedForm(request, statementFilePathKey)
+            val (year, month, user, statement, statementFilePath) = form.fields.values()
 
-            val year = form.fields[yearName]?.firstOrNull()
-            val month = form.fields[monthName]?.firstOrNull()
-            val user = form.fields[userName]?.firstOrNull()
-            val statementName = form.fields[statement]?.firstOrNull()
-            val statementFilePath = form.fields[statementFilePathKey]?.firstOrNull()
-
-            if (year != null && month != null && user != null && statementName != null && statementFilePath != null) {
-                val statementMetadata = StatementMetadata(Year.of(year.toInt()), Month.valueOf(month.toUpperCase()), user, statementName)
+            if (year != null && month != null && user != null && statement != null && statementFilePath != null) {
+                val statementMetadata = StatementMetadata(Year.of(year.toInt()), Month.valueOf(month.toUpperCase()), user, statement)
                 val file = File(statementFilePath)
 
                 return FormForNormalisedStatement(statementMetadata, file)
@@ -180,31 +172,13 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
             }
         }
 
-        private fun writeFileToFileSystem(statementMetadata: StatementMetadata, formFile: FormFile, normalisedStatements: Path): File {
-            val (year, month, user, statement) = statementMetadata
-            val fileBytes = formFile.content.use { inputStream ->
-                inputStream.readBytes()
-            }
-            val file = File("$normalisedStatements/$year-${format(month)}_${user.capitalize()}_$statement.csv")
-            file.writeBytes(fileBytes)
-            return file
-        }
-
-        private fun extractUrlEncodedForm(request: Request, statementFilePathKey: String): WebForm {
-            val yearLens = FormField.required(yearName)
-            val monthLens = FormField.required(monthName)
-            val userLens = FormField.required(userName)
-            val statementNameLens = FormField.required(statement)
-            val statementPathLens = FormField.required(statementFilePathKey)
-            val webForm = Body.webForm(
-                    Validator.Feedback,
-                    yearLens,
-                    monthLens,
-                    userLens,
-                    statementNameLens,
-                    statementPathLens
-            )
-            return webForm.toLens().extract(request)
+        private fun Map<String, List<String>>.values(): FieldValues {
+            val year = this[yearName]?.firstOrNull()
+            val monthString = this[monthName]?.firstOrNull()
+            val user = this[userName]?.firstOrNull()
+            val statement = this[statementName]?.firstOrNull()
+            val statementFilePath = this[statementFilePathKey]?.firstOrNull()
+            return FieldValues(year, monthString, user, statement, statementFilePath)
         }
 
         private fun extractMultiPartForm(request: Request, statementName: String, statementFile: String): MultipartForm {
@@ -225,7 +199,36 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
             return multipartFormBody.extract(request)
         }
 
+        private fun extractUrlEncodedForm(request: Request, statementFilePathKey: String): WebForm {
+            val yearLens = FormField.required(yearName)
+            val monthLens = FormField.required(monthName)
+            val userLens = FormField.required(userName)
+            val statementNameLens = FormField.required(statement)
+            val statementPathLens = FormField.required(statementFilePathKey)
+            val webForm = Body.webForm(
+                    Validator.Feedback,
+                    yearLens,
+                    monthLens,
+                    userLens,
+                    statementNameLens,
+                    statementPathLens
+            )
+            return webForm.toLens().extract(request)
+        }
+
+        private fun writeFileToFileSystem(statementMetadata: StatementMetadata, formFile: FormFile, normalisedStatements: Path): File {
+            val (year, month, user, statement) = statementMetadata
+            val fileBytes = formFile.content.use { inputStream ->
+                inputStream.readBytes()
+            }
+            val file = File("$normalisedStatements/$year-${format(month)}_${user.capitalize()}_$statement.csv")
+            file.writeBytes(fileBytes)
+            return file
+        }
+
         private fun format(month: Month) = month.value.toString().padStart(2, '0')
+
+        data class FieldValues(val year: String?, val month: String?, val user: String?, val statement: String?, val statementFilePath: String?)
     }
 }
 
