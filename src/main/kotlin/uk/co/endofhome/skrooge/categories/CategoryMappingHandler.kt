@@ -46,29 +46,43 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
 
         val statementForm = FormForNormalisedStatement.fromUrlEncoded(request)
 
-        return if (newMapping != null && newMapping.size >= 3) {
-            val newMappingString = newMapping.joinToString(",")
-            mappingWriter.write(newMappingString)
-            categoryMappings.add(newMappingString)
-            if (remainingMerchants.isEmpty()) {
-                Response(Status.TEMPORARY_REDIRECT)
-                    .header("Location", statementsWithFilePath)
-                    .header("Method", Method.POST.name)
-            } else {
-                val nextVendor = remainingMerchants.first()
-                val carriedForwardMerchants = remainingMerchants.drop(1)
-                val uri = Uri.of(unknownMerchant)
-                        .query("currentMerchant", nextVendor)
-                        .query("remainingMerchants", carriedForwardMerchants.joinToString(","))
-                        .query(yearName, statementForm.statementMetadata.year.toString())
-                        .query(monthName, statementForm.statementMetadata.month.getDisplayName(TextStyle.FULL, Locale.UK))
-                        .query(userName, statementForm.statementMetadata.user)
-                        .query(statementName, statementForm.statementMetadata.statement)
-                        .query(statementFilePathKey, statementForm.file.path)
-                Response(Status.SEE_OTHER).header("Location", uri.toString())
+        return when {
+            newMapping.isValid() -> {
+                newMapping!!.add()
+                when {
+                    remainingMerchants.isEmpty() -> redirectToStatementsWIthFilePath()
+                    else                         -> redirectToUnknownMerchant(statementForm, remainingMerchants)
+                }
             }
-        } else {
-            Response(BAD_REQUEST)
+            else -> Response(BAD_REQUEST)
         }
+    }
+
+    private fun List<String>?.isValid() = this != null && this.size >= 3
+
+    private fun List<String>.add() {
+        val newMappingString = this.joinToString(",")
+        mappingWriter.write(newMappingString)
+        categoryMappings.add(newMappingString)
+    }
+
+    private fun redirectToStatementsWIthFilePath(): Response {
+        return Response(Status.TEMPORARY_REDIRECT)
+                .header("Location", statementsWithFilePath)
+                .header("Method", Method.POST.name)
+    }
+
+    private fun redirectToUnknownMerchant(statementForm: FormForNormalisedStatement, remainingMerchants: List<String>): Response {
+        val nextVendor = remainingMerchants.first()
+        val carriedForwardMerchants = remainingMerchants.drop(1)
+        val uri = Uri.of(unknownMerchant)
+                .query("currentMerchant", nextVendor)
+                .query("remainingMerchants", carriedForwardMerchants.joinToString(","))
+                .query(yearName, statementForm.statementMetadata.year.toString())
+                .query(monthName, statementForm.statementMetadata.month.getDisplayName(TextStyle.FULL, Locale.UK))
+                .query(userName, statementForm.statementMetadata.user)
+                .query(statementName, statementForm.statementMetadata.statement)
+                .query(statementFilePathKey, statementForm.file.path)
+        return Response(Status.SEE_OTHER).header("Location", uri.toString())
     }
 }
