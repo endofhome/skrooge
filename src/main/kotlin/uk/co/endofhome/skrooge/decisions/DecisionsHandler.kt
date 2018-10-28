@@ -7,6 +7,10 @@ import org.http4k.core.Status
 import org.http4k.lens.Validator
 import org.http4k.lens.webForm
 import uk.co.endofhome.skrooge.statements.StatementData
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statement
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
 import java.time.LocalDate
 import java.time.Month
 import java.time.Year
@@ -32,14 +36,23 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
             }
         }
 
-        val statementDataSplit: List<String> = form.fields["statement-data"]!![0].split(";")
-        val year = Year.parse(statementDataSplit[0])
-        val month = Month.valueOf(statementDataSplit[1].toUpperCase())
-        val user = statementDataSplit[2]
-        val statement = statementDataSplit[3]
-        val statementData = StatementData(year, month, user, statement)
-        decisionReaderWriter.write(statementData, decisions)
+        val year = form.fields[yearName]?.firstOrNull()
+        val month = form.fields[monthName]?.firstOrNull()
+        val user = form.fields[userName]?.firstOrNull()
+        val statement = form.fields[statement]?.firstOrNull()
 
-        return Response(Status.CREATED)
+        if (year != null && month != null && user != null && statement != null) {
+            val statementData = StatementData(Year.parse(year), Month.valueOf(month.toUpperCase()), user, statement)
+            decisionReaderWriter.write(statementData, decisions)
+
+            return Response(Status.CREATED)
+        } else {
+            throw IllegalStateException("""Form fields cannot be null, but were:
+                            |year: $year
+                            |month: $month
+                            |user: $user
+                            |statement: $statement
+            """.trimIndent())
+        }
     }
 }

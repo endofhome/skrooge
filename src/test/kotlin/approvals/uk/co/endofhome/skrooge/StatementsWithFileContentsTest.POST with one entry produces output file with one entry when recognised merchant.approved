@@ -133,7 +133,10 @@
             </select>
             </h3>
         
-        <input type="hidden" name="statement-data" value="2017;February;Test;one-known-merchant.csv">
+        <input type="hidden" name="year" value="2017">
+        <input type="hidden" name="month" value="February">
+        <input type="hidden" name="user" value="Test">
+        <input type="hidden" name="statement-name" value="one-known-merchant">
         <div class="button">
             <button type="submit">Confirm</button>
         </div>

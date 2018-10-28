@@ -9,7 +9,10 @@
     <h1>Please review your categorisations for EmptyStatement</h1>
     <form action="statement-decisions" method="post">
         
-        <input type="hidden" name="statement-data" value="2017;September;Tom;EmptyStatement.csv">
+        <input type="hidden" name="year" value="2017">
+        <input type="hidden" name="month" value="September">
+        <input type="hidden" name="user" value="Tom">
+        <input type="hidden" name="statement-name" value="EmptyStatement">
         <div class="button">
             <button type="submit">Confirm</button>
         </div>

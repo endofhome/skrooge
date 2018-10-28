@@ -14,6 +14,10 @@ import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementDecisions
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import uk.co.endofhome.skrooge.decisions.FileSystemDecisionReaderReaderWriter
+import uk.co.endofhome.skrooge.statements.FileMetadata.statementName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
 import java.io.File
 import java.nio.file.Paths
 
@@ -33,7 +37,10 @@ class DecisionsHandlerTest {
         val request = Request(Method.POST, statementDecisions)
                 .with(CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("decisions", "[29/12/2016,National Lottery,10,Fun,Test fun budget]")
-                .form("statement-data", "2016;December;Test;SomeBank")
+                .form(yearName, "2016")
+                .form(monthName, "December")
+                .form(userName, "Test")
+                .form(statementName, "SomeBank")
 
         assertThat(skrooge(request).status, equalTo(CREATED))
 

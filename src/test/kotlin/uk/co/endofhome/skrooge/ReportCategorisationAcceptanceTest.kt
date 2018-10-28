@@ -18,6 +18,10 @@ import uk.co.endofhome.skrooge.decisions.Decision
 import uk.co.endofhome.skrooge.decisions.Line
 import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
 import uk.co.endofhome.skrooge.decisions.SubCategory
+import uk.co.endofhome.skrooge.statements.FileMetadata.statementName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
 import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.Month
@@ -44,8 +48,11 @@ class ReportCategorisationAcceptanceTest {
     fun `POST to reports - categorisations endpoint with no amended decisions writes same decisions`() {
         val request = Request(POST, statementDecisions)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form("statement-data", "2017;October;Tom;SomeBank;[blah]")
                 .form("decisions", "[18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget]")
+                .form(yearName, "2017")
+                .form(monthName, "October")
+                .form(userName, "Tom")
+                .form(statementName, "SomeBank")
 
         assertThat(skrooge(request).status, equalTo(CREATED))
         assertThat(decisionReaderWriter.read(2017, Month.of(10)), equalTo(listOf(originalDecision)))
@@ -55,8 +62,11 @@ class ReportCategorisationAcceptanceTest {
     fun `POST to reports - categorisations endpoint with amended mappings writes amended mappings`() {
         val request = Request(POST, statementDecisions)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form("statement-data", "2017;October;Tom;SomeBank;[blah]")
                 .form("decisions", "[18/10/2017,Edgeworld Records,14.99,Eats and drinks,Food]")
+                .form(yearName, "2017")
+                .form(monthName, "October")
+                .form(userName, "Tom")
+                .form(statementName, "SomeBank")
 
         val expectedCategory = "Eats and drinks"
         val expectedSubCategories = categories.all().find { it.title == expectedCategory }!!.subcategories
