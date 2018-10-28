@@ -40,46 +40,35 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
         val newMapping = fields[newMappingName]?.firstOrNull()
                                                ?.split(",")
         val remainingMerchants = fields[remainingMerchantsName]?.firstOrNull()
-                                                           ?.split(",")
-                                                           ?.filter { it.isNotBlank() }
-                                                           ?: emptyList()
+                                                               ?.split(",")
+                                                               ?.filter { it.isNotBlank() }
+                                                               ?: emptyList()
 
         val statementForm = FormForNormalisedStatement.fromUrlEncoded(request)
 
-        if (newMapping != null) {
-            return newMapping.size.let {
-                when {
-                    it < 3 -> Response(BAD_REQUEST)
-                    else -> {
-                        val newMappingString = newMapping.joinToString(",")
-                        mappingWriter.write(newMappingString)
-                        categoryMappings.add(newMappingString)
-                        when (remainingMerchants.isEmpty()) {
-                            true -> Response(Status.TEMPORARY_REDIRECT)
-                                    .header("Location", statementsWithFilePath)
-                                    .header("Method", Method.POST.name)
-                            false -> {
-                                val nextVendor = remainingMerchants.first()
-                                val carriedForwardMerchants = remainingMerchants.filterIndexed { index, _ -> index != 0 }
-                                val uri = Uri.of(unknownMerchant)
-                                        .query("currentMerchant", nextVendor)
-                                        .query("remainingMerchants", carriedForwardMerchants.joinToString(","))
-                                        .query(yearName, statementForm.statementMetadata.year.toString())
-                                        .query(monthName, statementForm.statementMetadata.month.getDisplayName(TextStyle.FULL, Locale.UK))
-                                        .query(userName, statementForm.statementMetadata.user)
-                                        .query(statementName, statementForm.statementMetadata.statement)
-                                        .query(statementFilePathKey, statementForm.file.path)
-                                Response(Status.SEE_OTHER).header("Location", uri.toString())
-                            }
-                        }
-                    }
-                }
+        return if (newMapping != null && newMapping.size >= 3) {
+            val newMappingString = newMapping.joinToString(",")
+            mappingWriter.write(newMappingString)
+            categoryMappings.add(newMappingString)
+            if (remainingMerchants.isEmpty()) {
+                Response(Status.TEMPORARY_REDIRECT)
+                    .header("Location", statementsWithFilePath)
+                    .header("Method", Method.POST.name)
+            } else {
+                val nextVendor = remainingMerchants.first()
+                val carriedForwardMerchants = remainingMerchants.filterIndexed { index, _ -> index != 0 }
+                val uri = Uri.of(unknownMerchant)
+                        .query("currentMerchant", nextVendor)
+                        .query("remainingMerchants", carriedForwardMerchants.joinToString(","))
+                        .query(yearName, statementForm.statementMetadata.year.toString())
+                        .query(monthName, statementForm.statementMetadata.month.getDisplayName(TextStyle.FULL, Locale.UK))
+                        .query(userName, statementForm.statementMetadata.user)
+                        .query(statementName, statementForm.statementMetadata.statement)
+                        .query(statementFilePathKey, statementForm.file.path)
+                Response(Status.SEE_OTHER).header("Location", uri.toString())
             }
-
         } else {
-            return Response(BAD_REQUEST)
+            Response(BAD_REQUEST)
         }
-
-
     }
 }
