@@ -56,7 +56,7 @@ class StatementsHandler(private val renderer: TemplateRenderer, val categories: 
                                                      .toSet()
         return when {
             unknownMerchants.isEmpty() -> pleaseReviewYourCategorisations(statementMetadata, statementFile, decisions)
-            else                       -> redirectToUnknownMerchant(statementMetadata, unknownMerchants)
+            else                       -> redirectToUnknownMerchant(statementMetadata, statementFile, unknownMerchants)
         }
     }
 
@@ -83,13 +83,18 @@ class StatementsHandler(private val renderer: TemplateRenderer, val categories: 
         return Response(Status.OK).with(view of reviewCategorisationsViewModel)
     }
 
-    private fun redirectToUnknownMerchant(statementMetadata: StatementMetadata, unknownMerchants: Set<String>): Response {
+    private fun redirectToUnknownMerchant(statementMetadata: StatementMetadata, statementFile: File, unknownMerchants: Set<String>): Response {
         val (year, month, user, statement) = statementMetadata
         val currentMerchant = unknownMerchants.first()
         val outstandingMerchants = unknownMerchants.drop(1)
-        val uri = Uri.of(unknownMerchant).query("currentMerchant", currentMerchant)
+        val uri = Uri.of(unknownMerchant)
+                .query("currentMerchant", currentMerchant)
                 .query("outstandingMerchants", outstandingMerchants.joinToString(","))
-                .query("originalRequestBody", "$year;${month.getDisplayName(TextStyle.FULL, Locale.UK)};$user;$statement")
+                .query(StatementMetadata.yearName, year.toString())
+                .query(StatementMetadata.monthName, month.getDisplayName(TextStyle.FULL, Locale.UK))
+                .query(StatementMetadata.userName, user)
+                .query(FileMetadata.statementName, statement)
+                .query(FileMetadata.statementFilePathKey, statementFile.path)
         return Response(Status.SEE_OTHER).header("Location", uri.toString())
     }
 }
@@ -113,6 +118,13 @@ data class StatementMetadata(val year: Year, val month: Month, val user: String,
         const val statement = "statement-name"
     }
 }
+
+object FileMetadata {
+    const val statementName = "statement-name"
+    const val statementFile = "statement-file"
+    const val statementFilePathKey = "statement-file-path"
+}
+
 data class FormattedBankStatement(val year: String, val month: String, val username: String, val bankName: String, val filePath: String, val formattedDecisions: List<FormattedDecision>)
 data class FormattedLine(val date: String, val merchant: String, val amount: String)
 data class FormattedDecision(val line: FormattedLine, val category: Category?, val subCategory: SubCategory?, val categoriesWithSelection: CategoriesWithSelection)

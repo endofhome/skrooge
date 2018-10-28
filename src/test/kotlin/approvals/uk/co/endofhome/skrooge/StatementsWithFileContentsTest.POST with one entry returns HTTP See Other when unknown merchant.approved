@@ -131,8 +131,11 @@
             
         </select>
         <input type="hidden" name="remaining-vendors" value="">
-        <input type="hidden" name="originalRequestBody" value="2017;April;Test;OneUnknownMerchant">
-
+        <input type="hidden" name="year" value="2017">
+        <input type="hidden" name="month" value="April">
+        <input type="hidden" name="username" value="Test">
+        <input type="hidden" name="statement-name" value="OneUnknownMerchant">
+        <input type="hidden" name="statement-file-path" value="input/normalised/2017-04_Test_OneUnknownMerchant.csv">
         <div class="button">
             <button type="submit">Update category</button>
         </div>

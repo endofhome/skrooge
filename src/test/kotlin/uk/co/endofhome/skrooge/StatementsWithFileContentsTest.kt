@@ -191,7 +191,7 @@ class StatementsWithFileContentsTest {
 
         val response = skrooge(requestWithMcDonalds)
         assertThat(response.status, equalTo(SEE_OTHER))
-        assertThat(response.header("Location"), equalTo("/unknown-merchant?currentMerchant=McDonalds&outstandingMerchants=&originalRequestBody=2017%3BApril%3BTest%3BOneUnknownMerchant"))
+        assertThat(response.header("Location"), equalTo("/unknown-merchant?currentMerchant=McDonalds&outstandingMerchants=&year=2017&month=April&user=Test&statement-name=OneUnknownMerchant&statement-file-path=input%2Fnormalised%2F2017-04_Test_OneUnknownMerchant.csv"))
 
         val followedResponse = with(RedirectHelper(skrooge)) { response.followRedirect() }
         approver.assertApproved(followedResponse.bodyString())
@@ -209,10 +209,10 @@ class StatementsWithFileContentsTest {
                 inputStatementContent.byteInputStream()
         )
         val body = MultipartFormBody().plus("year" to "2017")
-                .plus("month" to "March")
-                .plus("user" to "Test")
-                .plus("statement-name" to "TwoUnknownMerchants")
-                .plus("statement-file" to formFile)
+                                      .plus("month" to "March")
+                                      .plus("user" to "Test")
+                                      .plus("statement-name" to "TwoUnknownMerchants")
+                                      .plus("statement-file" to formFile)
         val requestWithTwoRecordShops = Request(POST, statementsWithFileContents)
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)

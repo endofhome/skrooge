@@ -20,6 +20,7 @@ import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.categoryMapping
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementsWithFilePath
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
+import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statement
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
@@ -54,7 +55,7 @@ class CategoryMappingTest {
                 .form(monthName, statementMonth)
                 .form(userName, statementUser)
                 .form(statement, statementName)
-                .form("statement-file-path", statementFilePath)
+                .form(statementFilePathKey, statementFilePath)
 
         assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
     }
@@ -69,7 +70,7 @@ class CategoryMappingTest {
                 .form(monthName, statementMonth)
                 .form(userName, statementUser)
                 .form(statement, statementName)
-                .form("statement-file-path", statementFilePath)
+                .form(statementFilePathKey, statementFilePath)
 
         assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
     }
@@ -84,14 +85,14 @@ class CategoryMappingTest {
                 .form(monthName, statementMonth)
                 .form(userName, statementUser)
                 .form(statement, statementName)
-                .form("statement-file-path", statementFilePath)
+                .form(statementFilePathKey, statementFilePath)
 
         assertThat(skrooge(request).status, equalTo(TEMPORARY_REDIRECT))
         assertThat(mappingWriter.read().last(), equalTo("Casbah Records,Fun,Tom fun budget"))
     }
 
     @Test
-    fun `succesful POST to category-mapping redirects back to continue categorisation if necessary`() {
+    fun `successful POST to category-mapping redirects back to continue categorisation if necessary`() {
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form("new-mapping", "DIY Space for London,Fun,Tom fun budget")
@@ -100,7 +101,7 @@ class CategoryMappingTest {
                 .form(monthName, statementMonth)
                 .form(userName, statementUser)
                 .form(statement, statementName)
-                .form("statement-file-path", statementFilePath)
+                .form(statementFilePathKey, statementFilePath)
 
         val followedResponse = with(RedirectHelper(skrooge)) { request.handleAndFollowRedirect() }
 
@@ -126,7 +127,7 @@ class CategoryMappingTest {
                 .form(monthName, statementMonth)
                 .form(userName, statementUser)
                 .form(statement, statementName)
-                .form("statement-file-path", statementFilePath)
+                .form(statementFilePathKey, statementFilePath)
 
         val response = skrooge(request)
 

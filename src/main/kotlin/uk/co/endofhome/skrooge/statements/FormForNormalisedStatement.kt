@@ -11,6 +11,9 @@ import org.http4k.lens.Validator
 import org.http4k.lens.WebForm
 import org.http4k.lens.multipartForm
 import org.http4k.lens.webForm
+import uk.co.endofhome.skrooge.statements.FileMetadata.statementFile
+import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
+import uk.co.endofhome.skrooge.statements.FileMetadata.statementName
 import java.io.File
 import java.nio.file.Path
 import java.time.Month
@@ -18,10 +21,6 @@ import java.time.Year
 
 data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, val file: File) {
     companion object {
-        private const val statementName = "statement-name"
-        private const val statementFile = "statement-file"
-        private const val statementFilePathKey = "statement-file-path"
-
         fun fromMultiPart(request: Request, normalisedStatements: Path): FormForNormalisedStatement {
             val multipartForm = extractMultiPartForm(request, statementName, statementFile)
             val fields = multipartForm.fields

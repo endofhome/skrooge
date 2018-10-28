@@ -13,45 +13,40 @@ import org.http4k.lens.Validator
 import org.http4k.lens.webForm
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementsWithFilePath
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.unknownMerchant
-import uk.co.endofhome.skrooge.statements.StatementMetadata
+import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
+import uk.co.endofhome.skrooge.statements.FileMetadata.statementName
+import uk.co.endofhome.skrooge.statements.FormForNormalisedStatement
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
+import java.time.format.TextStyle
+import java.util.Locale
 
 class CategoryMappingHandler(private val categoryMappings: MutableList<String>, private val mappingWriter: MappingWriter) {
 
-    private val thisAintGonnaWork = "ain't gonna work"
-
     operator fun invoke(request: Request): Response {
         val newMappingName = "new-mapping"
-        val newMappingLens = FormField.required(newMappingName)
         val remainingVendorsName = "remaining-vendors"
+        val newMappingLens = FormField.required(newMappingName)
         val remainingVendorsLens = FormField.required(remainingVendorsName)
-        val yearLens = FormField.required(yearName)
-        val monthLens = FormField.required(StatementMetadata.monthName)
-        val userLens = FormField.required(StatementMetadata.userName)
-        val statementNameLens = FormField.required(StatementMetadata.statement)
-        val statementFilePathKey = "statement-file-path"
-        val statementPathLens = FormField.required(statementFilePathKey)
         val webForm = Body.webForm(
                 Validator.Feedback,
                 newMappingLens,
-                remainingVendorsLens,
-                yearLens,
-                monthLens,
-                userLens,
-                statementNameLens,
-                statementPathLens
-        )
-        val form = webForm.toLens().extract(request)
-        val year = form.fields[yearName]?.firstOrNull()
-        val month = form.fields[StatementMetadata.monthName]?.firstOrNull()
-        val user = form.fields[StatementMetadata.userName]?.firstOrNull()
-        val statementName = form.fields[StatementMetadata.statement]?.firstOrNull()
-        val statementFilePath = form.fields[statementFilePathKey]?.firstOrNull()
+                remainingVendorsLens
+        ).toLens()
+        val form = webForm.extract(request)
+        val fields = form.fields
 
-        val newMapping = form.fields[newMappingName]?.firstOrNull()?.split(",")
-        val remainingVendors = form.fields[remainingVendorsName]?.firstOrNull()?.split(",")?.filter { it.isNotBlank() } ?: emptyList()
+        val newMapping = fields[newMappingName]?.firstOrNull()
+                                               ?.split(",")
+        val remainingVendors = fields[remainingVendorsName]?.firstOrNull()
+                                                           ?.split(",")
+                                                           ?.filter { it.isNotBlank() }
+                                                           ?: emptyList()
 
-        if (newMapping != null && year != null && month != null && user != null && statementName != null && statementFilePath != null) {
+        val statementForm = FormForNormalisedStatement.fromUrlEncoded(request)
+
+        if (newMapping != null) {
             return newMapping.size.let {
                 when {
                     it < 3 -> Response(BAD_REQUEST)
@@ -69,7 +64,11 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
                                 val uri = Uri.of(unknownMerchant)
                                         .query("currentMerchant", nextVendor)
                                         .query("outstandingMerchants", carriedForwardVendors.joinToString(","))
-                                        .query("originalRequestBody", thisAintGonnaWork)
+                                        .query(yearName, statementForm.statementMetadata.year.toString())
+                                        .query(monthName, statementForm.statementMetadata.month.getDisplayName(TextStyle.FULL, Locale.UK))
+                                        .query(userName, statementForm.statementMetadata.user)
+                                        .query(statementName, statementForm.statementMetadata.statement)
+                                        .query(statementFilePathKey, statementForm.file.path)
                                 Response(Status.SEE_OTHER).header("Location", uri.toString())
                             }
                         }
