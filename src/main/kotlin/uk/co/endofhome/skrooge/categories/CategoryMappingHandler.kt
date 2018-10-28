@@ -37,9 +37,9 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
         val form = webForm.extract(request)
         val fields = form.fields
 
-        val newMapping = fields[newMappingName]?.firstOrNull()
+        val newMapping = fields[newMappingName]?.first()
                                                ?.split(",")
-        val remainingMerchants = fields[remainingMerchantsName]?.firstOrNull()
+        val remainingMerchants = fields[remainingMerchantsName]?.first()
                                                                ?.split(",")
                                                                ?.filter { it.isNotBlank() }
                                                                ?: emptyList()
