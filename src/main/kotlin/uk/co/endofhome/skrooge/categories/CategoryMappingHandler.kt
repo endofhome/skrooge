@@ -56,7 +56,7 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
                     .header("Method", Method.POST.name)
             } else {
                 val nextVendor = remainingMerchants.first()
-                val carriedForwardMerchants = remainingMerchants.filterIndexed { index, _ -> index != 0 }
+                val carriedForwardMerchants = remainingMerchants.drop(1)
                 val uri = Uri.of(unknownMerchant)
                         .query("currentMerchant", nextVendor)
                         .query("remainingMerchants", carriedForwardMerchants.joinToString(","))
