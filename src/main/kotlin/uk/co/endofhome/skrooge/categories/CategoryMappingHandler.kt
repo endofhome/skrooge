@@ -63,7 +63,7 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
                                 val carriedForwardMerchants = remainingMerchants.filterIndexed { index, _ -> index != 0 }
                                 val uri = Uri.of(unknownMerchant)
                                         .query("currentMerchant", nextVendor)
-                                        .query("outstandingMerchants", carriedForwardMerchants.joinToString(","))
+                                        .query("remainingMerchants", carriedForwardMerchants.joinToString(","))
                                         .query(yearName, statementForm.statementMetadata.year.toString())
                                         .query(monthName, statementForm.statementMetadata.month.getDisplayName(TextStyle.FULL, Locale.UK))
                                         .query(userName, statementForm.statementMetadata.user)

@@ -86,10 +86,10 @@ class StatementsHandler(private val renderer: TemplateRenderer, val categories: 
     private fun redirectToUnknownMerchant(statementMetadata: StatementMetadata, statementFile: File, unknownMerchants: Set<String>): Response {
         val (year, month, user, statement) = statementMetadata
         val currentMerchant = unknownMerchants.first()
-        val outstandingMerchants = unknownMerchants.drop(1)
+        val remainingMerchants = unknownMerchants.drop(1)
         val uri = Uri.of(unknownMerchant)
                 .query("currentMerchant", currentMerchant)
-                .query("outstandingMerchants", outstandingMerchants.joinToString(","))
+                .query("remainingMerchants", remainingMerchants.joinToString(","))
                 .query(StatementMetadata.yearName, year.toString())
                 .query(StatementMetadata.monthName, month.getDisplayName(TextStyle.FULL, Locale.UK))
                 .query(StatementMetadata.userName, user)
