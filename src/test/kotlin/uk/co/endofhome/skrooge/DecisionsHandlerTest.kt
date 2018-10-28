@@ -5,49 +5,83 @@ import com.natpryce.hamkrest.equalTo
 import org.http4k.core.ContentType
 import org.http4k.core.Method
 import org.http4k.core.Request
-import org.http4k.core.Status.Companion.CREATED
+import org.http4k.core.Status
 import org.http4k.core.body.form
 import org.http4k.core.with
-import org.http4k.lens.Header.Common.CONTENT_TYPE
+import org.http4k.lens.Header
+import org.junit.Before
 import org.junit.Test
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.index
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementDecisions
 import uk.co.endofhome.skrooge.categories.Categories
-import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
-import uk.co.endofhome.skrooge.decisions.FileSystemDecisionReaderReaderWriter
+import uk.co.endofhome.skrooge.decisions.Category
+import uk.co.endofhome.skrooge.decisions.Decision
+import uk.co.endofhome.skrooge.decisions.Line
+import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
+import uk.co.endofhome.skrooge.decisions.SubCategory
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
-import java.io.File
 import java.nio.file.Paths
+import java.time.LocalDate
+import java.time.Month
 
 class DecisionsHandlerTest {
-
     private val categoryMappings = mutableListOf<String>()
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
-    private val mappingWriter = StubbedMappingWriter()
-    private val outputPath = Paths.get("src/test/resources/decisions")
-    private val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
-    private val testBudgetDirectory = Paths.get("src/test/resources/budgets/")
-    private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes
+    private val decisionReaderWriter = StubbedDecisionReaderWriter()
+    private val skrooge = Skrooge(categories, decisionReaderWriter = decisionReaderWriter, budgetDirectory = Paths.get("src/test/resources/budgets/")).routes
+
+    private val originalDecision =
+            Decision(
+                    Line(LocalDate.of(2017, 10, 18), "Edgeworld Records", 14.99),
+                    Category("Fun", categories.all().find { it.title == "Fun" }?.subcategories!!),
+                    SubCategory("Tom fun budget")
+            )
+
+    @Before
+    fun setup() {
+        decisionReaderWriter.files.clear()
+    }
 
     @Test
-    fun `POST with valid form data results in HTTP CREATED and new decision file on file system`() {
-
+    fun `POST to statementDecisions endpoint with no amended decisions writes same decisions`() {
         val request = Request(Method.POST, statementDecisions)
-                .with(CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form("decisions", "[29/12/2016,National Lottery,10,Fun,Test fun budget]")
-                .form(yearName, "2016")
-                .form(monthName, "December")
-                .form(userName, "Test")
+                .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+                .form("decisions", "[18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget]")
+                .form(yearName, "2017")
+                .form(monthName, "October")
+                .form(userName, "Tom")
                 .form(statementName, "SomeBank")
 
-        assertThat(skrooge(request).status, equalTo(CREATED))
+        val response = skrooge(request)
+        assertThat(response.status, equalTo(Status.SEE_OTHER))
+        assertThat(response.header("Location")!!, equalTo(index))
 
-        val decisionFile = File("$outputPath/2016-12-Test-decisions-SomeBank.csv")
-        val decisionFileContents = decisionFile.readLines()
+        assertThat(decisionReaderWriter.read(2017, Month.of(10)), equalTo(listOf(originalDecision)))
+    }
 
-        assertThat(decisionFileContents.size, equalTo(1))
-        assertThat(decisionFileContents[0], equalTo("2016-12-29,National Lottery,10.0,Fun,Test fun budget"))
+    @Test
+    fun `POST to statementDecisions endpoint with amended mappings writes amended mappings`() {
+        val request = Request(Method.POST, statementDecisions)
+                .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+                .form("decisions", "[18/10/2017,Edgeworld Records,14.99,Eats and drinks,Food]")
+                .form(yearName, "2017")
+                .form(monthName, "October")
+                .form(userName, "Tom")
+                .form(statementName, "SomeBank")
+
+        val expectedCategory = "Eats and drinks"
+        val expectedSubCategories = categories.all().find { it.title == expectedCategory }!!.subcategories
+        val expectedDecision = originalDecision.copy(
+                category = originalDecision.category?.copy(expectedCategory, expectedSubCategories),
+                subCategory = SubCategory("Food")
+        )
+
+        val response = skrooge(request)
+        assertThat(response.status, equalTo(Status.SEE_OTHER))
+        assertThat(response.header("Location")!!, equalTo(index))
+        assertThat(decisionReaderWriter.read(2017, Month.of(10)), equalTo(listOf(expectedDecision)))
     }
 }

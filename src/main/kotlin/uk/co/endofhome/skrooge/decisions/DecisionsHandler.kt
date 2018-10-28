@@ -6,6 +6,7 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.lens.Validator
 import org.http4k.lens.webForm
+import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.index
 import uk.co.endofhome.skrooge.statements.StatementData
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statement
@@ -45,7 +46,7 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
             val statementData = StatementData(Year.parse(year), Month.valueOf(month.toUpperCase()), user, statement)
             decisionReaderWriter.write(statementData, decisions)
 
-            return Response(Status.CREATED)
+            return Response(Status.SEE_OTHER).header("Location", index)
         } else {
             throw IllegalStateException("""Form fields cannot be null, but were:
                             |year: $year
