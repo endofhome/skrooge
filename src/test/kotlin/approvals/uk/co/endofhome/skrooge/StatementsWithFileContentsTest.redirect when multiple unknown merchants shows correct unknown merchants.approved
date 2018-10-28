@@ -130,7 +130,7 @@
             </optgroup>
             
         </select>
-        <input type="hidden" name="remaining-vendors" value="Edgeworld Records">
+        <input type="hidden" name="remaining-merchants" value="Edgeworld Records">
         <input type="hidden" name="originalRequestBody" value="2017;March;Test;TwoUnknownMerchants">
 
         <div class="button">

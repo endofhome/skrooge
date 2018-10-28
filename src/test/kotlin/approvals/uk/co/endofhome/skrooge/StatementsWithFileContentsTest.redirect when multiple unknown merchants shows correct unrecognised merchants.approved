@@ -130,7 +130,7 @@
             </optgroup>
             
         </select>
-        <input type="hidden" name="remaining-vendors" value="Edgeworld Records">
+        <input type="hidden" name="remaining-merchants" value="Edgeworld Records">
         <input type="hidden" name="year" value="2017">
         <input type="hidden" name="month" value="March">
         <input type="hidden" name="user" value="Test">

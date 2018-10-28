@@ -26,20 +26,20 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
 
     operator fun invoke(request: Request): Response {
         val newMappingName = "new-mapping"
-        val remainingVendorsName = "remaining-vendors"
+        val remainingMerchantsName = "remaining-merchants"
         val newMappingLens = FormField.required(newMappingName)
-        val remainingVendorsLens = FormField.required(remainingVendorsName)
+        val remainingMerchantsLens = FormField.required(remainingMerchantsName)
         val webForm = Body.webForm(
                 Validator.Feedback,
                 newMappingLens,
-                remainingVendorsLens
+                remainingMerchantsLens
         ).toLens()
         val form = webForm.extract(request)
         val fields = form.fields
 
         val newMapping = fields[newMappingName]?.firstOrNull()
                                                ?.split(",")
-        val remainingVendors = fields[remainingVendorsName]?.firstOrNull()
+        val remainingMerchants = fields[remainingMerchantsName]?.firstOrNull()
                                                            ?.split(",")
                                                            ?.filter { it.isNotBlank() }
                                                            ?: emptyList()
@@ -54,16 +54,16 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
                         val newMappingString = newMapping.joinToString(",")
                         mappingWriter.write(newMappingString)
                         categoryMappings.add(newMappingString)
-                        when (remainingVendors.isEmpty()) {
+                        when (remainingMerchants.isEmpty()) {
                             true -> Response(Status.TEMPORARY_REDIRECT)
                                     .header("Location", statementsWithFilePath)
                                     .header("Method", Method.POST.name)
                             false -> {
-                                val nextVendor = remainingVendors.first()
-                                val carriedForwardVendors = remainingVendors.filterIndexed { index, _ -> index != 0 }
+                                val nextVendor = remainingMerchants.first()
+                                val carriedForwardMerchants = remainingMerchants.filterIndexed { index, _ -> index != 0 }
                                 val uri = Uri.of(unknownMerchant)
                                         .query("currentMerchant", nextVendor)
-                                        .query("outstandingMerchants", carriedForwardVendors.joinToString(","))
+                                        .query("outstandingMerchants", carriedForwardMerchants.joinToString(","))
                                         .query(yearName, statementForm.statementMetadata.year.toString())
                                         .query(monthName, statementForm.statementMetadata.month.getDisplayName(TextStyle.FULL, Locale.UK))
                                         .query(userName, statementForm.statementMetadata.user)
