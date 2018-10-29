@@ -39,12 +39,17 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
 
         val newMapping = fields[newMappingName]?.first()
                                                ?.split(",")
-        val remainingMerchants = fields[remainingMerchantsName]?.first()
-                                                               ?.split(",")
-                                                               ?.filter { it.isNotBlank() }
-                                                               ?: emptyList()
 
-        val statementForm = FormForNormalisedStatement.fromUrlEncoded(request)
+        val remainingMerchants: List<String> by lazy {
+            fields[remainingMerchantsName]?.first()
+                                           ?.split(",")
+                                           ?.filter { it.isNotBlank() }
+                                           ?: emptyList()
+        }
+
+        val statementForm: FormForNormalisedStatement by lazy {
+            FormForNormalisedStatement.fromUrlEncoded(request)
+        }
 
         return when {
             newMapping.isValid() -> {
@@ -57,7 +62,6 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
             else -> Response(BAD_REQUEST)
         }
     }
-
     private fun List<String>?.isValid() = this != null && this.size >= 3
 
     private fun List<String>.add() {
