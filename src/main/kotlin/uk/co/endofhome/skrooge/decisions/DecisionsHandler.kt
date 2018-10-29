@@ -17,30 +17,34 @@ import java.time.Month
 import java.time.Year
 
 class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, val categories: List<Category>) {
+    companion object {
+        const val decision = "decision"
+    }
+
     operator fun invoke(request: Request): Response {
         val webForm = Body.webForm(Validator.Strict)
         val form = webForm.toLens().extract(request)
-        val decisionsStrings: List<String>? = form.fields["decisions"]
-        val decisionsSplit: List<List<String>>? = decisionsStrings?.map { it.substring(1, it.lastIndex).split(", ") }
-        val decisions: List<Decision> = decisionsSplit!!.flatMap { decisionLine ->
-            decisionLine.map { it.split(",") }.map {
-                val dateParts = it[0].split("/")
-                val day = Integer.valueOf(dateParts[0])
-                val month = Month.of(Integer.valueOf(dateParts[1]))
-                val year = Integer.valueOf(dateParts[2])
-                val date = LocalDate.of(year, month, day)
-                val merchant = it[1]
-                val amount = it[2].toDouble()
-                val category = it[3]
-                val subCategory = it[4]
-                Decision(Line(date, merchant, amount), Category(category, categories.find { it.title == category }!!.subcategories), SubCategory(subCategory))
-            }
+        val fields = form.fields
+        val decisions: List<Decision> = fields[decision]!!.map {
+            val decisionLine = it.split(",")
+            Decision(
+                Line(
+                    date = reformatDate(presentationFormattedDate = decisionLine[0]),
+                    merchant = decisionLine[1],
+                    amount = decisionLine[2].toDouble()
+                ),
+                Category(
+                    title = decisionLine[3],
+                    subcategories = categories.find { it.title == decisionLine[3] }!!.subcategories
+                ),
+                SubCategory(name = decisionLine[4])
+            )
         }
 
-        val year = form.fields[yearName]?.firstOrNull()
-        val month = form.fields[monthName]?.firstOrNull()
-        val user = form.fields[userName]?.firstOrNull()
-        val statement = form.fields[statement]?.firstOrNull()
+        val year = fields[yearName]?.firstOrNull()
+        val month = fields[monthName]?.firstOrNull()
+        val user = fields[userName]?.firstOrNull()
+        val statement = fields[statement]?.firstOrNull()
 
         if (year != null && month != null && user != null && statement != null) {
             val statementData = StatementData(Year.parse(year), Month.valueOf(month.toUpperCase()), user, statement)
@@ -55,5 +59,13 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
                             |statement: $statement
             """.trimIndent())
         }
+    }
+
+    private fun reformatDate(presentationFormattedDate: String): LocalDate {
+        val dateParts = presentationFormattedDate.split("/")
+        val day = Integer.valueOf(dateParts[0])
+        val month = Month.of(Integer.valueOf(dateParts[1]))
+        val year = Integer.valueOf(dateParts[2])
+        return LocalDate.of(year, month, day)
     }
 }

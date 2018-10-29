@@ -16,6 +16,7 @@ import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementDecisions
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.decisions.Decision
+import uk.co.endofhome.skrooge.decisions.DecisionsHandler.Companion.decision
 import uk.co.endofhome.skrooge.decisions.Line
 import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
 import uk.co.endofhome.skrooge.decisions.SubCategory
@@ -49,7 +50,7 @@ class DecisionsHandlerTest {
     fun `POST to statementDecisions endpoint with no amended decisions writes same decisions`() {
         val request = Request(Method.POST, statementDecisions)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form("decisions", "[18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget]")
+                .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget")
                 .form(yearName, "2017")
                 .form(monthName, "October")
                 .form(userName, "Tom")
@@ -66,7 +67,7 @@ class DecisionsHandlerTest {
     fun `POST to statementDecisions endpoint with amended mappings writes amended mappings`() {
         val request = Request(Method.POST, statementDecisions)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form("decisions", "[18/10/2017,Edgeworld Records,14.99,Eats and drinks,Food]")
+                .form(decision, "18/10/2017,Edgeworld Records,14.99,Eats and drinks,Food")
                 .form(yearName, "2017")
                 .form(monthName, "October")
                 .form(userName, "Tom")
@@ -83,5 +84,31 @@ class DecisionsHandlerTest {
         assertThat(response.status, equalTo(Status.SEE_OTHER))
         assertThat(response.header("Location")!!, equalTo(index))
         assertThat(decisionReaderWriter.read(2017, Month.of(10)), equalTo(listOf(expectedDecision)))
+    }
+
+    @Test
+    fun `POST to statementDecisions endpoint with multiple decisions writes same decisions`() {
+        val additionalDecision =
+            Decision(
+                Line(LocalDate.of(2017, 10, 3), "Pizza Union", 5.5),
+                Category("Eats and drinks", categories.all().find { it.title == "Eats and drinks" }?.subcategories!!),
+                SubCategory("Meals at work")
+            )
+
+        val request = Request(Method.POST, statementDecisions)
+            .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+            .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget")
+            .form(decision, "3/10/2017,Pizza Union,5.50,Eats and drinks,Meals at work")
+            .form(yearName, "2017")
+            .form(monthName, "October")
+            .form(userName, "Tom")
+            .form(statementName, "SomeBank")
+
+        val response = skrooge(request)
+        assertThat(response.status, equalTo(Status.SEE_OTHER))
+        assertThat(response.header("Location")!!, equalTo(index))
+
+        val expectedDecisions = listOf(originalDecision, additionalDecision)
+        assertThat(decisionReaderWriter.read(2017, Month.of(10)), equalTo(expectedDecisions))
     }
 }

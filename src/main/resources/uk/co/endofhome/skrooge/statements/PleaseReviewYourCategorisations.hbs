@@ -10,11 +10,11 @@
     <form action="statement-decisions" method="post">
         {{#each bankStatement.formattedDecisions}}
             <h3>{{line.date}}, {{line.merchant}}: £{{line.amount}}
-            <select name="decisions">
+            <select name="decision">
                 {{#each categoriesWithSelection.categories}}
                     <optgroup label="{{title}}">
                         {{#each subCategories}}
-                            <option value="[{{line.date}},{{line.merchant}},{{line.amount}},{{title}},{{subCategory.name}}]"{{selector}}>{{subCategory.name}}</option>
+                            <option value="{{line.date}},{{line.merchant}},{{line.amount}},{{title}},{{subCategory.name}}"{{selector}}>{{subCategory.name}}</option>
                         {{/each}}
                     </optgroup>
                 {{/each}}

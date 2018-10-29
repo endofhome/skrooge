@@ -178,6 +178,42 @@ class StatementsWithFileContentsTest {
     }
 
     @Test
+    fun `POST with two entries produces output file with two entry when recognised merchants`() {
+        val categoryMappings = mutableListOf(
+            "Pizza Union,Eats and drinks,Meals at work",
+            "Pizza Hut,Eats and drinks,Meals at work"
+        )
+        val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
+        val outputPath = Paths.get("src/test/resources/decisions")
+        val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
+        val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes
+        val firstLineOfContent = "2017-02-17,Pizza Union,5.50"
+        val secondLineOfContent = "2017-02-17,Pizza Hut,7.50"
+        val inputStatementContent = """
+            $firstLineOfContent
+            $secondLineOfContent
+        """.trimIndent()
+        val body = MultipartFormBody().plus("year" to "2017")
+            .plus("month" to "February")
+            .plus("user" to "Test")
+            .plus("statement-name" to "two-known-merchants")
+            .plus("statement-file" to FormFile("2017-02_Test_two-known-merchants.csv", ContentType.OCTET_STREAM, inputStatementContent.byteInputStream()))
+        val request = Request(POST, statementsWithFileContents)
+            .header("content-type", "multipart/form-data; boundary=${body.boundary}")
+            .body(body)
+
+        val response = localSkrooge(request)
+
+        val statementFile = File("input/normalised/2017-02_Test_two-known-merchants.csv")
+        val statementFileContents = statementFile.readLines()
+        assertThat(statementFileContents.size, equalTo(2))
+        assertThat(statementFileContents[0], equalTo(firstLineOfContent))
+        assertThat(statementFileContents[1], equalTo(secondLineOfContent))
+
+        approver.assertApproved(response.bodyString())
+    }
+
+    @Test
     fun `POST with one entry returns HTTP See Other when unknown merchant`() {
         val inputStatementContent = "2017-09-17,McDonalds,0.99\n"
         val body = MultipartFormBody().plus("year" to "2017")
