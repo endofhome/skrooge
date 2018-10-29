@@ -48,7 +48,7 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
         }
 
         fun fromUrlEncoded(request: Request): FormForNormalisedStatement {
-            val form = extractUrlEncodedForm(request, statementFilePathKey)
+            val form = extractUrlEncodedForm(request)
             val (year, month, user, statement, statementFilePath) = form.fields.values()
 
             if (year != null && month != null && user != null && statement != null && statementFilePath != null) {
@@ -96,7 +96,7 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
             return multipartFormBody.extract(request)
         }
 
-        private fun extractUrlEncodedForm(request: Request, statementFilePathKey: String): WebForm {
+        private fun extractUrlEncodedForm(request: Request): WebForm {
             val yearLens = FormField.required(StatementMetadata.yearName)
             val monthLens = FormField.required(StatementMetadata.monthName)
             val userLens = FormField.required(StatementMetadata.userName)
