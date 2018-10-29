@@ -14,21 +14,24 @@ class AnnualBudgets(private val budgets: List<AnnualBudget>) {
     companion object {
         fun from(budgetDirectory: Path): AnnualBudgets {
             val budgetsFromFiles = budgetDirectory.toFile()
-                                                  .listFiles()
-                                                  .filter { it.name.endsWith(".json") }
-                                                  .map { file ->
-                val dateInts = file.name
-                                            .split('/')
-                                            .last()
-                                            .substringBefore('.')
-                                            .split('-')
-                                            .drop(1)
-                                            .map { it.toInt() }
-                                                      AnnualBudget.from(
-                                                              LocalDate.of(dateInts[0], Month.of(dateInts[1]), dateInts[2]),
-                                                              file.readText()
-                                                      )
-            }
+                .listFiles()
+                .filter { it.name.endsWith(".json") }
+                .map { file ->
+                    val (year, month, day) = file.name.split('/')
+                        .last()
+                        .substringBefore('.')
+                        .split('-')
+                        .drop(1)
+                        .map { it.toInt() }
+                    AnnualBudget.from(
+                        LocalDate.of(
+                            year,
+                            Month.of(month),
+                            day
+                        ),
+                        file.readText()
+                    )
+                }
 
             return AnnualBudgets(budgetsFromFiles)
         }
