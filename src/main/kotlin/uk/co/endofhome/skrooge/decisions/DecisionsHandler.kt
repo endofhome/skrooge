@@ -4,6 +4,7 @@ import org.http4k.core.Body
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status
+import org.http4k.lens.FormField
 import org.http4k.lens.Validator
 import org.http4k.lens.webForm
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.index
@@ -22,10 +23,19 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
     }
 
     operator fun invoke(request: Request): Response {
-        val webForm = Body.webForm(Validator.Strict)
+        val webForm = Body.webForm(Validator.Feedback)
+        val decisionLens = FormField.multi.required(decision)
+        val yearLens = FormField.required(yearName)
+        val monthLens = FormField.required(monthName)
+        val userLens = FormField.required(userName)
+        val statementLens = FormField.required(statement)
         val form = webForm.toLens().extract(request)
-        val fields = form.fields
-        val decisions: List<Decision> = fields[decision]!!.map {
+        val year = yearLens.extract(form)
+        val month = monthLens.extract(form)
+        val user = userLens.extract(form)
+        val statement = statementLens.extract(form)
+
+        val decisions: List<Decision> = decisionLens.extract(form).map {
             val decisionLine = it.split(",")
             Decision(
                 Line(
@@ -41,12 +51,7 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
             )
         }
 
-        val year = fields[yearName]?.firstOrNull()
-        val month = fields[monthName]?.firstOrNull()
-        val user = fields[userName]?.firstOrNull()
-        val statement = fields[statement]?.firstOrNull()
-
-        if (year != null && month != null && user != null && statement != null) {
+        if (form.errors.isEmpty()) {
             val statementData = StatementData(Year.parse(year), Month.valueOf(month.toUpperCase()), user, statement)
             decisionReaderWriter.write(statementData, decisions)
 
