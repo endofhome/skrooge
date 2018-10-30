@@ -35,16 +35,10 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
                 remainingMerchantsLens
         ).toLens()
         val form = webForm.extract(request)
-        val fields = form.fields
-
-        val newMapping = fields[newMappingName]?.first()
-                                               ?.split(",")
+        val newMapping: List<String> = newMappingLens.extract(form).split(',')
 
         val remainingMerchants: List<String> by lazy {
-            fields[remainingMerchantsName]?.first()
-                                           ?.split(",")
-                                           ?.filter { it.isNotBlank() }
-                                           ?: emptyList()
+            remainingMerchantsLens.extract(form).split(',').filter { it.isNotBlank() }
         }
 
         val statementForm: FormForNormalisedStatement by lazy {
@@ -53,7 +47,7 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
 
         return when {
             newMapping.isValid() -> {
-                newMapping!!.add()
+                newMapping.add()
                 when {
                     remainingMerchants.isEmpty() -> redirectToStatementsWIthFilePath()
                     else                         -> redirectToUnknownMerchant(statementForm, remainingMerchants)
@@ -62,7 +56,7 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
             else -> Response(BAD_REQUEST)
         }
     }
-    private fun List<String>?.isValid() = this != null && this.size >= 3
+    private fun List<String>.isValid() = this.size >= 3
 
     private fun List<String>.add() {
         val newMappingString = this.joinToString(",")
