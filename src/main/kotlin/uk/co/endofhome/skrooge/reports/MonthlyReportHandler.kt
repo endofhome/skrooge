@@ -5,6 +5,8 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.format.Gson
 import org.http4k.format.Gson.asPrettyJsonString
+import org.http4k.lens.Query
+import org.http4k.lens.int
 import org.http4k.template.ViewModel
 import uk.co.endofhome.skrooge.categories.AggregateOverviewReport
 import uk.co.endofhome.skrooge.categories.CategoryReport
@@ -20,8 +22,8 @@ class MonthlyReportHandler(private val decisionReaderWriter: DecisionReaderWrite
                            private val categoryReporter: CategoryReporter) {
 
     operator fun invoke(request: Request): Response {
-        val year = request.query("year")!!.toInt()
-        val month = Month.of(request.query("month")!!.toInt())
+        val year = Query.int().required("year").extract(request)
+        val month = Month.of(Query.int().required("month").extract(request))
         val decisions = decisionReaderWriter.read(year, month)
 
         return decisions.let {
