@@ -111,4 +111,21 @@ class DecisionsHandlerTest {
         val expectedDecisions = listOf(originalDecision, additionalDecision)
         assertThat(decisionReaderWriter.read(2017, Month.of(10)), equalTo(expectedDecisions))
     }
+
+    @Test
+    fun `POST to statementDecisions endpoint with missing fields returns HTTP BAD REQUEST`() {
+        val request = Request(Method.POST, statementDecisions)
+            .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+            .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget")
+
+        val response = skrooge(request)
+        assertThat(response.status, equalTo(Status.BAD_REQUEST))
+        assertThat(response.bodyString(), equalTo("""
+            Form fields were missing:
+            year
+            month
+            user
+            statement-name
+        """.trimIndent()))
+    }
 }

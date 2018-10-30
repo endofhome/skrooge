@@ -53,7 +53,7 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
             } else {
                 val fieldsWithErrors = multipartForm.errors.map { it.meta.name }
                 val osNewline = System.lineSeparator()
-                throw IllegalStateException("Form fields were missing:$osNewline ${fieldsWithErrors.joinToString(osNewline)}")
+                throw IllegalStateException("Form fields were missing:$osNewline${fieldsWithErrors.joinToString(osNewline)}")
             }
         }
 
@@ -87,7 +87,7 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
             } else {
                 val fieldsWithErrors = form.errors.map { it.meta.name }
                 val osNewline = System.lineSeparator()
-                throw IllegalStateException("Form fields were missing:$osNewline ${fieldsWithErrors.joinToString(osNewline)}")
+                throw IllegalStateException("Form fields were missing:$osNewline${fieldsWithErrors.joinToString(osNewline)}")
             }
         }
 

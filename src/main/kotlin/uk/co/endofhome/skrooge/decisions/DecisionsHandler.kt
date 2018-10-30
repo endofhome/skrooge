@@ -23,46 +23,54 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
     }
 
     operator fun invoke(request: Request): Response {
-        val webForm = Body.webForm(Validator.Feedback)
-        val decisionLens = FormField.multi.required(decision)
         val yearLens = FormField.required(yearName)
         val monthLens = FormField.required(monthName)
         val userLens = FormField.required(userName)
         val statementLens = FormField.required(statement)
+        val decisionLens = FormField.multi.required(decision)
+        val webForm = Body.webForm(
+            Validator.Feedback,
+            yearLens,
+            monthLens,
+            userLens,
+            statementLens,
+            decisionLens
+        )
         val form = webForm.toLens().extract(request)
-        val year = yearLens.extract(form)
-        val month = monthLens.extract(form)
-        val user = userLens.extract(form)
-        val statement = statementLens.extract(form)
 
-        val decisions: List<Decision> = decisionLens.extract(form).map {
-            val decisionLine = it.split(",")
-            Decision(
-                Line(
-                    date = reformatDate(presentationFormattedDate = decisionLine[0]),
-                    merchant = decisionLine[1],
-                    amount = decisionLine[2].toDouble()
-                ),
-                Category(
-                    title = decisionLine[3],
-                    subcategories = categories.find { it.title == decisionLine[3] }!!.subcategories
-                ),
-                SubCategory(name = decisionLine[4])
-            )
-        }
+        return if (form.errors.isEmpty()) {
+            val year = yearLens.extract(form)
+            val month = monthLens.extract(form)
+            val user = userLens.extract(form)
+            val statement = statementLens.extract(form)
 
-        if (form.errors.isEmpty()) {
+            val decisions: List<Decision> = decisionLens.extract(form).map {
+                val decisionLine = it.split(",")
+                Decision(
+                    Line(
+                        date = reformatDate(presentationFormattedDate = decisionLine[0]),
+                        merchant = decisionLine[1],
+                        amount = decisionLine[2].toDouble()
+                    ),
+                    Category(
+                        title = decisionLine[3],
+                        subcategories = categories.find { it.title == decisionLine[3] }!!.subcategories
+                    ),
+                    SubCategory(name = decisionLine[4])
+                )
+            }
+
             val statementData = StatementData(Year.parse(year), Month.valueOf(month.toUpperCase()), user, statement)
             decisionReaderWriter.write(statementData, decisions)
 
-            return Response(Status.SEE_OTHER).header("Location", index)
+            Response(Status.SEE_OTHER).header("Location", index)
         } else {
-            throw IllegalStateException("""Form fields cannot be null, but were:
-                            |year: $year
-                            |month: $month
-                            |user: $user
-                            |statement: $statement
-            """.trimIndent())
+            val fieldsWithErrors = form.errors.map { it.meta.name }
+            val osNewline = System.lineSeparator()
+
+            Response(Status.BAD_REQUEST).body(
+                "Form fields were missing:$osNewline${fieldsWithErrors.joinToString(osNewline)}"
+            )
         }
     }
 
