@@ -39,11 +39,6 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
         val form = webForm.toLens().extract(request)
 
         return if (form.errors.isEmpty()) {
-            val year = yearLens.extract(form)
-            val month = monthLens.extract(form)
-            val user = userLens.extract(form)
-            val statement = statementLens.extract(form)
-
             val decisions: List<Decision> = decisionLens.extract(form).map {
                 val decisionLine = it.split(",")
                 Decision(
@@ -60,7 +55,12 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
                 )
             }
 
-            val statementData = StatementData(Year.parse(year), Month.valueOf(month.toUpperCase()), user, statement)
+            val statementData = StatementData(
+                year = Year.parse(yearLens.extract(form)),
+                month = Month.valueOf(monthLens.extract(form).toUpperCase()),
+                username = userLens.extract(form),
+                statement = statementLens.extract(form)
+            )
             decisionReaderWriter.write(statementData, decisions)
 
             Response(Status.SEE_OTHER).header("Location", index)
