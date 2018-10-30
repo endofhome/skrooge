@@ -4,16 +4,18 @@ import org.http4k.core.Body
 import org.http4k.core.FormFile
 import org.http4k.core.Request
 import org.http4k.lens.FormField
-import org.http4k.lens.MultipartForm
 import org.http4k.lens.MultipartFormField
 import org.http4k.lens.MultipartFormFile
 import org.http4k.lens.Validator
-import org.http4k.lens.WebForm
 import org.http4k.lens.multipartForm
 import org.http4k.lens.webForm
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFile
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statement
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
 import java.io.File
 import java.nio.file.Path
 import java.time.Month
@@ -22,66 +24,9 @@ import java.time.Year
 data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, val file: File) {
     companion object {
         fun fromMultiPart(request: Request, normalisedStatements: Path): FormForNormalisedStatement {
-            val multipartForm = extractMultiPartForm(request, statementName, statementFile)
-            val fields = multipartForm.fields
-            val files = multipartForm.files
-            val (year, monthString, user, statement) = fields.values()
-            val formFile = files[statementFile]?.firstOrNull()
-
-            if (year != null && monthString != null && user != null && statement != null && formFile != null) {
-                val month = Month.valueOf(monthString.toUpperCase())
-                val statementMetadata = StatementMetadata(Year.parse(year), month, user, statement)
-                val file = writeFileToFileSystem(statementMetadata, formFile, normalisedStatements)
-
-                return FormForNormalisedStatement(statementMetadata, file)
-            } else {
-                throw IllegalStateException(
-                        """Form fields cannot be null, but were:
-                            |year: $year
-                            |month: $monthString
-                            |user: $user
-                            |statement: $statement
-                            |formFile: $formFile
-                        """.trimMargin()
-                )
-            }
-        }
-
-        fun fromUrlEncoded(request: Request): FormForNormalisedStatement {
-            val form = extractUrlEncodedForm(request)
-            val (year, month, user, statement, statementFilePath) = form.fields.values()
-
-            if (year != null && month != null && user != null && statement != null && statementFilePath != null) {
-                val statementMetadata = StatementMetadata(Year.of(year.toInt()), Month.valueOf(month.toUpperCase()), user, statement)
-                val file = File(statementFilePath)
-
-                return FormForNormalisedStatement(statementMetadata, file)
-            } else {
-                throw IllegalStateException(
-                        """Form fields cannot be null, but were:
-                            |year: $year
-                            |month: $month
-                            |user: $user
-                            |statement: $statement
-                            |statementFilePath: $statementFilePath
-                        """.trimMargin()
-                )
-            }
-        }
-
-        private fun Map<String, List<String>>.values(): FieldValues {
-            val year = this[StatementMetadata.yearName]?.firstOrNull()
-            val monthString = this[StatementMetadata.monthName]?.firstOrNull()
-            val user = this[StatementMetadata.userName]?.firstOrNull()
-            val statement = this[statementName]?.firstOrNull()
-            val statementFilePath = this[statementFilePathKey]?.firstOrNull()
-            return FieldValues(year, monthString, user, statement, statementFilePath)
-        }
-
-        private fun extractMultiPartForm(request: Request, statementName: String, statementFile: String): MultipartForm {
-            val yearLens = MultipartFormField.required(StatementMetadata.yearName)
-            val monthLens = MultipartFormField.required(StatementMetadata.monthName)
-            val userLens = MultipartFormField.required(StatementMetadata.userName)
+            val yearLens = MultipartFormField.required(yearName)
+            val monthLens = MultipartFormField.required(monthName)
+            val userLens = MultipartFormField.required(userName)
             val statementNameLens = MultipartFormField.required(statementName)
             val statementFileLens = MultipartFormFile.required(statementFile)
             val multipartFormBody = Body.multipartForm(
@@ -92,15 +37,31 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
                     statementNameLens,
                     statementFileLens
             ).toLens()
+            val multipartForm = multipartFormBody.extract(request)
 
-            return multipartFormBody.extract(request)
+            if (multipartForm.errors.isEmpty()) {
+                val year = yearLens.extract(multipartForm)
+                val month = monthLens.extract(multipartForm)
+                val user = userLens.extract(multipartForm)
+                val statement = statementNameLens.extract(multipartForm)
+                val formFile = statementFileLens.extract(multipartForm)
+
+                val statementMetadata = StatementMetadata(Year.parse(year), Month.valueOf(month.toUpperCase()), user, statement)
+                val file = writeFileToFileSystem(statementMetadata, formFile, normalisedStatements)
+
+                return FormForNormalisedStatement(statementMetadata, file)
+            } else {
+                val fieldsWithErrors = multipartForm.errors.map { it.meta.name }
+                val osNewline = System.lineSeparator()
+                throw IllegalStateException("Form fields were missing:$osNewline ${fieldsWithErrors.joinToString(osNewline)}")
+            }
         }
 
-        private fun extractUrlEncodedForm(request: Request): WebForm {
-            val yearLens = FormField.required(StatementMetadata.yearName)
-            val monthLens = FormField.required(StatementMetadata.monthName)
-            val userLens = FormField.required(StatementMetadata.userName)
-            val statementNameLens = FormField.required(StatementMetadata.statement)
+        fun fromUrlEncoded(request: Request): FormForNormalisedStatement {
+            val yearLens = FormField.required(yearName)
+            val monthLens = FormField.required(monthName)
+            val userLens = FormField.required(userName)
+            val statementNameLens = FormField.required(statement)
             val statementPathLens = FormField.required(statementFilePathKey)
             val webForm = Body.webForm(
                     Validator.Feedback,
@@ -110,7 +71,24 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
                     statementNameLens,
                     statementPathLens
             )
-            return webForm.toLens().extract(request)
+            val form = webForm.toLens().extract(request)
+
+            if (form.errors.isEmpty()) {
+                val year = yearLens.extract(form)
+                val month = monthLens.extract(form)
+                val user = userLens.extract(form)
+                val statement = statementNameLens.extract(form)
+                val statementFilePath = statementPathLens.extract(form)
+
+                val statementMetadata = StatementMetadata(Year.of(year.toInt()), Month.valueOf(month.toUpperCase()), user, statement)
+                val file = File(statementFilePath)
+
+                return FormForNormalisedStatement(statementMetadata, file)
+            } else {
+                val fieldsWithErrors = form.errors.map { it.meta.name }
+                val osNewline = System.lineSeparator()
+                throw IllegalStateException("Form fields were missing:$osNewline ${fieldsWithErrors.joinToString(osNewline)}")
+            }
         }
 
         private fun writeFileToFileSystem(statementMetadata: StatementMetadata, formFile: FormFile, normalisedStatements: Path): File {
@@ -124,7 +102,5 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
         }
 
         private fun format(month: Month) = month.value.toString().padStart(2, '0')
-
-        data class FieldValues(val year: String?, val month: String?, val user: String?, val statement: String?, val statementFilePath: String?)
     }
 }

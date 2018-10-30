@@ -159,10 +159,10 @@ class StatementsWithFileContentsTest {
         val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes
         val inputStatementContent = "2017-09-17,Pizza Union,5.50\n"
         val body = MultipartFormBody().plus("year" to "2017")
-                .plus("month" to "February")
-                .plus("user" to "Test")
-                .plus("statement-name" to "one-known-merchant")
-                .plus("statement-file" to FormFile("2017-02_Test_one-known-merchant.csv", ContentType.OCTET_STREAM, inputStatementContent.byteInputStream()))
+                                      .plus("month" to "February")
+                                      .plus("user" to "Test")
+                                      .plus("statement-name" to "one-known-merchant")
+                                      .plus("statement-file" to FormFile("2017-02_Test_one-known-merchant.csv", ContentType.OCTET_STREAM, inputStatementContent.byteInputStream()))
         val request = Request(POST, statementsWithFileContents)
                 .header("content-type", "multipart/form-data; boundary=${body.boundary}")
                 .body(body)
