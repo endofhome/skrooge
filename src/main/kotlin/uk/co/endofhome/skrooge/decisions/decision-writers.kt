@@ -63,12 +63,12 @@ class FileSystemDecisionReaderReaderWriter(private val categories: Categories, p
 
         return this.flatMap {
             it.readLines().map {
-                val split = it.split(",")
-                val dateValues = split[0].split("-").map { it.toInt() }
-                val line = Line(LocalDate.of(dateValues[0], dateValues[1], dateValues[2]), split[1], split[2].toDouble())
+                val (date, merchant, amount, categoryName, subCategoryName) = it.split(",")
+                val (year, month, day) = date.split("-").map { it.toInt() }
+                val line = Line(LocalDate.of(year, month, day), merchant, amount.toDouble())
 
-                val category = categories.all().find { it.title == split[3] }!!
-                Decision(line, category, categories.subcategoriesFor(category.title).find { it.name == split[4] })
+                val category = categories.all().find { it.title == categoryName }!!
+                Decision(line, category, categories.subcategoriesFor(category.title).find { it.name == subCategoryName })
             }
         }
     }
