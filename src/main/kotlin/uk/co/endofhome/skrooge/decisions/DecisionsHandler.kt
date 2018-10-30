@@ -40,18 +40,14 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
 
         return if (form.errors.isEmpty()) {
             val decisions: List<Decision> = decisionLens.extract(form).map {
-                val decisionLine = it.split(",")
+                val (presentationFormattedDate, merchant, amount, categoryName, subCategoryName) = it.split(",")
                 Decision(
-                    Line(
-                        date = reformatDate(presentationFormattedDate = decisionLine[0]),
-                        merchant = decisionLine[1],
-                        amount = decisionLine[2].toDouble()
-                    ),
+                    Line(reformat(presentationFormattedDate), merchant, amount.toDouble()),
                     Category(
-                        title = decisionLine[3],
-                        subcategories = categories.find { it.title == decisionLine[3] }!!.subcategories
+                        categoryName,
+                        categories.find { it.title == categoryName }!!.subcategories
                     ),
-                    SubCategory(name = decisionLine[4])
+                    SubCategory(subCategoryName)
                 )
             }
 
@@ -74,7 +70,7 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
         }
     }
 
-    private fun reformatDate(presentationFormattedDate: String): LocalDate {
+    private fun reformat(presentationFormattedDate: String): LocalDate {
         val dateParts = presentationFormattedDate.split("/")
         val day = Integer.valueOf(dateParts[0])
         val month = Month.of(Integer.valueOf(dateParts[1]))
