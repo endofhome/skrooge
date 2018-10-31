@@ -41,7 +41,7 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
         val form = webForm.extract(request)
         val newMapping: List<String> = newMappingLens.extract(form).split(',')
 
-        val remainingMerchants: List<String> by lazy { remainingMerchantsLens.extract(form) ?: emptyList() }
+        val remainingMerchants: Set<String> by lazy { remainingMerchantsLens.extract(form)?.toSet() ?: emptySet() }
 
         val statementForm: FormForNormalisedStatement by lazy {
             FormForNormalisedStatement.fromUrlEncoded(request)
@@ -72,10 +72,10 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
                 .header("Method", Method.POST.name)
     }
 
-    private fun redirectToUnknownMerchant(statementForm: FormForNormalisedStatement, remainingMerchants: List<String>): Response {
-        val carriedForwardMerchants = remainingMerchants.drop(1)
+    private fun redirectToUnknownMerchant(statementForm: FormForNormalisedStatement, remainingMerchants: Set<String>): Response {
+        val (currentMerchant, carriedForwardMerchants) = remainingMerchants.partition { it == remainingMerchants.first() }
         val baseUri = Uri.of(unknownMerchant)
-                .query(currentMerchantName, remainingMerchants.first())
+                .query(currentMerchantName, currentMerchant.single())
                 .query(yearName, statementForm.statementMetadata.year.toString())
                 .query(monthName, statementForm.statementMetadata.month.getDisplayName(TextStyle.FULL, Locale.UK))
                 .query(userName, statementForm.statementMetadata.user)
