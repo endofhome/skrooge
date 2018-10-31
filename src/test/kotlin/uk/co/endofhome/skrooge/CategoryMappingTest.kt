@@ -9,6 +9,7 @@ import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
+import org.http4k.core.Status.Companion.SEE_OTHER
 import org.http4k.core.Status.Companion.TEMPORARY_REDIRECT
 import org.http4k.core.body.form
 import org.http4k.core.with
@@ -19,6 +20,8 @@ import org.junit.Test
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.categoryMapping
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementsWithFilePath
 import uk.co.endofhome.skrooge.categories.Categories
+import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.newMappingName
+import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantName
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
@@ -49,8 +52,7 @@ class CategoryMappingTest {
     fun `POST to category-mapping endpoint with empty new-mapping field returns HTTP Bad Request`() {
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form("new-mapping", "")
-                .form("remaining-merchants", "")
+                .form(newMappingName, "")
                 .form(yearName, statementYear)
                 .form(monthName, statementMonth)
                 .form(userName, statementUser)
@@ -64,8 +66,7 @@ class CategoryMappingTest {
     fun `POST to category-mapping endpoint with non-CSV mapping returns HTTP Bad Request`() {
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form("new-mapping", "Casbah Records;Established 1967 in our minds")
-                .form("remaining-merchants", "")
+                .form(newMappingName, "Casbah Records;Established 1967 in our minds")
                 .form(yearName, statementYear)
                 .form(monthName, statementMonth)
                 .form(userName, statementUser)
@@ -79,8 +80,7 @@ class CategoryMappingTest {
     fun `POST to category-mapping endpoint with good CSV mapping returns HTTP OK and writes new mapping`() {
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form("new-mapping", "Casbah Records,Fun,Tom fun budget")
-                .form("remaining-merchants", "")
+                .form(newMappingName, "Casbah Records,Fun,Tom fun budget")
                 .form(yearName, statementYear)
                 .form(monthName, statementMonth)
                 .form(userName, statementUser)
@@ -95,8 +95,8 @@ class CategoryMappingTest {
     fun `successful POST to category-mapping redirects back to continue categorisation if necessary`() {
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form("new-mapping", "DIY Space for London,Fun,Tom fun budget")
-                .form("remaining-merchants", "Another vendor")
+                .form(newMappingName, "DIY Space for London,Fun,Tom fun budget")
+                .form(remainingMerchantName, "Another vendor")
                 .form(yearName, statementYear)
                 .form(monthName, statementMonth)
                 .form(userName, statementUser)
@@ -112,6 +112,34 @@ class CategoryMappingTest {
     }
 
     @Test
+    fun `can accept multiple remaining merchants`() {
+        val testFile = File(statementFilePath)
+        val printWriter = PrintWriter(testFile)
+        printWriter.use {
+            it.write("")
+        }
+
+        val request = Request(POST, categoryMapping)
+            .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+            .form(newMappingName, "Last new mapping,Fun,Tom fun budget")
+            .form(remainingMerchantName, "Bob's Laundrette")
+            .form(remainingMerchantName, "Bert's Hardware")
+            .form(yearName, statementYear)
+            .form(monthName, statementMonth)
+            .form(userName, statementUser)
+            .form(statement, statementName)
+            .form(statementFilePathKey, statementFilePath)
+
+        val response = skrooge(request)
+
+        assertThat(response.status, equalTo(SEE_OTHER))
+        assertThat(response.header("Location")!!, equalTo("/unknown-merchant?currentMerchant=Bob%27s+Laundrette&year=2017&month=February&user=Test&statement-name=Empty+Statement&statement-file-path=src%2Ftest%2Fresources%2F2017-02_Test_EmptyStatement.csv&remaining-merchant=Bert%27s+Hardware"))
+
+        val followedResponse = with(RedirectHelper(skrooge)) { response.followRedirect(request) }
+        approver.assertApproved(followedResponse.bodyString())
+    }
+
+    @Test
     fun `when all categories have been mapped a monthly report is available for review`() {
         val testFile = File(statementFilePath)
         val printWriter = PrintWriter(testFile)
@@ -121,8 +149,7 @@ class CategoryMappingTest {
 
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form("new-mapping", "Last new mapping,Fun,Tom fun budget")
-                .form("remaining-merchants", "")
+                .form(newMappingName, "Last new mapping,Fun,Tom fun budget")
                 .form(yearName, statementYear)
                 .form(monthName, statementMonth)
                 .form(userName, statementUser)

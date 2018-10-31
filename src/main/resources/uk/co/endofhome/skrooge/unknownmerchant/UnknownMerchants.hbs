@@ -18,7 +18,9 @@
             </optgroup>
             {{/each}}
         </select>
-        <input type="hidden" name="remaining-merchants" value="{{remainingMerchants}}">
+        {{#each remainingMerchants}}
+            <input type="hidden" name="remaining-merchant" value="{{this}}">
+        {{/each}}
         <input type="hidden" name="year" value="{{year}}">
         <input type="hidden" name="month" value="{{month}}">
         <input type="hidden" name="user" value="{{username}}">

@@ -14,10 +14,17 @@ import org.http4k.template.view
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.unknownMerchant
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.CategoriesWithSelection
+import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantName
 import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.decisions.Decision
 import uk.co.endofhome.skrooge.decisions.Line
 import uk.co.endofhome.skrooge.decisions.SubCategory
+import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
+import uk.co.endofhome.skrooge.statements.FileMetadata.statementName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
+import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler.Companion.currentMerchantName
 import java.io.File
 import java.math.BigDecimal
 import java.nio.file.Path
@@ -85,16 +92,18 @@ class StatementsHandler(private val renderer: TemplateRenderer, val categories: 
 
     private fun redirectToUnknownMerchant(statementMetadata: StatementMetadata, statementFile: File, unknownMerchants: Set<String>): Response {
         val (year, month, user, statement) = statementMetadata
-        val currentMerchant = unknownMerchants.first()
         val remainingMerchants = unknownMerchants.drop(1)
-        val uri = Uri.of(unknownMerchant)
-                .query("currentMerchant", currentMerchant)
-                .query("remainingMerchants", remainingMerchants.joinToString(","))
-                .query(StatementMetadata.yearName, year.toString())
-                .query(StatementMetadata.monthName, month.getDisplayName(TextStyle.FULL, Locale.UK))
-                .query(StatementMetadata.userName, user)
-                .query(FileMetadata.statementName, statement)
-                .query(FileMetadata.statementFilePathKey, statementFile.path)
+        val baseUri = Uri.of(unknownMerchant)
+                .query(currentMerchantName, unknownMerchants.first())
+                .query(yearName, year.toString())
+                .query(monthName, month.getDisplayName(TextStyle.FULL, Locale.UK))
+                .query(userName, user)
+                .query(statementName, statement)
+                .query(statementFilePathKey, statementFile.path)
+        val uri = when {
+            remainingMerchants.isNotEmpty() -> baseUri.query(remainingMerchantName, remainingMerchants.joinToString(","))
+            else                            -> baseUri
+        }
         return Response(Status.SEE_OTHER).header("Location", uri.toString())
     }
 }

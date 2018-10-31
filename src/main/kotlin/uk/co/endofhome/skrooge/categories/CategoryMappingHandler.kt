@@ -19,27 +19,29 @@ import uk.co.endofhome.skrooge.statements.FormForNormalisedStatement
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
+import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler.Companion.currentMerchantName
 import java.time.format.TextStyle
 import java.util.Locale
 
 class CategoryMappingHandler(private val categoryMappings: MutableList<String>, private val mappingWriter: MappingWriter) {
 
+    companion object {
+        const val newMappingName = "new-mapping"
+        const val remainingMerchantName = "remaining-merchant"
+    }
+
     operator fun invoke(request: Request): Response {
-        val newMappingName = "new-mapping"
-        val remainingMerchantsName = "remaining-merchants"
         val newMappingLens = FormField.required(newMappingName)
-        val remainingMerchantsLens = FormField.required(remainingMerchantsName)
+        val remainingMerchantsLens = FormField.multi.optional(remainingMerchantName)
         val webForm = Body.webForm(
-                Validator.Feedback,
-                newMappingLens,
-                remainingMerchantsLens
+            Validator.Feedback,
+            newMappingLens,
+            remainingMerchantsLens
         ).toLens()
         val form = webForm.extract(request)
         val newMapping: List<String> = newMappingLens.extract(form).split(',')
 
-        val remainingMerchants: List<String> by lazy {
-            remainingMerchantsLens.extract(form).split(',').filter { it.isNotBlank() }
-        }
+        val remainingMerchants: List<String> by lazy { remainingMerchantsLens.extract(form) ?: emptyList() }
 
         val statementForm: FormForNormalisedStatement by lazy {
             FormForNormalisedStatement.fromUrlEncoded(request)
@@ -71,16 +73,18 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
     }
 
     private fun redirectToUnknownMerchant(statementForm: FormForNormalisedStatement, remainingMerchants: List<String>): Response {
-        val nextVendor = remainingMerchants.first()
         val carriedForwardMerchants = remainingMerchants.drop(1)
-        val uri = Uri.of(unknownMerchant)
-                .query("currentMerchant", nextVendor)
-                .query("remainingMerchants", carriedForwardMerchants.joinToString(","))
+        val baseUri = Uri.of(unknownMerchant)
+                .query(currentMerchantName, remainingMerchants.first())
                 .query(yearName, statementForm.statementMetadata.year.toString())
                 .query(monthName, statementForm.statementMetadata.month.getDisplayName(TextStyle.FULL, Locale.UK))
                 .query(userName, statementForm.statementMetadata.user)
                 .query(statementName, statementForm.statementMetadata.statement)
                 .query(statementFilePathKey, statementForm.file.path)
+        val uri = when {
+            carriedForwardMerchants.isNotEmpty() -> baseUri.query(remainingMerchantName, carriedForwardMerchants.joinToString(","))
+            else                                 -> baseUri
+        }
         return Response(Status.SEE_OTHER).header("Location", uri.toString())
     }
 }

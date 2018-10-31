@@ -130,7 +130,7 @@
             </optgroup>
             
         </select>
-        <input type="hidden" name="remaining-merchants" value="">
+        
         <input type="hidden" name="year" value="2017">
         <input type="hidden" name="month" value="April">
         <input type="hidden" name="user" value="Test">

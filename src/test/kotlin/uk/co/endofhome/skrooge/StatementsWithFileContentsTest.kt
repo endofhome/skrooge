@@ -227,7 +227,7 @@ class StatementsWithFileContentsTest {
 
         val response = skrooge(requestWithMcDonalds)
         assertThat(response.status, equalTo(SEE_OTHER))
-        assertThat(response.header("Location"), equalTo("/unknown-merchant?currentMerchant=McDonalds&remainingMerchants=&year=2017&month=April&user=Test&statement-name=OneUnknownMerchant&statement-file-path=input%2Fnormalised%2F2017-04_Test_OneUnknownMerchant.csv"))
+        assertThat(response.header("Location"), equalTo("/unknown-merchant?currentMerchant=McDonalds&year=2017&month=April&user=Test&statement-name=OneUnknownMerchant&statement-file-path=input%2Fnormalised%2F2017-04_Test_OneUnknownMerchant.csv"))
 
         val followedResponse = with(RedirectHelper(skrooge)) { response.followRedirect() }
         approver.assertApproved(followedResponse.bodyString())
