@@ -53,7 +53,7 @@ class JsonGenerationTest {
     }
 
     @Test
-    fun `POST to generate - json endpoint with no monthly data returns BAD REQUEST`() {
+    fun `POST to generate - json endpoint with no monthly data returns Bad Request`() {
         val request = Request(GET, monthlyJsonReport).query("year", "2006").query("month", "10")
 
         assertThat(skrooge(request).status, equalTo(BAD_REQUEST))

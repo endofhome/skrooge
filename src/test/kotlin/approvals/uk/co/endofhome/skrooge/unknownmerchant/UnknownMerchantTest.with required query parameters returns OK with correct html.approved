@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skrooge</title>
+    <link href="public/vendor/bootstrap.min.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <h1>You need to categorise some merchants.</h1>
+    <h3>Bob&#x27;s Hardware</h3>
+    <form action="/category-mapping" method="post">
+        <select name="new-mapping">
+            
+            <optgroup label="In your home">
+                
+                <option value="Bob&#x27;s Hardware,In your home,Mortgage">Mortgage</option>
+                
+                <option value="Bob&#x27;s Hardware,In your home,Building insurance">Building insurance</option>
+                
+                <option value="Bob&#x27;s Hardware,In your home,Council tax">Council tax</option>
+                
+                <option value="Bob&#x27;s Hardware,In your home,Water rates">Water rates</option>
+                
+                <option value="Bob&#x27;s Hardware,In your home,Gas">Gas</option>
+                
+                <option value="Bob&#x27;s Hardware,In your home,Electricity">Electricity</option>
+                
+                <option value="Bob&#x27;s Hardware,In your home,Household maintenance">Household maintenance</option>
+                
+                <option value="Bob&#x27;s Hardware,In your home,Internet">Internet</option>
+                
+                <option value="Bob&#x27;s Hardware,In your home,TV Licence">TV Licence</option>
+                
+                <option value="Bob&#x27;s Hardware,In your home,Mobile phone">Mobile phone</option>
+                
+            </optgroup>
+            
+            <optgroup label="Insurance">
+                
+                <option value="Bob&#x27;s Hardware,Insurance,Travel insurance">Travel insurance</option>
+                
+                <option value="Bob&#x27;s Hardware,Insurance,Income protection">Income protection</option>
+                
+                <option value="Bob&#x27;s Hardware,Insurance,Life insurance">Life insurance</option>
+                
+            </optgroup>
+            
+            <optgroup label="Eats and drinks">
+                
+                <option value="Bob&#x27;s Hardware,Eats and drinks,Food">Food</option>
+                
+                <option value="Bob&#x27;s Hardware,Eats and drinks,Eating out">Eating out</option>
+                
+                <option value="Bob&#x27;s Hardware,Eats and drinks,Meals at work">Meals at work</option>
+                
+            </optgroup>
+            
+            <optgroup label="Motoring and public transport">
+                
+                <option value="Bob&#x27;s Hardware,Motoring and public transport,Rail/bus/taxi">Rail/bus/taxi</option>
+                
+                <option value="Bob&#x27;s Hardware,Motoring and public transport,Car club subscription">Car club subscription</option>
+                
+                <option value="Bob&#x27;s Hardware,Motoring and public transport,Car club hires">Car club hires</option>
+                
+            </optgroup>
+            
+            <optgroup label="Savings and investments">
+                
+                <option value="Bob&#x27;s Hardware,Savings and investments,Pension payments">Pension payments</option>
+                
+            </optgroup>
+            
+            <optgroup label="Family">
+                
+                <option value="Bob&#x27;s Hardware,Family,Childcare">Childcare</option>
+                
+                <option value="Bob&#x27;s Hardware,Family,Nappies/baby extras">Nappies/baby extras</option>
+                
+                <option value="Bob&#x27;s Hardware,Family,Baby activities">Baby activities</option>
+                
+            </optgroup>
+            
+            <optgroup label="Fun">
+                
+                <option value="Bob&#x27;s Hardware,Fun,Bob fun budget">Bob fun budget</option>
+                
+                <option value="Bob&#x27;s Hardware,Fun,Bill fun budget">Bill fun budget</option>
+                
+            </optgroup>
+            
+            <optgroup label="Health and beauty">
+                
+                <option value="Bob&#x27;s Hardware,Health and beauty,Dentistry">Dentistry</option>
+                
+                <option value="Bob&#x27;s Hardware,Health and beauty,Haircuts">Haircuts</option>
+                
+                <option value="Bob&#x27;s Hardware,Health and beauty,Optical bills">Optical bills</option>
+                
+            </optgroup>
+            
+            <optgroup label="Clothes">
+                
+                <option value="Bob&#x27;s Hardware,Clothes,Baby clothes">Baby clothes</option>
+                
+            </optgroup>
+            
+            <optgroup label="Big one offs">
+                
+                <option value="Bob&#x27;s Hardware,Big one offs,Christmas">Christmas</option>
+                
+                <option value="Bob&#x27;s Hardware,Big one offs,Summer holiday">Summer holiday</option>
+                
+                <option value="Bob&#x27;s Hardware,Big one offs,Winter holiday">Winter holiday</option>
+                
+                <option value="Bob&#x27;s Hardware,Big one offs,Birthdays">Birthdays</option>
+                
+            </optgroup>
+            
+            <optgroup label="Odds and sods">
+                
+                <option value="Bob&#x27;s Hardware,Odds and sods,Charity donations">Charity donations</option>
+                
+            </optgroup>
+            
+            <optgroup label="Refurbishments">
+                
+                <option value="Bob&#x27;s Hardware,Refurbishments,Refurbishments">Refurbishments</option>
+                
+            </optgroup>
+            
+        </select>
+        
+            <input type="hidden" name="remaining-merchant" value="Bert&#x27;s Audio Gear">
+        
+            <input type="hidden" name="remaining-merchant" value="Hubert&#x27;s bots">
+        
+        <input type="hidden" name="year" value="2017">
+        <input type="hidden" name="month" value="November">
+        <input type="hidden" name="user" value="Milford">
+        <input type="hidden" name="statement-name" value="Hipster Bank">
+        <input type="hidden" name="statement-file-path" value="path">
+        <div class="button">
+            <button type="submit">Update category</button>
+        </div>
+    </form>
+    </body>
+</html>

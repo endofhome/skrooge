@@ -4,7 +4,8 @@ import org.http4k.core.Body
 import org.http4k.core.ContentType
 import org.http4k.core.Request
 import org.http4k.core.Response
-import org.http4k.core.Status
+import org.http4k.core.Status.Companion.BAD_REQUEST
+import org.http4k.core.Status.Companion.OK
 import org.http4k.core.with
 import org.http4k.lens.Query
 import org.http4k.template.TemplateRenderer
@@ -35,22 +36,33 @@ class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val
         val statementNameLens = Query.required(statementName)
         val statementPathLens = Query.required(statementFilePathKey)
 
-        val currentMerchant = Merchant(currentMerchantLens(request), categories)
-        val remainingMerchants: List<String> = remainingMerchantsLens(request)?.flatMap { it.split(",") } ?: emptyList()
-        val year = yearLens(request)
-        val month = monthLens(request)
-        val username = usernameLens(request)
-        val statementName = statementNameLens(request)
-        val statementPath = statementPathLens(request)
-        val unknownMerchants = UnknownMerchants(currentMerchant, remainingMerchants, year, month, username, statementName, statementPath)
-
-        return Response(Status.OK).with(view of unknownMerchants)
+        return try {
+            val currentMerchant = Merchant(currentMerchantLens(request), categories)
+            val remainingMerchants: Set<String> = remainingMerchantsLens(request)?.toSet() ?: emptySet()
+            val year = yearLens(request)
+            val month = monthLens(request)
+            val username = usernameLens(request)
+            val statementName = statementNameLens(request)
+            val statementPath = statementPathLens(request)
+            val unknownMerchants = UnknownMerchants(
+                currentMerchant,
+                remainingMerchants,
+                year,
+                month,
+                username,
+                statementName,
+                statementPath
+            )
+            Response(OK).with(view of unknownMerchants)
+        } catch (e: Exception) {
+            Response(BAD_REQUEST)
+        }
     }
 }
 
 data class UnknownMerchants(
         val currentMerchant: Merchant,
-        val remainingMerchants: List<String>,
+        val remainingMerchants: Set<String>,
         val year: String,
         val month: String,
         val username: String,

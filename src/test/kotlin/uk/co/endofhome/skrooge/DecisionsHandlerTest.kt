@@ -113,7 +113,7 @@ class DecisionsHandlerTest {
     }
 
     @Test
-    fun `POST to statementDecisions endpoint with missing fields returns HTTP BAD REQUEST`() {
+    fun `POST to statementDecisions endpoint with missing fields returns HTTP Bad Request`() {
         val request = Request(Method.POST, statementDecisions)
             .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
             .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget")
