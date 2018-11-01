@@ -41,14 +41,17 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
         return if (form.errors.isEmpty()) {
             val decisions: List<Decision> = decisionLens.extract(form).map {
                 val (presentationFormattedDate, merchant, amount, categoryName, subCategoryName) = it.split(",")
-                Decision(
-                    Line(reformat(presentationFormattedDate), merchant, amount.toDouble()),
-                    Category(
-                        categoryName,
-                        categories.find { it.title == categoryName }!!.subcategories
-                    ),
-                    SubCategory(subCategoryName)
-                )
+                val category = categories.find { it.title == categoryName }
+                category?.let {
+                    Decision(
+                        Line(reformat(presentationFormattedDate), merchant, amount.toDouble()),
+                        Category(
+                            categoryName,
+                            category.subcategories
+                        ),
+                        SubCategory(subCategoryName)
+                    )
+                } ?: throw IllegalStateException("$categoryName not found in schema file.")
             }
 
             val statementData = StatementData(
