@@ -13,22 +13,20 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
 
     fun categoryReportsFrom(decisions: List<Decision>, numberOfMonths: Int = 1): List<CategoryReport> {
         val catReportDataItems: List<CategoryReportDataItem> =
-                decisions.map {
-                    val budgetAmount = annualBudgets.valueFor(it.category!!, it.subCategory!!, it.line.date)
-                    CategoryReportDataItem(it.subCategory.name, it.line.amount, budgetAmount * numberOfMonths)
+            decisions.map {
+                val budgetAmount = annualBudgets.valueFor(it.category!!, it.subCategory!!, it.line.date)
+                CategoryReportDataItem(it.subCategory.name, it.line.amount, budgetAmount * numberOfMonths)
+            }.groupBy { it.name }
+             .map {
+                it.value.reduce { acc, categoryReportDataItem ->
+                    CategoryReportDataItem(it.key, acc.actual + categoryReportDataItem.actual, categoryReportDataItem.budget)
                 }
-                        .groupBy { it.name }
-                        .map {
-                            it.value.reduce { acc, categoryReportDataItem ->
-                                CategoryReportDataItem(it.key, acc.actual + categoryReportDataItem.actual, categoryReportDataItem.budget)
-                            }
-                        }
-                        .map { it.copy(actual = BigDecimal.valueOf(it.actual).setScale(2, RoundingMode.HALF_UP).toDouble()) }
+            }.map { it.copy(actual = BigDecimal.valueOf(it.actual).setScale(2, RoundingMode.HALF_UP).toDouble()) }
 
         return categories.map { category ->
             CategoryReport(
-                    category.title,
-                    catReportDataItems.filter { dataItem -> category.subcategories.map { it.name }.contains(dataItem.name) }
+                category.title,
+                catReportDataItems.filter { dataItem -> category.subcategories.map { it.name }.contains(dataItem.name) }
             )
         }.filter { it.data.isNotEmpty() }
     }
@@ -44,7 +42,7 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
 
     fun aggregatedOverviewFrom(categoryReport: CategoryReport, firstTransactionDate: LocalDate, lastTransactionDate: LocalDate, historicalCategoryReports: List<List<CategoryReport>>): AggregateOverviewReport {
         val firstRelevantBudget = annualBudgets.budgetFor(firstTransactionDate)
-        val firstBudgetStartDate = firstRelevantBudget!!.startDateInclusive
+        val firstBudgetStartDate = firstRelevantBudget.startDateInclusive
         val budgetDayOfMonth = firstBudgetStartDate.dayOfMonth
         val lastBudgetEndDate = lastTransactionDate.nextBudgetDate(budgetDayOfMonth)
         val numberOfMonthsSoFar = totalMonths(firstBudgetStartDate, lastBudgetEndDate)
@@ -57,7 +55,12 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
         return AggregateOverviewReport("Aggregated Overview", data)
     }
 
-    fun currentBudgetStartDateFor(date: LocalDate): AnnualBudget? = annualBudgets.budgetFor(date)
+    fun currentBudgetStartDateFor(date: LocalDate): LocalDate? =
+        try {
+            annualBudgets.budgetFor(date).startDateInclusive
+        } catch (e: IllegalStateException) {
+            null
+        }
 
     private fun totalMonths(startDate: LocalDate, endDate: LocalDate): Int {
         val period = Period.between(startDate, endDate)
@@ -68,9 +71,9 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
 private fun LocalDate.nextBudgetDate(budgetDayOfMonth: Int): LocalDate = when {
     this.dayOfMonth <= budgetDayOfMonth -> LocalDate.of(year, month, budgetDayOfMonth)
     else -> {
-        when {
-            this.month == DECEMBER -> LocalDate.of(year.plus(1), JANUARY, budgetDayOfMonth)
-            else -> LocalDate.of(year, month.plus(1), budgetDayOfMonth)
+        when (this.month) {
+            DECEMBER -> LocalDate.of(year.plus(1), JANUARY, budgetDayOfMonth)
+            else     -> LocalDate.of(year, month.plus(1), budgetDayOfMonth)
         }
 
     }

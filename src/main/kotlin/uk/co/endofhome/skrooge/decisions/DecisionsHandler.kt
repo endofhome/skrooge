@@ -8,6 +8,7 @@ import org.http4k.lens.FormField
 import org.http4k.lens.Validator
 import org.http4k.lens.webForm
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.index
+import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.statements.StatementData
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statement
@@ -17,7 +18,7 @@ import java.time.LocalDate
 import java.time.Month
 import java.time.Year
 
-class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, val categories: List<Category>) {
+class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, val categories: Categories) {
     companion object {
         const val decision = "decision"
     }
@@ -41,17 +42,11 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
         return if (form.errors.isEmpty()) {
             val decisions: List<Decision> = decisionLens.extract(form).map {
                 val (presentationFormattedDate, merchant, amount, categoryName, subCategoryName) = it.split(",")
-                val category = categories.find { it.title == categoryName }
-                category?.let {
-                    Decision(
-                        Line(reformat(presentationFormattedDate), merchant, amount.toDouble()),
-                        Category(
-                            categoryName,
-                            category.subcategories
-                        ),
-                        SubCategory(subCategoryName)
-                    )
-                } ?: throw IllegalStateException("$categoryName not found in schema file.")
+                Decision(
+                    Line(reformat(presentationFormattedDate), merchant, amount.toDouble()),
+                    categories.get(categoryName),
+                    SubCategory(subCategoryName)
+                )
             }
 
             val statementData = StatementData(

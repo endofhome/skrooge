@@ -7,21 +7,21 @@ import uk.co.endofhome.skrooge.categories.Categories
 
 class CategoriesTest {
     private val categoryMappings = emptyList<String>().toMutableList()
-    private val categories = Categories("src/test/resources/test-schema.json", categoryMappings).all()
+    private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
 
     @Test
     fun `can get first category from category-schema file`() {
-        assertThat(categories[0].title, equalTo("In your home"))
+        assertThat(categories.all()[0].title, equalTo("In your home"))
     }
 
     @Test
     fun `can get last category from category-schema file`() {
-        assertThat(categories.last().title, equalTo("Refurbishments"))
+        assertThat(categories.all().last().title, equalTo("Refurbishments"))
     }
 
     @Test
     fun `can get subcategories from category-schema file`() {
-        val subcategories = categories.find { it.title == "Fun" }!!.subcategories
+        val subcategories = categories.get("Fun").subcategories
         assertThat(subcategories[0].name, equalTo("Bob fun budget"))
         assertThat(subcategories[1].name, equalTo("Bill fun budget"))
     }

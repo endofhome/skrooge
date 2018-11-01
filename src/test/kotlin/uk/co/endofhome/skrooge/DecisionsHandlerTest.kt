@@ -36,9 +36,9 @@ class DecisionsHandlerTest {
 
     private val originalDecision =
             Decision(
-                    Line(LocalDate.of(2017, 10, 18), "Edgeworld Records", 14.99),
-                    Category("Fun", categories.all().find { it.title == "Fun" }?.subcategories!!),
-                    SubCategory("Tom fun budget")
+                Line(LocalDate.of(2017, 10, 18), "Edgeworld Records", 14.99),
+                Category("Fun", categories.get("Fun").subcategories),
+                SubCategory("Tom fun budget")
             )
 
     @Before
@@ -74,7 +74,7 @@ class DecisionsHandlerTest {
                 .form(statementName, "SomeBank")
 
         val expectedCategory = "Eats and drinks"
-        val expectedSubCategories = categories.all().find { it.title == expectedCategory }!!.subcategories
+        val expectedSubCategories = categories.get(expectedCategory).subcategories
         val expectedDecision = originalDecision.copy(
                 category = originalDecision.category?.copy(expectedCategory, expectedSubCategories),
                 subCategory = SubCategory("Food")
@@ -91,7 +91,7 @@ class DecisionsHandlerTest {
         val additionalDecision =
             Decision(
                 Line(LocalDate.of(2017, 10, 3), "Pizza Union", 5.5),
-                Category("Eats and drinks", categories.all().find { it.title == "Eats and drinks" }?.subcategories!!),
+                Category("Eats and drinks", categories.get("Eats and drinks").subcategories),
                 SubCategory("Meals at work")
             )
 

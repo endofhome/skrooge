@@ -35,7 +35,7 @@ class MonthlyReportHandler(private val decisionReaderWriter: DecisionReaderWrite
                     val sortedDecisions = decisions.sortedBy { it.line.date }
                     val dateOfFirstTransaction = sortedDecisions.first().line.date
                     val endDate = sortedDecisions.last().line.date
-                    val budgetStartDate = categoryReporter.currentBudgetStartDateFor(dateOfFirstTransaction)?.startDateInclusive
+                    val budgetStartDate = categoryReporter.currentBudgetStartDateFor(dateOfFirstTransaction)
                     val historicalCategoryReports: List<List<CategoryReport>> = when {
                         budgetStartDate != null -> {
                             val startOfPreviousPeriod = dateOfFirstTransaction.previousBudgetDate(budgetStartDate.dayOfMonth).minusMonths(1)
