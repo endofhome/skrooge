@@ -67,8 +67,10 @@ class FileSystemDecisionReaderReaderWriter(private val categories: Categories, p
                 val (year, month, day) = date.split("-").map { it.toInt() }
                 val line = Line(LocalDate.of(year, month, day), merchant, amount.toDouble())
 
-                val category = categories.all().find { it.title == categoryName }!!
-                Decision(line, category, categories.subcategoriesFor(category.title).find { it.name == subCategoryName })
+                val category = categories.all().find { it.title == categoryName }
+                category?.let {
+                    Decision(line, category, categories.subcategoriesFor(category.title).find { it.name == subCategoryName })
+                } ?: throw IllegalStateException("$categoryName is not found in category schema file.")
             }
         }
     }
