@@ -49,7 +49,10 @@ class MonthlyReportHandler(private val decisionReaderWriter: DecisionReaderWrite
                     val reportJson = Gson.asJsonObject(report)
                     Response(Status.OK).body(reportJson.asPrettyJsonString())
                 }
-                else -> Response(Status.BAD_REQUEST)
+                else -> {
+                    val emptyJson = Gson.asJsonObject(emptyMap<Any, Any>()).asPrettyJsonString()
+                    Response(Status.OK).body(emptyJson)
+                }
             }
         }
     }
