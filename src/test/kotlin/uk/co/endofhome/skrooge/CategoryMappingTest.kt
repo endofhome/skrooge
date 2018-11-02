@@ -1,7 +1,6 @@
 package uk.co.endofhome.skrooge
 
 import com.natpryce.hamkrest.assertion.assertThat
-import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
 import com.oneeyedmen.okeydoke.junit.ApprovalsRule
 import org.http4k.core.ContentType
@@ -107,8 +106,7 @@ class CategoryMappingTest {
 
         assertThat(mappingWriter.read().last(), equalTo("DIY Space for London,Fun,Tom fun budget"))
         assertThat(followedResponse.status, equalTo(OK))
-        assertThat(followedResponse.bodyString(), containsSubstring("You need to categorise some merchants."))
-        assertThat(followedResponse.bodyString(), containsSubstring("<h3>Another vendor</h3>"))
+        approver.assertApproved(followedResponse.bodyString())
     }
 
     @Test

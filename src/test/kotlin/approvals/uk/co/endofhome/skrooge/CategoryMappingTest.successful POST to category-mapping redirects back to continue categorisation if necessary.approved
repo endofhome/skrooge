@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skrooge</title>
+    <link href="public/vendor/bootstrap.min.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <h1>You need to categorise some merchants.</h1>
+    <h3>Another vendor</h3>
+    <form action="/category-mapping" method="post">
+        <select name="new-mapping">
+            
+            <optgroup label="In your home">
+                
+                <option value="Another vendor,In your home,Mortgage">Mortgage</option>
+                
+                <option value="Another vendor,In your home,Building insurance">Building insurance</option>
+                
+                <option value="Another vendor,In your home,Council tax">Council tax</option>
+                
+                <option value="Another vendor,In your home,Water rates">Water rates</option>
+                
+                <option value="Another vendor,In your home,Gas">Gas</option>
+                
+                <option value="Another vendor,In your home,Electricity">Electricity</option>
+                
+                <option value="Another vendor,In your home,Household maintenance">Household maintenance</option>
+                
+                <option value="Another vendor,In your home,Internet">Internet</option>
+                
+                <option value="Another vendor,In your home,TV Licence">TV Licence</option>
+                
+                <option value="Another vendor,In your home,Mobile phone">Mobile phone</option>
+                
+            </optgroup>
+            
+            <optgroup label="Insurance">
+                
+                <option value="Another vendor,Insurance,Travel insurance">Travel insurance</option>
+                
+                <option value="Another vendor,Insurance,Income protection">Income protection</option>
+                
+                <option value="Another vendor,Insurance,Life insurance">Life insurance</option>
+                
+            </optgroup>
+            
+            <optgroup label="Eats and drinks">
+                
+                <option value="Another vendor,Eats and drinks,Food">Food</option>
+                
+                <option value="Another vendor,Eats and drinks,Eating out">Eating out</option>
+                
+                <option value="Another vendor,Eats and drinks,Meals at work">Meals at work</option>
+                
+            </optgroup>
+            
+            <optgroup label="Motoring and public transport">
+                
+                <option value="Another vendor,Motoring and public transport,Rail/bus/taxi">Rail/bus/taxi</option>
+                
+                <option value="Another vendor,Motoring and public transport,Car club subscription">Car club subscription</option>
+                
+                <option value="Another vendor,Motoring and public transport,Car club hires">Car club hires</option>
+                
+            </optgroup>
+            
+            <optgroup label="Savings and investments">
+                
+                <option value="Another vendor,Savings and investments,Pension payments">Pension payments</option>
+                
+            </optgroup>
+            
+            <optgroup label="Family">
+                
+                <option value="Another vendor,Family,Childcare">Childcare</option>
+                
+                <option value="Another vendor,Family,Nappies/baby extras">Nappies/baby extras</option>
+                
+                <option value="Another vendor,Family,Baby activities">Baby activities</option>
+                
+            </optgroup>
+            
+            <optgroup label="Fun">
+                
+                <option value="Another vendor,Fun,Bob fun budget">Bob fun budget</option>
+                
+                <option value="Another vendor,Fun,Bill fun budget">Bill fun budget</option>
+                
+            </optgroup>
+            
+            <optgroup label="Health and beauty">
+                
+                <option value="Another vendor,Health and beauty,Dentistry">Dentistry</option>
+                
+                <option value="Another vendor,Health and beauty,Haircuts">Haircuts</option>
+                
+                <option value="Another vendor,Health and beauty,Optical bills">Optical bills</option>
+                
+            </optgroup>
+            
+            <optgroup label="Clothes">
+                
+                <option value="Another vendor,Clothes,Baby clothes">Baby clothes</option>
+                
+            </optgroup>
+            
+            <optgroup label="Big one offs">
+                
+                <option value="Another vendor,Big one offs,Christmas">Christmas</option>
+                
+                <option value="Another vendor,Big one offs,Summer holiday">Summer holiday</option>
+                
+                <option value="Another vendor,Big one offs,Winter holiday">Winter holiday</option>
+                
+                <option value="Another vendor,Big one offs,Birthdays">Birthdays</option>
+                
+            </optgroup>
+            
+            <optgroup label="Odds and sods">
+                
+                <option value="Another vendor,Odds and sods,Charity donations">Charity donations</option>
+                
+            </optgroup>
+            
+            <optgroup label="Refurbishments">
+                
+                <option value="Another vendor,Refurbishments,Refurbishments">Refurbishments</option>
+                
+            </optgroup>
+            
+        </select>
+        
+        <input type="hidden" name="year" value="2017">
+        <input type="hidden" name="month" value="February">
+        <input type="hidden" name="user" value="Test">
+        <input type="hidden" name="statement-name" value="Empty Statement">
+        <input type="hidden" name="statement-file-path" value="src/test/resources/2017-02_Test_EmptyStatement.csv">
+        <div class="button">
+            <button type="submit">Update category</button>
+        </div>
+    </form>
+    </body>
+</html>
