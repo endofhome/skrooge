@@ -9,7 +9,7 @@ import org.http4k.lens.Validator
 import org.http4k.lens.webForm
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.index
 import uk.co.endofhome.skrooge.categories.Categories
-import uk.co.endofhome.skrooge.statements.StatementData
+import uk.co.endofhome.skrooge.statements.StatementMetadata
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statement
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
@@ -49,13 +49,13 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
                 )
             }
 
-            val statementData = StatementData(
+            val statementMetadata = StatementMetadata(
                 year = Year.parse(yearLens.extract(form)),
                 month = Month.valueOf(monthLens.extract(form).toUpperCase()),
-                username = userLens.extract(form),
+                user = userLens.extract(form),
                 statement = statementLens.extract(form)
             )
-            decisionReaderWriter.write(statementData, decisions)
+            decisionReaderWriter.write(statementMetadata, decisions)
 
             Response(Status.SEE_OTHER).header("Location", index)
         } else {

@@ -134,10 +134,9 @@ object FileMetadata {
     const val statementFilePathKey = "statement-file-path"
 }
 
-data class FormattedBankStatement(val year: String, val month: String, val username: String, val bankName: String, val filePath: String, val formattedDecisions: List<FormattedDecision>)
+data class FormattedBankStatement(val year: String, val month: String, val user: String, val bankName: String, val filePath: String, val formattedDecisions: List<FormattedDecision>)
 data class FormattedLine(val date: String, val merchant: String, val amount: String)
 data class FormattedDecision(val line: FormattedLine, val category: Category?, val subCategory: SubCategory?, val categoriesWithSelection: CategoriesWithSelection)
-data class StatementData(val year: Year, val month: Month, val username: String, val statement: String)
 data class CategoryMapping(val purchase: String, val mainCategory: String, val subCategory: String)
 
 data class PleaseReviewYourCategorisations(val bankStatement: FormattedBankStatement) : ViewModel

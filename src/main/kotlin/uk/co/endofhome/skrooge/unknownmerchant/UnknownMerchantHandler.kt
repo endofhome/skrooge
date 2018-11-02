@@ -32,7 +32,7 @@ class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val
         val remainingMerchantsLens = Query.multi.optional(remainingMerchantName)
         val yearLens = Query.required(yearName)
         val monthLens = Query.required(monthName)
-        val usernameLens = Query.required(userName)
+        val userLens = Query.required(userName)
         val statementNameLens = Query.required(statementName)
         val statementPathLens = Query.required(statementFilePathKey)
 
@@ -41,7 +41,7 @@ class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val
             val remainingMerchants: Set<String> = remainingMerchantsLens(request)?.toSet() ?: emptySet()
             val year = yearLens(request)
             val month = monthLens(request)
-            val username = usernameLens(request)
+            val user = userLens(request)
             val statementName = statementNameLens(request)
             val statementPath = statementPathLens(request)
             val unknownMerchants = UnknownMerchants(
@@ -49,7 +49,7 @@ class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val
                 remainingMerchants,
                 year,
                 month,
-                username,
+                user,
                 statementName,
                 statementPath
             )
@@ -65,7 +65,7 @@ data class UnknownMerchants(
         val remainingMerchants: Set<String>,
         val year: String,
         val month: String,
-        val username: String,
+        val user: String,
         val statementName: String,
         val statementFilePath: String
 ) : ViewModel

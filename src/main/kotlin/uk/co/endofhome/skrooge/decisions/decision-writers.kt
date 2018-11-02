@@ -1,7 +1,7 @@
 package uk.co.endofhome.skrooge.decisions
 
 import uk.co.endofhome.skrooge.categories.Categories
-import uk.co.endofhome.skrooge.statements.StatementData
+import uk.co.endofhome.skrooge.statements.StatementMetadata
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -10,18 +10,18 @@ import java.time.Month
 import java.time.Year
 
 interface DecisionReaderWriter {
-    fun write(statementData: StatementData, decisions: List<Decision>)
+    fun write(statementMetadata: StatementMetadata, decisions: List<Decision>)
     fun read(year: Int, month: Month): List<Decision>
     fun readForYearStarting(startDate: LocalDate): List<Decision>
 }
 
 class FileSystemDecisionReaderReaderWriter(private val categories: Categories, private val outputPath: Path = Paths.get("output/decisions")) : DecisionReaderWriter {
-    override fun write(statementData: StatementData, decisions: List<Decision>) {
-        val year = statementData.year.toString()
-        val month = statementData.month.value
-        val username = statementData.username
-        val bank = statementData.statement
-        File("$outputPath/$year-$month-$username-decisions-$bank.csv").printWriter().use { out ->
+    override fun write(statementMetadata: StatementMetadata, decisions: List<Decision>) {
+        val year = statementMetadata.year.toString()
+        val month = statementMetadata.month.value
+        val user = statementMetadata.user
+        val bank = statementMetadata.statement
+        File("$outputPath/$year-$month-$user-decisions-$bank.csv").printWriter().use { out ->
             decisions.forEach {
                 out.print("${it.line.date},${it.line.merchant},${it.line.amount},${it.category?.title},${it.subCategory?.name}\n")
             }
@@ -61,9 +61,9 @@ class FileSystemDecisionReaderReaderWriter(private val categories: Categories, p
             println(it.name)
         }
 
-        return this.flatMap {
-            it.readLines().map {
-                val (date, merchant, amount, categoryName, subCategoryName) = it.split(",")
+        return this.flatMap { file ->
+            file.readLines().map { rawLine ->
+                val (date, merchant, amount, categoryName, subCategoryName) = rawLine.split(",")
                 val (year, month, day) = date.split("-").map { it.toInt() }
                 val line = Line(LocalDate.of(year, month, day), merchant, amount.toDouble())
 
@@ -77,7 +77,7 @@ class FileSystemDecisionReaderReaderWriter(private val categories: Categories, p
 class StubbedDecisionReaderWriter : DecisionReaderWriter {
     val files: MutableList<Decision> = mutableListOf()
 
-    override fun write(statementData: StatementData, decisions: List<Decision>) {
+    override fun write(statementMetadata: StatementMetadata, decisions: List<Decision>) {
         decisions.forEach {
             files.add(it)
         }
