@@ -41,9 +41,10 @@ class JsonGenerationTest {
         budgetDirectory = Paths.get("${testDir}budgets/")
     ).routes
 
-    // TODO app already works for multiple files, but some tests would be nice
-    // TODO to guard against regressions.
-    // TODO also, possibly all subcategories should be available, but with 0 values for actual expenditure.
+    /* TODO:
+       App already works for multiple files, but some tests would be nice, to guard against regressions.
+       Also, possibly all subcategories should be available, but with 0 values for actual expenditure.
+    */
     
     @Before
     fun setup() {
