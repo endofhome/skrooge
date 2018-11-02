@@ -73,16 +73,16 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
     }
 
     private fun redirectToUnknownMerchant(statementForm: FormForNormalisedStatement, remainingMerchants: Set<String>): Response {
-        val (currentMerchant, carriedForwardMerchants) = remainingMerchants.partition { it == remainingMerchants.first() }
+        val (nextCurrentMerchant, nextRemainingMerchants) = remainingMerchants.partition { it == remainingMerchants.first() }
         val baseUri = Uri.of(unknownMerchant)
-                .query(currentMerchantName, currentMerchant.single())
+                .query(currentMerchantName, nextCurrentMerchant.single())
                 .query(yearName, statementForm.statementMetadata.year.toString())
                 .query(monthName, statementForm.statementMetadata.month.getDisplayName(TextStyle.FULL, Locale.UK))
                 .query(userName, statementForm.statementMetadata.user)
                 .query(statementName, statementForm.statementMetadata.statement)
                 .query(statementFilePathKey, statementForm.file.path)
         val uri = when {
-            carriedForwardMerchants.isNotEmpty() -> baseUri.query(remainingMerchantName, carriedForwardMerchants.joinToString(","))
+            nextRemainingMerchants.isNotEmpty() -> baseUri.query(remainingMerchantName, nextRemainingMerchants.joinToString(","))
             else                                 -> baseUri
         }
         return Response(Status.SEE_OTHER).header("Location", uri.toString())
