@@ -8,3 +8,8 @@
     position: absolute;
     width: 1px;
 }
+
+#month-unavailable {
+    position: center;
+    font-size: xx-large;
+}
