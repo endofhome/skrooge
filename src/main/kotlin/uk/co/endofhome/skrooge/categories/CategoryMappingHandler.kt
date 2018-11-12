@@ -49,7 +49,7 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
 
         return when {
             newMapping.isValid() -> {
-                newMapping.add()
+                write(newMapping)
                 when {
                     remainingMerchants.isEmpty() -> redirectToStatementsWIthFilePath()
                     else                         -> redirectToUnknownMerchant(statementForm, remainingMerchants)
@@ -60,8 +60,8 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
     }
     private fun List<String>.isValid() = this.size >= 3
 
-    private fun List<String>.add() {
-        val newMappingString = this.joinToString(",")
+    private fun write(mapping: List<String>) {
+        val newMappingString = mapping.joinToString(",")
         mappingWriter.write(newMappingString)
         categoryMappings.add(newMappingString)
     }
