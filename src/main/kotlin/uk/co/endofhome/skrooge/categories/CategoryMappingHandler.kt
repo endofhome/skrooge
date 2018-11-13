@@ -14,9 +14,9 @@ import org.http4k.lens.webForm
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementsWithFilePath
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.unknownMerchant
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
-import uk.co.endofhome.skrooge.statements.FileMetadata.statementName
 import uk.co.endofhome.skrooge.statements.FormForNormalisedStatement
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statementName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
 import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler.Companion.currentMerchantName

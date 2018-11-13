@@ -20,8 +20,8 @@ import uk.co.endofhome.skrooge.decisions.DecisionsHandler.Companion.decision
 import uk.co.endofhome.skrooge.decisions.Line
 import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
 import uk.co.endofhome.skrooge.decisions.SubCategory
-import uk.co.endofhome.skrooge.statements.FileMetadata.statementName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statementName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
 import java.nio.file.Paths

@@ -24,7 +24,7 @@ import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remai
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statement
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statementName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
 import java.io.File
@@ -42,7 +42,7 @@ class CategoryMappingTest {
     private val statementYear = "2017"
     private val statementMonth = "February"
     private val statementUser = "Test"
-    private val statementName = "Empty Statement"
+    private val statement = "Empty Statement"
     private val statementFilePath = "src/test/resources/2017-02_Test_EmptyStatement.csv"
 
     private val skrooge = Skrooge(categories, mappingWriter, budgetDirectory = Paths.get("src/test/resources/budgets/")).routes
@@ -55,7 +55,7 @@ class CategoryMappingTest {
                 .form(yearName, statementYear)
                 .form(monthName, statementMonth)
                 .form(userName, statementUser)
-                .form(statement, statementName)
+                .form(statementName, statement)
                 .form(statementFilePathKey, statementFilePath)
 
         assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
@@ -69,7 +69,7 @@ class CategoryMappingTest {
                 .form(yearName, statementYear)
                 .form(monthName, statementMonth)
                 .form(userName, statementUser)
-                .form(statement, statementName)
+                .form(statementName, statement)
                 .form(statementFilePathKey, statementFilePath)
 
         assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
@@ -83,7 +83,7 @@ class CategoryMappingTest {
                 .form(yearName, statementYear)
                 .form(monthName, statementMonth)
                 .form(userName, statementUser)
-                .form(statement, statementName)
+                .form(statementName, statement)
                 .form(statementFilePathKey, statementFilePath)
 
         assertThat(skrooge(request).status, equalTo(TEMPORARY_REDIRECT))
@@ -99,7 +99,7 @@ class CategoryMappingTest {
                 .form(yearName, statementYear)
                 .form(monthName, statementMonth)
                 .form(userName, statementUser)
-                .form(statement, statementName)
+                .form(statementName, statement)
                 .form(statementFilePathKey, statementFilePath)
 
         val followedResponse = with(RedirectHelper(skrooge)) { request.handleAndFollowRedirect() }
@@ -125,7 +125,7 @@ class CategoryMappingTest {
             .form(yearName, statementYear)
             .form(monthName, statementMonth)
             .form(userName, statementUser)
-            .form(statement, statementName)
+            .form(statementName, statement)
             .form(statementFilePathKey, statementFilePath)
 
         val response = skrooge(request)
@@ -151,7 +151,7 @@ class CategoryMappingTest {
                 .form(yearName, statementYear)
                 .form(monthName, statementMonth)
                 .form(userName, statementUser)
-                .form(statement, statementName)
+                .form(statementName, statement)
                 .form(statementFilePathKey, statementFilePath)
 
         val response = skrooge(request)

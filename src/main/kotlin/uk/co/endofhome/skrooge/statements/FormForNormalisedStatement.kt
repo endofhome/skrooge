@@ -9,11 +9,9 @@ import org.http4k.lens.MultipartFormFile
 import org.http4k.lens.Validator
 import org.http4k.lens.multipartForm
 import org.http4k.lens.webForm
-import uk.co.endofhome.skrooge.statements.FileMetadata.statementFile
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
-import uk.co.endofhome.skrooge.statements.FileMetadata.statementName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statement
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statementName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
 import java.io.File
@@ -24,27 +22,25 @@ import java.time.Year
 data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, val file: File) {
     companion object {
         fun fromMultiPart(request: Request, normalisedStatements: Path): FormForNormalisedStatement {
-            val yearLens = MultipartFormField.required(yearName)
-            val monthLens = MultipartFormField.required(monthName)
-            val userLens = MultipartFormField.required(userName)
-            val statementNameLens = MultipartFormField.required(statementName)
-            val statementFileLens = MultipartFormFile.required(statementFile)
+            val fieldLenses = listOf(
+                MultipartFormField.required(yearName),
+                MultipartFormField.required(monthName),
+                MultipartFormField.required(userName),
+                MultipartFormField.required(statementName)
+            )
+            val fileLens = MultipartFormFile.required(FileMetadata.statementFile)
+
             val multipartFormBody = Body.multipartForm(
                     Validator.Feedback,
-                    yearLens,
-                    monthLens,
-                    userLens,
-                    statementNameLens,
-                    statementFileLens
+                    *fieldLenses.toTypedArray(),
+                    fileLens
             ).toLens()
+
             val multipartForm = multipartFormBody.extract(request)
 
             if (multipartForm.errors.isEmpty()) {
-                val year = yearLens.extract(multipartForm)
-                val month = monthLens.extract(multipartForm)
-                val user = userLens.extract(multipartForm)
-                val statement = statementNameLens.extract(multipartForm)
-                val formFile = statementFileLens.extract(multipartForm)
+                val (year, month, user, statement) = fieldLenses.map { it.extract(multipartForm) }
+                val formFile = fileLens.extract(multipartForm)
 
                 val statementMetadata = StatementMetadata(Year.parse(year), Month.valueOf(month.toUpperCase()), user, statement)
                 val file = writeFileToFileSystem(statementMetadata, formFile, normalisedStatements)
@@ -61,7 +57,7 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
             val yearLens = FormField.required(yearName)
             val monthLens = FormField.required(monthName)
             val userLens = FormField.required(userName)
-            val statementNameLens = FormField.required(statement)
+            val statementNameLens = FormField.required(statementName)
             val statementPathLens = FormField.required(statementFilePathKey)
             val webForm = Body.webForm(
                     Validator.Feedback,

@@ -11,7 +11,7 @@ import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.index
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.statements.StatementMetadata
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statement
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statementName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
 import java.time.LocalDate
@@ -27,7 +27,7 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
         val yearLens = FormField.required(yearName)
         val monthLens = FormField.required(monthName)
         val userLens = FormField.required(userName)
-        val statementLens = FormField.required(statement)
+        val statementLens = FormField.required(statementName)
         val decisionLens = FormField.multi.required(decision)
         val webForm = Body.webForm(
             Validator.Feedback,

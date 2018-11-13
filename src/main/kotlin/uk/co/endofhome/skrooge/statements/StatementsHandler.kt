@@ -20,8 +20,8 @@ import uk.co.endofhome.skrooge.decisions.Decision
 import uk.co.endofhome.skrooge.decisions.Line
 import uk.co.endofhome.skrooge.decisions.SubCategory
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
-import uk.co.endofhome.skrooge.statements.FileMetadata.statementName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statementName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
 import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler.Companion.currentMerchantName
@@ -124,12 +124,11 @@ data class StatementMetadata(val year: Year, val month: Month, val user: String,
         const val yearName = "year"
         const val monthName = "month"
         const val userName = "user"
-        const val statement = "statement-name"
+        const val statementName = "statement-name"
     }
 }
 
 object FileMetadata {
-    const val statementName = "statement-name"
     const val statementFile = "statement-file"
     const val statementFilePathKey = "statement-file-path"
 }
