@@ -130,22 +130,18 @@ data class StatementMetadata(val year: Year, val month: Month, val user: String,
         const val monthName = "month"
         const val userName = "user"
         const val statementName = "statement-name"
+        private val fieldNames = listOf(
+            "year",
+            "month",
+            "user",
+            "statement-name"
+        )
 
         fun webFormFields(): List<BiDiLens<WebForm, String>> =
-            listOf(
-                FormField.required(yearName),
-                FormField.required(monthName),
-                FormField.required(userName),
-                FormField.required(statementName)
-            )
+            fieldNames.map { FormField.required(it) }
 
         fun multipartFormFields(): List<BiDiLens<MultipartForm, String>> =
-            listOf(
-                MultipartFormField.required(yearName),
-                MultipartFormField.required(monthName),
-                MultipartFormField.required(userName),
-                MultipartFormField.required(statementName)
-            )
+            fieldNames.map { MultipartFormField.required(it) }
     }
 }
 
