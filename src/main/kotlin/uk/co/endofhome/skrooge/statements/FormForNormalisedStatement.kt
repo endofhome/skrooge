@@ -4,16 +4,11 @@ import org.http4k.core.Body
 import org.http4k.core.FormFile
 import org.http4k.core.Request
 import org.http4k.lens.FormField
-import org.http4k.lens.MultipartFormField
 import org.http4k.lens.MultipartFormFile
 import org.http4k.lens.Validator
 import org.http4k.lens.multipartForm
 import org.http4k.lens.webForm
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statementName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
 import java.io.File
 import java.nio.file.Path
 import java.time.Month
@@ -22,20 +17,13 @@ import java.time.Year
 data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, val file: File) {
     companion object {
         fun fromMultiPart(request: Request, normalisedStatements: Path): FormForNormalisedStatement {
-            val fieldLenses = listOf(
-                MultipartFormField.required(yearName),
-                MultipartFormField.required(monthName),
-                MultipartFormField.required(userName),
-                MultipartFormField.required(statementName)
-            )
+            val fieldLenses = StatementMetadata.multipartFormFields()
             val fileLens = MultipartFormFile.required(FileMetadata.statementFile)
-
             val multipartFormBody = Body.multipartForm(
                     Validator.Feedback,
                     *fieldLenses.toTypedArray(),
                     fileLens
             ).toLens()
-
             val multipartForm = multipartFormBody.extract(request)
 
             if (multipartForm.errors.isEmpty()) {
@@ -53,14 +41,7 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
         }
 
         fun fromUrlEncoded(request: Request): FormForNormalisedStatement {
-            val fieldLenses = listOf(
-                FormField.required(yearName),
-                FormField.required(monthName),
-                FormField.required(userName),
-                FormField.required(statementName)
-            ) + listOf(
-                FormField.required(statementFilePathKey)
-            )
+            val fieldLenses = StatementMetadata.webFormFields().plus(listOf(FormField.required(statementFilePathKey)))
             val webForm = Body.webForm(
                     Validator.Feedback,
                     *fieldLenses.toTypedArray()

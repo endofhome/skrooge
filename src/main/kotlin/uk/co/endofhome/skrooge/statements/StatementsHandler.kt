@@ -8,6 +8,11 @@ import org.http4k.core.Status
 import org.http4k.core.Uri
 import org.http4k.core.query
 import org.http4k.core.with
+import org.http4k.lens.BiDiLens
+import org.http4k.lens.FormField
+import org.http4k.lens.MultipartForm
+import org.http4k.lens.MultipartFormField
+import org.http4k.lens.WebForm
 import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
 import org.http4k.template.view
@@ -125,6 +130,22 @@ data class StatementMetadata(val year: Year, val month: Month, val user: String,
         const val monthName = "month"
         const val userName = "user"
         const val statementName = "statement-name"
+
+        fun webFormFields(): List<BiDiLens<WebForm, String>> =
+            listOf(
+                FormField.required(yearName),
+                FormField.required(monthName),
+                FormField.required(userName),
+                FormField.required(statementName)
+            )
+
+        fun multipartFormFields(): List<BiDiLens<MultipartForm, String>> =
+            listOf(
+                MultipartFormField.required(yearName),
+                MultipartFormField.required(monthName),
+                MultipartFormField.required(userName),
+                MultipartFormField.required(statementName)
+            )
     }
 }
 
