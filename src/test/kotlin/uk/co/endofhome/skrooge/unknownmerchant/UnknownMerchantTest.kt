@@ -14,10 +14,10 @@ import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantName
 import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statementName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.MONTH
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.STATEMENT
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.USER
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.YEAR
 import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler.Companion.currentMerchantName
 import java.nio.file.Paths
 
@@ -45,10 +45,10 @@ class UnknownMerchantTest {
             .query(currentMerchantName, "Bob's Hardware")
             .query(remainingMerchantName, "Bert's Audio Gear")
             .query(remainingMerchantName, "Hubert's bots")
-            .query(yearName, "2017")
-            .query(monthName, "November")
-            .query(userName, "Milford")
-            .query(statementName, "Hipster Bank")
+            .query(YEAR.key, "2017")
+            .query(MONTH.key, "November")
+            .query(USER.key, "Milford")
+            .query(STATEMENT.key, "Hipster Bank")
             .query(statementFilePathKey, "path")
 
         val response = skrooge(request)

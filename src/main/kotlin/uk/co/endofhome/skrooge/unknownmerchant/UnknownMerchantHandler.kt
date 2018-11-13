@@ -14,10 +14,7 @@ import org.http4k.template.view
 import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantName
 import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statementName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
+import uk.co.endofhome.skrooge.statements.StatementMetadata
 
 class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val categories: List<Category>) {
 
@@ -30,19 +27,13 @@ class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val
 
         val currentMerchantLens = Query.required(currentMerchantName)
         val remainingMerchantsLens = Query.multi.optional(remainingMerchantName)
-        val yearLens = Query.required(yearName)
-        val monthLens = Query.required(monthName)
-        val userLens = Query.required(userName)
-        val statementNameLens = Query.required(statementName)
+        val statementMetadataLenses = StatementMetadata.queryParameters()
         val statementPathLens = Query.required(statementFilePathKey)
 
         return try {
             val currentMerchant = Merchant(currentMerchantLens(request), categories)
             val remainingMerchants: Set<String> = remainingMerchantsLens(request)?.toSet() ?: emptySet()
-            val year = yearLens(request)
-            val month = monthLens(request)
-            val user = userLens(request)
-            val statementName = statementNameLens(request)
+            val (year, month, user, statementName) = statementMetadataLenses.map { it.extract(request) }
             val statementPath = statementPathLens(request)
             val unknownMerchants = UnknownMerchants(
                 currentMerchant,

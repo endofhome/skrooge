@@ -15,10 +15,10 @@ import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementsWithFilePath
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.unknownMerchant
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
 import uk.co.endofhome.skrooge.statements.FormForNormalisedStatement
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statementName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.MONTH
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.STATEMENT
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.USER
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.YEAR
 import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler.Companion.currentMerchantName
 import java.time.format.TextStyle
 import java.util.Locale
@@ -76,10 +76,10 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
         val (nextCurrentMerchant, nextRemainingMerchants) = remainingMerchants.partition { it == remainingMerchants.first() }
         val baseUri = Uri.of(unknownMerchant)
                 .query(currentMerchantName, nextCurrentMerchant.single())
-                .query(yearName, statementForm.statementMetadata.year.toString())
-                .query(monthName, statementForm.statementMetadata.month.getDisplayName(TextStyle.FULL, Locale.UK))
-                .query(userName, statementForm.statementMetadata.user)
-                .query(statementName, statementForm.statementMetadata.statement)
+                .query(YEAR.key, statementForm.statementMetadata.year.toString())
+                .query(MONTH.key, statementForm.statementMetadata.month.getDisplayName(TextStyle.FULL, Locale.UK))
+                .query(USER.key, statementForm.statementMetadata.user)
+                .query(STATEMENT.key, statementForm.statementMetadata.statement)
                 .query(statementFilePathKey, statementForm.file.path)
         val uri = when {
             nextRemainingMerchants.isNotEmpty() -> baseUri.query(remainingMerchantName, nextRemainingMerchants.joinToString(","))

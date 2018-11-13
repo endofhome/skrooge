@@ -23,10 +23,10 @@ import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.newMa
 import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantName
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statementName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.MONTH
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.STATEMENT
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.USER
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.YEAR
 import java.io.File
 import java.io.PrintWriter
 import java.nio.file.Paths
@@ -52,10 +52,10 @@ class CategoryMappingTest {
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form(newMappingName, "")
-                .form(yearName, statementYear)
-                .form(monthName, statementMonth)
-                .form(userName, statementUser)
-                .form(statementName, statement)
+                .form(YEAR.key, statementYear)
+                .form(MONTH.key, statementMonth)
+                .form(USER.key, statementUser)
+                .form(STATEMENT.key, statement)
                 .form(statementFilePathKey, statementFilePath)
 
         assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
@@ -66,10 +66,10 @@ class CategoryMappingTest {
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form(newMappingName, "Casbah Records;Established 1967 in our minds")
-                .form(yearName, statementYear)
-                .form(monthName, statementMonth)
-                .form(userName, statementUser)
-                .form(statementName, statement)
+                .form(YEAR.key, statementYear)
+                .form(MONTH.key, statementMonth)
+                .form(USER.key, statementUser)
+                .form(STATEMENT.key, statement)
                 .form(statementFilePathKey, statementFilePath)
 
         assertThat(skrooge(request).status, equalTo(BAD_REQUEST))
@@ -80,10 +80,10 @@ class CategoryMappingTest {
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form(newMappingName, "Casbah Records,Fun,Tom fun budget")
-                .form(yearName, statementYear)
-                .form(monthName, statementMonth)
-                .form(userName, statementUser)
-                .form(statementName, statement)
+                .form(YEAR.key, statementYear)
+                .form(MONTH.key, statementMonth)
+                .form(USER.key, statementUser)
+                .form(STATEMENT.key, statement)
                 .form(statementFilePathKey, statementFilePath)
 
         assertThat(skrooge(request).status, equalTo(TEMPORARY_REDIRECT))
@@ -96,10 +96,10 @@ class CategoryMappingTest {
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form(newMappingName, "DIY Space for London,Fun,Tom fun budget")
                 .form(remainingMerchantName, "Another vendor")
-                .form(yearName, statementYear)
-                .form(monthName, statementMonth)
-                .form(userName, statementUser)
-                .form(statementName, statement)
+                .form(YEAR.key, statementYear)
+                .form(MONTH.key, statementMonth)
+                .form(USER.key, statementUser)
+                .form(STATEMENT.key, statement)
                 .form(statementFilePathKey, statementFilePath)
 
         val followedResponse = with(RedirectHelper(skrooge)) { request.handleAndFollowRedirect() }
@@ -122,10 +122,10 @@ class CategoryMappingTest {
             .form(newMappingName, "Last new mapping,Fun,Tom fun budget")
             .form(remainingMerchantName, "Bob's Laundrette")
             .form(remainingMerchantName, "Bert's Hardware")
-            .form(yearName, statementYear)
-            .form(monthName, statementMonth)
-            .form(userName, statementUser)
-            .form(statementName, statement)
+            .form(YEAR.key, statementYear)
+            .form(MONTH.key, statementMonth)
+            .form(USER.key, statementUser)
+            .form(STATEMENT.key, statement)
             .form(statementFilePathKey, statementFilePath)
 
         val response = skrooge(request)
@@ -148,10 +148,10 @@ class CategoryMappingTest {
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form(newMappingName, "Last new mapping,Fun,Tom fun budget")
-                .form(yearName, statementYear)
-                .form(monthName, statementMonth)
-                .form(userName, statementUser)
-                .form(statementName, statement)
+                .form(YEAR.key, statementYear)
+                .form(MONTH.key, statementMonth)
+                .form(USER.key, statementUser)
+                .form(STATEMENT.key, statement)
                 .form(statementFilePathKey, statementFilePath)
 
         val response = skrooge(request)

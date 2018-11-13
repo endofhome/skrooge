@@ -12,6 +12,7 @@ import org.http4k.lens.BiDiLens
 import org.http4k.lens.FormField
 import org.http4k.lens.MultipartForm
 import org.http4k.lens.MultipartFormField
+import org.http4k.lens.Query
 import org.http4k.lens.WebForm
 import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
@@ -25,10 +26,10 @@ import uk.co.endofhome.skrooge.decisions.Decision
 import uk.co.endofhome.skrooge.decisions.Line
 import uk.co.endofhome.skrooge.decisions.SubCategory
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statementName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.MONTH
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.STATEMENT
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.USER
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.YEAR
 import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler.Companion.currentMerchantName
 import java.io.File
 import java.math.BigDecimal
@@ -100,10 +101,10 @@ class StatementsHandler(private val renderer: TemplateRenderer, val categories: 
         val (currentMerchant, remainingMerchants) = unknownMerchants.partition { it == unknownMerchants.first() }
         val baseUri = Uri.of(unknownMerchant)
                 .query(currentMerchantName, currentMerchant.single())
-                .query(yearName, year.toString())
-                .query(monthName, month.getDisplayName(TextStyle.FULL, Locale.UK))
-                .query(userName, user)
-                .query(statementName, statement)
+                .query(YEAR.key, year.toString())
+                .query(MONTH.key, month.getDisplayName(TextStyle.FULL, Locale.UK))
+                .query(USER.key, user)
+                .query(STATEMENT.key, statement)
                 .query(statementFilePathKey, statementFile.path)
         val uri = when {
             remainingMerchants.isNotEmpty() -> baseUri.query(remainingMerchantName, remainingMerchants.joinToString(","))
@@ -126,22 +127,32 @@ object LineFormatter {
 
 data class StatementMetadata(val year: Year, val month: Month, val user: String, val statement: String) {
     companion object {
-        const val yearName = "year"
-        const val monthName = "month"
-        const val userName = "user"
-        const val statementName = "statement-name"
-        private val fieldNames = listOf(
-            "year",
-            "month",
-            "user",
-            "statement-name"
-        )
+        enum class FieldNames(val key: String) {
+            YEAR("year"),
+            MONTH("month"),
+            USER("user"),
+            STATEMENT("statement-name")
+        }
+
+        fun from(webForm: WebForm): StatementMetadata {
+            val (year, month, user, statement) = webFormFields().map { it.extract(webForm) }
+
+            return StatementMetadata(
+                year = Year.parse(year),
+                month = Month.valueOf(month.toUpperCase()),
+                user = user,
+                statement = statement
+            )
+        }
 
         fun webFormFields(): List<BiDiLens<WebForm, String>> =
-            fieldNames.map { FormField.required(it) }
+            FieldNames.values().map { FormField.required(it.key) }
 
         fun multipartFormFields(): List<BiDiLens<MultipartForm, String>> =
-            fieldNames.map { MultipartFormField.required(it) }
+            FieldNames.values().map { MultipartFormField.required(it.key) }
+
+        fun queryParameters(): List<BiDiLens<Request, String>> =
+            FieldNames.values().map { Query.required(it.key) }
     }
 }
 

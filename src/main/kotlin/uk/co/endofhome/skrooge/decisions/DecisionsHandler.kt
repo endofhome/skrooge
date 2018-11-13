@@ -10,13 +10,8 @@ import org.http4k.lens.webForm
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.index
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.statements.StatementMetadata
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statementName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
 import java.time.LocalDate
 import java.time.Month
-import java.time.Year
 
 class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, val categories: Categories) {
     companion object {
@@ -24,17 +19,11 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
     }
 
     operator fun invoke(request: Request): Response {
-        val yearLens = FormField.required(yearName)
-        val monthLens = FormField.required(monthName)
-        val userLens = FormField.required(userName)
-        val statementLens = FormField.required(statementName)
+        val fieldLenses = StatementMetadata.webFormFields()
         val decisionLens = FormField.multi.required(decision)
         val webForm = Body.webForm(
             Validator.Feedback,
-            yearLens,
-            monthLens,
-            userLens,
-            statementLens,
+            *fieldLenses.toTypedArray(),
             decisionLens
         )
         val form = webForm.toLens().extract(request)
@@ -49,12 +38,7 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
                 )
             }
 
-            val statementMetadata = StatementMetadata(
-                year = Year.parse(yearLens.extract(form)),
-                month = Month.valueOf(monthLens.extract(form).toUpperCase()),
-                user = userLens.extract(form),
-                statement = statementLens.extract(form)
-            )
+            val statementMetadata = StatementMetadata.from(form)
             decisionReaderWriter.write(statementMetadata, decisions)
 
             Response(Status.SEE_OTHER).header("Location", index)

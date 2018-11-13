@@ -20,10 +20,10 @@ import uk.co.endofhome.skrooge.decisions.DecisionsHandler.Companion.decision
 import uk.co.endofhome.skrooge.decisions.Line
 import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
 import uk.co.endofhome.skrooge.decisions.SubCategory
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.monthName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.statementName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.userName
-import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.yearName
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.MONTH
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.STATEMENT
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.USER
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.YEAR
 import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.Month
@@ -51,10 +51,10 @@ class DecisionsHandlerTest {
         val request = Request(Method.POST, statementDecisions)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget")
-                .form(yearName, "2017")
-                .form(monthName, "October")
-                .form(userName, "Tom")
-                .form(statementName, "SomeBank")
+                .form(YEAR.key, "2017")
+                .form(MONTH.key, "October")
+                .form(USER.key, "Tom")
+                .form(STATEMENT.key, "SomeBank")
 
         val response = skrooge(request)
         assertThat(response.status, equalTo(Status.SEE_OTHER))
@@ -68,10 +68,10 @@ class DecisionsHandlerTest {
         val request = Request(Method.POST, statementDecisions)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form(decision, "18/10/2017,Edgeworld Records,14.99,Eats and drinks,Food")
-                .form(yearName, "2017")
-                .form(monthName, "October")
-                .form(userName, "Tom")
-                .form(statementName, "SomeBank")
+                .form(YEAR.key, "2017")
+                .form(MONTH.key, "October")
+                .form(USER.key, "Tom")
+                .form(STATEMENT.key, "SomeBank")
 
         val expectedCategory = "Eats and drinks"
         val expectedSubCategories = categories.get(expectedCategory).subcategories
@@ -99,10 +99,10 @@ class DecisionsHandlerTest {
             .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
             .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget")
             .form(decision, "3/10/2017,Pizza Union,5.50,Eats and drinks,Meals at work")
-            .form(yearName, "2017")
-            .form(monthName, "October")
-            .form(userName, "Tom")
-            .form(statementName, "SomeBank")
+            .form(YEAR.key, "2017")
+            .form(MONTH.key, "October")
+            .form(USER.key, "Tom")
+            .form(STATEMENT.key, "SomeBank")
 
         val response = skrooge(request)
         assertThat(response.status, equalTo(Status.SEE_OTHER))
