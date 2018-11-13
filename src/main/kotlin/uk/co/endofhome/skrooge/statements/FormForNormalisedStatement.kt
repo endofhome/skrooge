@@ -40,9 +40,8 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
 
             if (multipartForm.errors.isEmpty()) {
                 val (year, month, user, statement) = fieldLenses.map { it.extract(multipartForm) }
-                val formFile = fileLens.extract(multipartForm)
-
                 val statementMetadata = StatementMetadata(Year.parse(year), Month.valueOf(month.toUpperCase()), user, statement)
+                val formFile = fileLens.extract(multipartForm)
                 val file = writeFileToFileSystem(statementMetadata, formFile, normalisedStatements)
 
                 return FormForNormalisedStatement(statementMetadata, file)
@@ -54,32 +53,25 @@ data class FormForNormalisedStatement(val statementMetadata: StatementMetadata, 
         }
 
         fun fromUrlEncoded(request: Request): FormForNormalisedStatement {
-            val yearLens = FormField.required(yearName)
-            val monthLens = FormField.required(monthName)
-            val userLens = FormField.required(userName)
-            val statementNameLens = FormField.required(statementName)
-            val statementPathLens = FormField.required(statementFilePathKey)
+            val fieldLenses = listOf(
+                FormField.required(yearName),
+                FormField.required(monthName),
+                FormField.required(userName),
+                FormField.required(statementName)
+            ) + listOf(
+                FormField.required(statementFilePathKey)
+            )
             val webForm = Body.webForm(
                     Validator.Feedback,
-                    yearLens,
-                    monthLens,
-                    userLens,
-                    statementNameLens,
-                    statementPathLens
+                    *fieldLenses.toTypedArray()
             )
             val form = webForm.toLens().extract(request)
 
             if (form.errors.isEmpty()) {
-                val year = yearLens.extract(form)
-                val month = monthLens.extract(form)
-                val user = userLens.extract(form)
-                val statement = statementNameLens.extract(form)
-                val statementFilePath = statementPathLens.extract(form)
-
+                val (year, month, user, statement, statementFilePath) = fieldLenses.map { it.extract(form) }
                 val statementMetadata = StatementMetadata(Year.of(year.toInt()), Month.valueOf(month.toUpperCase()), user, statement)
-                val file = File(statementFilePath)
 
-                return FormForNormalisedStatement(statementMetadata, file)
+                return FormForNormalisedStatement(statementMetadata, File(statementFilePath))
             } else {
                 val fieldsWithErrors = form.errors.map { it.meta.name }
                 val osNewline = System.lineSeparator()
