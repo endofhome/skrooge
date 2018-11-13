@@ -17,6 +17,11 @@ import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementsWithFilePath
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
+import uk.co.endofhome.skrooge.statements.FileMetadata
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.MONTH
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.STATEMENT
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.USER
+import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.YEAR
 import java.io.File
 import java.io.PrintWriter
 import java.nio.file.Paths
@@ -46,10 +51,10 @@ class StatementsWithFilePathTest {
     fun `POST to statements with missing year in body returns HTTP Bad Request`() {
         val request = Request(Method.POST, statementsWithFilePath)
                         .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                        .form("month", "September")
-                        .form("user", "Tom")
-                        .form("statement-name", "EmptyStatement")
-                        .form("statement-file-path", "$testNormalisedStatementsDirectory/empty-statement.csv")
+                        .form(MONTH.key, "September")
+                        .form(USER.key, "Tom")
+                        .form(STATEMENT.key, "EmptyStatement")
+                        .form(FileMetadata.statementFilePathKey, "$testNormalisedStatementsDirectory/empty-statement.csv")
         assertThat(skrooge(request).status, equalTo(Status.BAD_REQUEST))
     }
 
@@ -57,10 +62,10 @@ class StatementsWithFilePathTest {
     fun `POST to statements with missing month in form data returns HTTP Bad Request`() {
         val request = Request(Method.POST, statementsWithFilePath)
                         .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                        .form("year", "2017")
-                        .form("user", "Tom")
-                        .form("statement-name", "EmptyStatement")
-                        .form("statement-file-path", "$testNormalisedStatementsDirectory/empty-statement.csv")
+                        .form(YEAR.key, "2017")
+                        .form(USER.key, "Tom")
+                        .form(STATEMENT.key, "EmptyStatement")
+                        .form(FileMetadata.statementFilePathKey, "$testNormalisedStatementsDirectory/empty-statement.csv")
         assertThat(skrooge(request).status, equalTo(Status.BAD_REQUEST))
     }
 
@@ -68,10 +73,10 @@ class StatementsWithFilePathTest {
     fun `POST to statements with missing user in form data returns HTTP Bad Request`() {
         val request = Request(Method.POST, statementsWithFilePath)
                         .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                        .form("year", "2017")
-                        .form("month", "September")
-                        .form("statement-name", "EmptyStatement")
-                        .form("statement-file-path", "$testNormalisedStatementsDirectory/empty-statement.csv")
+                        .form(YEAR.key, "2017")
+                        .form(MONTH.key, "September")
+                        .form(STATEMENT.key, "EmptyStatement")
+                        .form(FileMetadata.statementFilePathKey, "$testNormalisedStatementsDirectory/empty-statement.csv")
         assertThat(skrooge(request).status, equalTo(Status.BAD_REQUEST))
     }
 
@@ -79,10 +84,10 @@ class StatementsWithFilePathTest {
     fun `POST to statements with missing statement name in form data returns HTTP Bad Request`() {
         val request = Request(Method.POST, statementsWithFilePath)
                         .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                        .form("year", "2017")
-                        .form("month", "September")
-                        .form("user", "Tom")
-                        .form("statement-file-path", "$testNormalisedStatementsDirectory/empty-statement.csv")
+                        .form(YEAR.key, "2017")
+                        .form(MONTH.key, "September")
+                        .form(USER.key, "Tom")
+                        .form(FileMetadata.statementFilePathKey, "$testNormalisedStatementsDirectory/empty-statement.csv")
         assertThat(skrooge(request).status, equalTo(Status.BAD_REQUEST))
     }
 
@@ -90,10 +95,10 @@ class StatementsWithFilePathTest {
     fun `POST to statements with missing statement file path in form data returns HTTP Bad Request`() {
         val request = Request(Method.POST, statementsWithFilePath)
                         .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                        .form("year", "2017")
-                        .form("month", "September")
-                        .form("user", "Tom")
-                        .form("statement-name", "EmptyStatement")
+                        .form(YEAR.key, "2017")
+                        .form(MONTH.key, "September")
+                        .form(USER.key, "Tom")
+                        .form(STATEMENT.key, "EmptyStatement")
         assertThat(skrooge(request).status, equalTo(Status.BAD_REQUEST))
     }
 
@@ -107,11 +112,11 @@ class StatementsWithFilePathTest {
         }
         val request = Request(Method.POST, statementsWithFilePath)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form("year", "2017")
-                .form("month", "September")
-                .form("user", "Tom")
-                .form("statement-name", "EmptyStatement")
-                .form("statement-file-path", filePath)
+                .form(YEAR.key, "2017")
+                .form(MONTH.key, "September")
+                .form(USER.key, "Tom")
+                .form(STATEMENT.key, "EmptyStatement")
+                .form(FileMetadata.statementFilePathKey, filePath)
 
         val response = skrooge(request)
 
