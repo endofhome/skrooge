@@ -133,6 +133,8 @@
         
             <input type="hidden" name="remaining-merchant" value="Bert&#x27;s Hardware">
         
+            <input type="hidden" name="remaining-merchant" value="Han&#x27;s Solo">
+        
         <input type="hidden" name="year" value="2017">
         <input type="hidden" name="month" value="February">
         <input type="hidden" name="user" value="Test">

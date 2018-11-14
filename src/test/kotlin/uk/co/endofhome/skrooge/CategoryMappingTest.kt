@@ -20,7 +20,7 @@ import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.categoryMapping
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementsWithFilePath
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.newMappingName
-import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantName
+import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantKey
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.MONTH
@@ -95,7 +95,7 @@ class CategoryMappingTest {
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form(newMappingName, "DIY Space for London,Fun,Tom fun budget")
-                .form(remainingMerchantName, "Another vendor")
+                .form(remainingMerchantKey, "Another vendor")
                 .form(YEAR.key, statementYear)
                 .form(MONTH.key, statementMonth)
                 .form(USER.key, statementUser)
@@ -120,8 +120,9 @@ class CategoryMappingTest {
         val request = Request(POST, categoryMapping)
             .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
             .form(newMappingName, "Last new mapping,Fun,Tom fun budget")
-            .form(remainingMerchantName, "Bob's Laundrette")
-            .form(remainingMerchantName, "Bert's Hardware")
+            .form(remainingMerchantKey, "Bob's Laundrette")
+            .form(remainingMerchantKey, "Bert's Hardware")
+            .form(remainingMerchantKey, "Han's Solo")
             .form(YEAR.key, statementYear)
             .form(MONTH.key, statementMonth)
             .form(USER.key, statementUser)
@@ -131,7 +132,7 @@ class CategoryMappingTest {
         val response = skrooge(request)
 
         assertThat(response.status, equalTo(SEE_OTHER))
-        assertThat(response.header("Location")!!, equalTo("/unknown-merchant?currentMerchant=Bob%27s+Laundrette&year=2017&month=February&user=Test&statement-name=Empty+Statement&statement-file-path=src%2Ftest%2Fresources%2F2017-02_Test_EmptyStatement.csv&remaining-merchant=Bert%27s+Hardware"))
+        assertThat(response.header("Location")!!, equalTo("/unknown-merchant?currentMerchant=Bob%27s+Laundrette&year=2017&month=February&user=Test&statement-name=Empty+Statement&statement-file-path=src%2Ftest%2Fresources%2F2017-02_Test_EmptyStatement.csv&remaining-merchant=Bert%27s+Hardware&remaining-merchant=Han%27s+Solo"))
 
         val followedResponse = with(RedirectHelper(skrooge)) { response.followRedirect(request) }
         approver.assertApproved(followedResponse.bodyString())

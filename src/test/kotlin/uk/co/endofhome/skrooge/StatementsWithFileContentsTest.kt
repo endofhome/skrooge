@@ -234,7 +234,7 @@ class StatementsWithFileContentsTest {
     }
 
     @Test
-    fun `redirect when multiple unknown merchants shows correct unrecognised merchants`() {
+    fun `redirect when two unknown merchants shows correct unrecognised merchants`() {
         val inputStatementContent = """
             2017-09-17,Rounder Records,14.99
             2017-09-17,Edgeworld Records,15.99
@@ -254,6 +254,31 @@ class StatementsWithFileContentsTest {
                 .body(body)
 
         val followedResponse = with(RedirectHelper(skrooge)) { requestWithTwoRecordShops.handleAndFollowRedirect() }
+        approver.assertApproved(followedResponse.bodyString())
+    }
+
+    @Test
+    fun `redirect when more than two unknown merchants shows correct unrecognised merchants`() {
+        val inputStatementContent = """
+            2017-09-17,Rounder Records,14.99
+            2017-09-17,Edgeworld Records,15.99
+            2017-09-17,Honest Jon's Records,19.99
+        """.trimIndent()
+        val formFile = FormFile(
+            "2017-04_Test_three-unknown-merchants.csv",
+            ContentType.OCTET_STREAM,
+            inputStatementContent.byteInputStream()
+        )
+        val body = MultipartFormBody().plus("year" to "2017")
+            .plus("month" to "April")
+            .plus("user" to "Test")
+            .plus("statement-name" to "ThreeUnknownMerchants")
+            .plus("statement-file" to formFile)
+        val requestWithThreeRecordShops = Request(POST, statementsWithFileContents)
+            .header("content-type", "multipart/form-data; boundary=${body.boundary}")
+            .body(body)
+
+        val followedResponse = with(RedirectHelper(skrooge)) { requestWithThreeRecordShops.handleAndFollowRedirect() }
         approver.assertApproved(followedResponse.bodyString())
     }
 }

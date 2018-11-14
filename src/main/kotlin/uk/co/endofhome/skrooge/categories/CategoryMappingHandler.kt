@@ -19,7 +19,7 @@ import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.STATEMENT
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.USER
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.YEAR
-import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler.Companion.currentMerchantName
+import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler.Companion.currentMerchantKey
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -27,12 +27,12 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
 
     companion object {
         const val newMappingName = "new-mapping"
-        const val remainingMerchantName = "remaining-merchant"
+        const val remainingMerchantKey = "remaining-merchant"
     }
 
     operator fun invoke(request: Request): Response {
         val newMappingLens = FormField.required(newMappingName)
-        val remainingMerchantsLens = FormField.multi.optional(remainingMerchantName)
+        val remainingMerchantsLens = FormField.multi.optional(remainingMerchantKey)
         val webForm = Body.webForm(
             Validator.Feedback,
             newMappingLens,
@@ -75,16 +75,13 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
     private fun redirectToUnknownMerchant(statementForm: FormForNormalisedStatement, remainingMerchants: Set<String>): Response {
         val (nextCurrentMerchant, nextRemainingMerchants) = remainingMerchants.partition { it == remainingMerchants.first() }
         val baseUri = Uri.of(unknownMerchant)
-                .query(currentMerchantName, nextCurrentMerchant.single())
+                .query(currentMerchantKey, nextCurrentMerchant.single())
                 .query(YEAR.key, statementForm.statementMetadata.year.toString())
                 .query(MONTH.key, statementForm.statementMetadata.month.getDisplayName(TextStyle.FULL, Locale.UK))
                 .query(USER.key, statementForm.statementMetadata.user)
                 .query(STATEMENT.key, statementForm.statementMetadata.statement)
                 .query(statementFilePathKey, statementForm.file.path)
-        val uri = when {
-            nextRemainingMerchants.isNotEmpty() -> baseUri.query(remainingMerchantName, nextRemainingMerchants.joinToString(","))
-            else                                 -> baseUri
-        }
+        val uri = nextRemainingMerchants.fold(baseUri) { acc, merchant -> acc.query(remainingMerchantKey, merchant) }
         return Response(Status.SEE_OTHER).header("Location", uri.toString())
     }
 }

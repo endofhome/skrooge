@@ -11,7 +11,7 @@ import org.http4k.lens.Query
 import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
 import org.http4k.template.view
-import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantName
+import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantKey
 import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
 import uk.co.endofhome.skrooge.statements.StatementMetadata
@@ -19,14 +19,14 @@ import uk.co.endofhome.skrooge.statements.StatementMetadata
 class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val categories: List<Category>) {
 
     companion object {
-        const val currentMerchantName = "currentMerchant"
+        const val currentMerchantKey = "currentMerchant"
     }
 
     operator fun invoke(request: Request): Response {
         val view = Body.view(renderer, ContentType.TEXT_HTML)
 
-        val currentMerchantLens = Query.required(currentMerchantName)
-        val remainingMerchantsLens = Query.multi.optional(remainingMerchantName)
+        val currentMerchantLens = Query.required(currentMerchantKey)
+        val remainingMerchantsLens = Query.multi.optional(remainingMerchantKey)
         val statementMetadataLenses = StatementMetadata.queryParameters()
         val statementPathLens = Query.required(statementFilePathKey)
 

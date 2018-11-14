@@ -20,7 +20,7 @@ import org.http4k.template.view
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.unknownMerchant
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.CategoriesWithSelection
-import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantName
+import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantKey
 import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.decisions.Decision
 import uk.co.endofhome.skrooge.decisions.Line
@@ -30,7 +30,7 @@ import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.STATEMENT
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.USER
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.YEAR
-import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler.Companion.currentMerchantName
+import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler.Companion.currentMerchantKey
 import java.io.File
 import java.math.BigDecimal
 import java.nio.file.Path
@@ -100,16 +100,13 @@ class StatementsHandler(private val renderer: TemplateRenderer, val categories: 
         val (year, month, user, statement) = statementMetadata
         val (currentMerchant, remainingMerchants) = unknownMerchants.partition { it == unknownMerchants.first() }
         val baseUri = Uri.of(unknownMerchant)
-                .query(currentMerchantName, currentMerchant.single())
+                .query(currentMerchantKey, currentMerchant.single())
                 .query(YEAR.key, year.toString())
                 .query(MONTH.key, month.getDisplayName(TextStyle.FULL, Locale.UK))
                 .query(USER.key, user)
                 .query(STATEMENT.key, statement)
                 .query(statementFilePathKey, statementFile.path)
-        val uri = when {
-            remainingMerchants.isNotEmpty() -> baseUri.query(remainingMerchantName, remainingMerchants.joinToString(","))
-            else                            -> baseUri
-        }
+        val uri = remainingMerchants.fold(baseUri) { acc, merchant -> acc.query(remainingMerchantKey, merchant) }
         return Response(Status.SEE_OTHER).header("Location", uri.toString())
     }
 }
