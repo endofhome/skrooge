@@ -40,12 +40,8 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
         ).toLens()
         val form = webForm.extract(request)
         val newMapping: List<String> = newMappingLens.extract(form).split(',')
-
         val remainingMerchants: Set<String> by lazy { remainingMerchantsLens.extract(form)?.toSet() ?: emptySet() }
-
-        val statementForm: FormForNormalisedStatement by lazy {
-            FormForNormalisedStatement.fromUrlEncoded(request)
-        }
+        val statementForm: FormForNormalisedStatement by lazy { FormForNormalisedStatement.fromUrlEncoded(request) }
 
         return when {
             newMapping.isValid() -> {
