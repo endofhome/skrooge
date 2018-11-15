@@ -35,8 +35,8 @@ class BarChartHandler(private val renderer: TemplateRenderer) {
         }
     }
 
-    private fun YearMonth?.toChartResponse(renderer: TemplateRenderer): Response {
-        return when (this) {
+    private fun YearMonth?.toChartResponse(renderer: TemplateRenderer): Response =
+        when (this) {
             null -> Response(BAD_REQUEST)
             else -> {
                 val monthName = Month.of(monthValue).getDisplayName(TextStyle.FULL, Locale.UK)
@@ -45,7 +45,6 @@ class BarChartHandler(private val renderer: TemplateRenderer) {
                 Response(Status.OK).with(view of chartView)
             }
         }
-    }
 }
 
 data class MonthlyBarChartReport(
