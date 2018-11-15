@@ -25,37 +25,36 @@ class MonthlyReportHandler(private val decisionReaderWriter: DecisionReaderWrite
         val year = Query.int().required("year").extract(request)
         val month = Month.of(Query.int().required("month").extract(request))
         val decisions = decisionReaderWriter.read(year, month)
-
-        return decisions.let {
-            when {
-                it.isNotEmpty() -> {
-                    val catReports = categoryReporter.categoryReportsFrom(decisions)
-                    val overview = categoryReporter.overviewFrom(catReports)
-
-                    val sortedDecisions = decisions.sortedBy { it.line.date }
-                    val dateOfFirstTransaction = sortedDecisions.first().line.date
-                    val endDate = sortedDecisions.last().line.date
-                    val budgetStartDate = categoryReporter.currentBudgetStartDateFor(dateOfFirstTransaction)
-                    val historicalCategoryReports: List<List<CategoryReport>> = when {
-                        budgetStartDate != null -> {
-                            val startOfPreviousPeriod = dateOfFirstTransaction.previousBudgetDate(budgetStartDate.dayOfMonth).minusMonths(1)
-
-                            catReportsForPreviousMonths(startOfPreviousPeriod, budgetStartDate)
-                        }
-                        else -> emptyList()
-                    }
-                    val aggregatedOverview = categoryReporter.aggregatedOverviewFrom(overview, dateOfFirstTransaction, endDate, historicalCategoryReports)
-                    val report = MonthlyJsonReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, aggregatedOverview, overview, catReports)
-                    val reportJson = Gson.asJsonObject(report)
-                    Response(Status.OK).body(reportJson.asPrettyJsonString())
-                }
-                else -> {
-                    val emptyJson = Gson.asJsonObject(emptyMap<Any, Any>()).asPrettyJsonString()
-                    Response(Status.OK).body(emptyJson)
-                }
-            }
+        val report = when {
+            decisions.isNotEmpty() -> monthlyJsonReport(decisions, year, month)
+            else                   -> emptyReport()
         }
+
+        return Response(Status.OK).body(report)
     }
+
+    private fun monthlyJsonReport(decisions: List<Decision>, year: Int, month: Month): String {
+        val catReports = categoryReporter.categoryReportsFrom(decisions)
+        val overview = categoryReporter.overviewFrom(catReports)
+
+        val sortedDecisions = decisions.sortedBy { it.line.date }
+        val dateOfFirstTransaction = sortedDecisions.first().line.date
+        val endDate = sortedDecisions.last().line.date
+        val budgetStartDate = categoryReporter.currentBudgetStartDateFor(dateOfFirstTransaction)
+        val historicalCategoryReports: List<List<CategoryReport>> =
+            when {
+                budgetStartDate != null -> {
+                    val startOfPreviousPeriod = dateOfFirstTransaction.previousBudgetDate(budgetStartDate.dayOfMonth).minusMonths(1)
+                    catReportsForPreviousMonths(startOfPreviousPeriod, budgetStartDate)
+                }
+                else -> emptyList()
+            }
+        val aggregatedOverview = categoryReporter.aggregatedOverviewFrom(overview, dateOfFirstTransaction, endDate, historicalCategoryReports)
+        val report = MonthlyJsonReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, aggregatedOverview, overview, catReports)
+        return Gson.asJsonObject(report).asPrettyJsonString()
+    }
+
+    private fun emptyReport() = Gson.asJsonObject(emptyMap<Any, Any>()).asPrettyJsonString()
 
     private fun catReportsForPreviousMonths(startOfThisPeriod: LocalDate, budgetStartDate: LocalDate?, catReports: List<List<CategoryReport>> = emptyList()): List<List<CategoryReport>> {
         if (startOfThisPeriod < budgetStartDate) return catReports
