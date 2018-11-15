@@ -30,31 +30,22 @@ interface StatementCsvFormatter {
         }.joinToString("").capitalizeUnlessWebAddress()
     }
 
-    fun String.capitalizeUnlessWebAddress(): String {
-        return when {
+    fun String.capitalizeUnlessWebAddress(): String =
+        when {
             this.startsWith("www") -> this
             else -> this.capitalize()
         }
-    }
 
-    fun specialMerchants(): Map<String, String> {
-        return mapOf(
-                "Tesco" to "Tesco",
-                        "B & Q" to "B&Q",
-                        "Spotify" to "Spotify",
-                        "Wickes" to "Wickes",
-                        "Eft Payment" to "EFT Payment",
-                        "Lloyds Tsb Credit" to "Lloyds TSB Credit",
-                        "Sainsburys" to "Sainsburys"
+    fun specialMerchants(): Map<String, String> =
+        mapOf(
+            "Tesco" to "Tesco",
+            "B & Q" to "B&Q",
+            "Spotify" to "Spotify",
+            "Wickes" to "Wickes",
+            "Eft Payment" to "EFT Payment",
+            "Lloyds Tsb Credit" to "Lloyds TSB Credit",
+            "Sainsburys" to "Sainsburys"
         )
-    }
 
-    fun String.modifyIfSpecialMerchant(): String {
-        val match = BankFiveStatementCsvFormatter.specialMerchants().keys.find { this.contains(it) }
-        return when {
-            match.isNullOrEmpty() -> this
-            else -> BankFiveStatementCsvFormatter.specialMerchants()[match]!!
-        }
-    }
-
+    fun String.modifyIfSpecialMerchant(): String = specialMerchants()[this] ?: this
 }
