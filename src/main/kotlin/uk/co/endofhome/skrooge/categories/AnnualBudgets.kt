@@ -57,10 +57,10 @@ data class AnnualBudget(val startDateInclusive: LocalDate, val budgetData: List<
             val mapper = ObjectMapper().registerModule(KotlinModule())
             val annualBudgetJson: AnnualBudgetJson = mapper.readValue(json)
             val budgetData = annualBudgetJson.categories.flatMap { categoryJson ->
-                val thisCategoryJson = annualBudgetJson.categories.find { it.title == categoryJson.title }!!
+                val thisCategoryJson = annualBudgetJson.categories.find(categoryJson.title)
                 val category = Category(thisCategoryJson.title, thisCategoryJson.subcategories.map { SubCategory(it.name) })
                 category.subcategories.map { subCategory ->
-                    subCategory to category to thisCategoryJson.subcategories.find { it.name == subCategory.name }!!.monthly_budget
+                    subCategory to category to thisCategoryJson.subcategories.find(subCategory.name).monthly_budget
                 }
             }
             return AnnualBudget(startDateInclusive, budgetData)
@@ -76,3 +76,9 @@ data class AnnualBudgetJson(
 
 data class CategoryJson(val title: String, val subcategories: List<SubCategoryBudgetJson>)
 data class SubCategoryBudgetJson(val name: String, val monthly_budget: Double)
+
+fun List<CategoryJson>.find(category: String): CategoryJson =
+    this.find { it.title == category } ?: throw java.lang.IllegalStateException("Category $category not found in ${this.joinToString(",") { it.title }}")
+
+fun List<SubCategoryBudgetJson>.find(subcategory: String): SubCategoryBudgetJson =
+    this.find { it.name == subcategory } ?: throw java.lang.IllegalStateException("Subcategory $subcategory not found in ${this.joinToString(",") { it.name }}")
