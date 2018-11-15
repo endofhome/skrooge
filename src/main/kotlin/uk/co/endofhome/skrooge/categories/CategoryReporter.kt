@@ -1,7 +1,7 @@
 package uk.co.endofhome.skrooge.categories
 
 import uk.co.endofhome.skrooge.decisions.Category
-import uk.co.endofhome.skrooge.decisions.Decision
+import uk.co.endofhome.skrooge.decisions.DecisionState.Decision
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
@@ -14,7 +14,7 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
     fun categoryReportsFrom(decisions: List<Decision>, numberOfMonths: Int = 1): List<CategoryReport> {
         val catReportDataItems: List<CategoryReportDataItem> =
             decisions.map {
-                val budgetAmount = annualBudgets.valueFor(it.category!!, it.subCategory!!, it.line.date)
+                val budgetAmount = annualBudgets.valueFor(it.category, it.subCategory, it.line.date)
                 CategoryReportDataItem(it.subCategory.name, it.line.amount, budgetAmount * numberOfMonths)
             }.groupBy { it.name }
              .map {

@@ -1,6 +1,7 @@
 package uk.co.endofhome.skrooge.decisions
 
 import uk.co.endofhome.skrooge.categories.Categories
+import uk.co.endofhome.skrooge.decisions.DecisionState.Decision
 import uk.co.endofhome.skrooge.statements.StatementMetadata
 import java.io.File
 import java.nio.file.Path
@@ -68,7 +69,8 @@ class FileSystemDecisionReaderReaderWriter(private val categories: Categories, p
                 val line = Line(LocalDate.of(year, month, day), merchant, amount.toDouble())
 
                 val category = categories.get(categoryName)
-                Decision(line, category, categories.subcategoriesFor(category.title).find { it.name == subCategoryName })
+                val subCategory = with(categories) { subcategoriesFor(category.title).find(subCategoryName) }
+                Decision(line, category, subCategory)
             }
         }
     }
@@ -92,4 +94,8 @@ class StubbedDecisionReaderWriter : DecisionReaderWriter {
 data class Line(val date: LocalDate, val merchant: String, val amount: Double)
 data class Category(val title: String, val subcategories: List<SubCategory>)
 data class SubCategory(val name: String)
-data class Decision(val line: Line, val category: Category?, val subCategory: SubCategory?)
+
+sealed class DecisionState {
+    data class Decision(val line: Line, val category: Category, val subCategory: SubCategory): DecisionState()
+    data class DecisionRequired(val line: Line): DecisionState()
+}

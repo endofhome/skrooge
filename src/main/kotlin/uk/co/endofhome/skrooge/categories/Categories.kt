@@ -36,6 +36,9 @@ class Categories(private val schemaFilePath: String = "category-schema/category-
         return all().filter { it.title == category }.flatMap { it.subcategories }
     }
 
+    fun List<SubCategory>.find(name: String): SubCategory =
+        this.find { it.name == name } ?: throw java.lang.IllegalStateException("Subcategory $name not found")
+
     private fun selectedString(subCategory: SubCategory, anotherSubCategory: SubCategory?): String {
         return when (subCategory == anotherSubCategory) {
             true -> " selected"

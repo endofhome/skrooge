@@ -9,6 +9,7 @@ import org.http4k.lens.Validator
 import org.http4k.lens.webForm
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.index
 import uk.co.endofhome.skrooge.categories.Categories
+import uk.co.endofhome.skrooge.decisions.DecisionState.Decision
 import uk.co.endofhome.skrooge.statements.StatementMetadata
 import java.time.LocalDate
 import java.time.Month

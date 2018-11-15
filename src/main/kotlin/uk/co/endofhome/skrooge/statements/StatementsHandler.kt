@@ -22,7 +22,8 @@ import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.CategoriesWithSelection
 import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantKey
 import uk.co.endofhome.skrooge.decisions.Category
-import uk.co.endofhome.skrooge.decisions.Decision
+import uk.co.endofhome.skrooge.decisions.DecisionState.Decision
+import uk.co.endofhome.skrooge.decisions.DecisionState.DecisionRequired
 import uk.co.endofhome.skrooge.decisions.Line
 import uk.co.endofhome.skrooge.decisions.SubCategory
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
@@ -63,12 +64,12 @@ class StatementsHandler(private val renderer: TemplateRenderer, val categories: 
     }
 
     private fun routeForStatement(statementMetadata: StatementMetadata, statementFile: File): Response {
-        val decisions = StatementDecider(categories.categoryMappings).process(statementFile.readLines())
-        val unknownMerchants: Set<String> = decisions.filter { it.category == null }
+        val decisionStates = StatementDecider(categories.categoryMappings).process(statementFile.readLines())
+        val unknownMerchants: Set<String> = decisionStates.filterIsInstance<DecisionRequired>()
                                                      .map { it.line.merchant }
                                                      .toSet()
         return when {
-            unknownMerchants.isEmpty() -> pleaseReviewYourCategorisations(statementMetadata, statementFile, decisions)
+            unknownMerchants.isEmpty() -> pleaseReviewYourCategorisations(statementMetadata, statementFile, decisionStates.filterIsInstance<Decision>())
             else                       -> redirectToUnknownMerchant(statementMetadata, statementFile, unknownMerchants)
         }
     }

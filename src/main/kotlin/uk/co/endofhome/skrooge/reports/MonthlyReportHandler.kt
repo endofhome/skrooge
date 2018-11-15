@@ -11,8 +11,8 @@ import org.http4k.template.ViewModel
 import uk.co.endofhome.skrooge.categories.AggregateOverviewReport
 import uk.co.endofhome.skrooge.categories.CategoryReport
 import uk.co.endofhome.skrooge.categories.CategoryReporter
-import uk.co.endofhome.skrooge.decisions.Decision
 import uk.co.endofhome.skrooge.decisions.DecisionReaderWriter
+import uk.co.endofhome.skrooge.decisions.DecisionState.Decision
 import java.time.LocalDate
 import java.time.Month
 import java.time.format.TextStyle

@@ -15,7 +15,7 @@ import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.index
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementDecisions
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.decisions.Category
-import uk.co.endofhome.skrooge.decisions.Decision
+import uk.co.endofhome.skrooge.decisions.DecisionState.Decision
 import uk.co.endofhome.skrooge.decisions.DecisionsHandler.Companion.decision
 import uk.co.endofhome.skrooge.decisions.Line
 import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
