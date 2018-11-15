@@ -19,7 +19,7 @@ import org.junit.Test
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.categoryMapping
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementsWithFilePath
 import uk.co.endofhome.skrooge.categories.Categories
-import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.newMappingName
+import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.newMappingKey
 import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantKey
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
@@ -51,7 +51,7 @@ class CategoryMappingTest {
     fun `POST to category-mapping endpoint with empty new-mapping field returns HTTP Bad Request`() {
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form(newMappingName, "")
+                .form(newMappingKey, "")
                 .form(YEAR.key, statementYear)
                 .form(MONTH.key, statementMonth)
                 .form(USER.key, statementUser)
@@ -65,7 +65,7 @@ class CategoryMappingTest {
     fun `POST to category-mapping endpoint with non-CSV mapping returns HTTP Bad Request`() {
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form(newMappingName, "Casbah Records;Established 1967 in our minds")
+                .form(newMappingKey, "Casbah Records;Established 1967 in our minds")
                 .form(YEAR.key, statementYear)
                 .form(MONTH.key, statementMonth)
                 .form(USER.key, statementUser)
@@ -79,7 +79,7 @@ class CategoryMappingTest {
     fun `POST to category-mapping endpoint with good CSV mapping returns HTTP OK and writes new mapping`() {
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form(newMappingName, "Casbah Records,Fun,Tom fun budget")
+                .form(newMappingKey, "Casbah Records,Fun,Tom fun budget")
                 .form(YEAR.key, statementYear)
                 .form(MONTH.key, statementMonth)
                 .form(USER.key, statementUser)
@@ -94,7 +94,7 @@ class CategoryMappingTest {
     fun `successful POST to category-mapping redirects back to continue categorisation if necessary`() {
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form(newMappingName, "DIY Space for London,Fun,Tom fun budget")
+                .form(newMappingKey, "DIY Space for London,Fun,Tom fun budget")
                 .form(remainingMerchantKey, "Another vendor")
                 .form(YEAR.key, statementYear)
                 .form(MONTH.key, statementMonth)
@@ -119,7 +119,7 @@ class CategoryMappingTest {
 
         val request = Request(POST, categoryMapping)
             .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-            .form(newMappingName, "Last new mapping,Fun,Tom fun budget")
+            .form(newMappingKey, "Last new mapping,Fun,Tom fun budget")
             .form(remainingMerchantKey, "Bob's Laundrette")
             .form(remainingMerchantKey, "Bert's Hardware")
             .form(remainingMerchantKey, "Han's Solo")
@@ -148,7 +148,7 @@ class CategoryMappingTest {
 
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form(newMappingName, "Last new mapping,Fun,Tom fun budget")
+                .form(newMappingKey, "Last new mapping,Fun,Tom fun budget")
                 .form(YEAR.key, statementYear)
                 .form(MONTH.key, statementMonth)
                 .form(USER.key, statementUser)

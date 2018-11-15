@@ -26,12 +26,12 @@ import java.util.Locale
 class CategoryMappingHandler(private val categoryMappings: MutableList<String>, private val mappingWriter: MappingWriter) {
 
     companion object {
-        const val newMappingName = "new-mapping"
+        const val newMappingKey = "new-mapping"
         const val remainingMerchantKey = "remaining-merchant"
     }
 
     operator fun invoke(request: Request): Response {
-        val newMappingLens = FormField.required(newMappingName)
+        val newMappingLens = FormField.required(newMappingKey)
         val remainingMerchantsLens = FormField.multi.optional(remainingMerchantKey)
         val webForm = Body.webForm(
             Validator.Feedback,
