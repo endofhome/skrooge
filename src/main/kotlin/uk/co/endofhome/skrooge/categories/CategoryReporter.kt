@@ -13,15 +13,18 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
 
     fun categoryReportsFrom(decisions: List<Decision>, numberOfMonths: Int = 1): List<CategoryReport> {
         val catReportDataItems: List<CategoryReportDataItem> =
-            decisions.map {
-                val budgetAmount = annualBudgets.valueFor(it.category, it.subCategory, it.line.date)
-                CategoryReportDataItem(it.subCategory.name, it.line.amount, budgetAmount * numberOfMonths)
-            }.groupBy { it.name }
-             .map {
-                it.value.reduce { acc, categoryReportDataItem ->
-                    CategoryReportDataItem(it.key, acc.actual + categoryReportDataItem.actual, categoryReportDataItem.budget)
+            decisions.map { decision ->
+                val budgetAmount = annualBudgets.valueFor(decision.category, decision.subCategory, decision.line.date)
+                CategoryReportDataItem(decision.subCategory.name, decision.line.amount, budgetAmount * numberOfMonths)
+            }.groupBy { reportDataItem ->
+                reportDataItem.name
+            }.map { mapEntry ->
+                mapEntry.value.reduce { acc, categoryReportDataItem ->
+                    CategoryReportDataItem(mapEntry.key, acc.actual + categoryReportDataItem.actual, categoryReportDataItem.budget)
                 }
-            }.map { it.copy(actual = BigDecimal.valueOf(it.actual).setScale(2, RoundingMode.HALF_UP).toDouble()) }
+            }.map { reportDataItem ->
+                reportDataItem.copy(actual = BigDecimal.valueOf(reportDataItem.actual).setScale(2, RoundingMode.HALF_UP).toDouble())
+            }
 
         return categories.map { category ->
             CategoryReport(
