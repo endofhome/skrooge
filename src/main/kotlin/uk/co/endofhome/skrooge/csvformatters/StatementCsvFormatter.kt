@@ -47,5 +47,9 @@ interface StatementCsvFormatter {
             "Sainsburys" to "Sainsburys"
         )
 
-    fun String.modifyIfSpecialMerchant(): String = specialMerchants()[this] ?: this
-}
+    fun String.modifyIfSpecialMerchant(): String =
+        specialMerchants().let { merchants ->
+                merchants.keys.find { specialKey -> this.contains(specialKey) }
+                    ?.let { specialKey -> merchants[specialKey] } ?: this
+            }
+        }
