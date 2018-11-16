@@ -24,7 +24,7 @@ class FileSystemDecisionReaderReaderWriter(private val categories: Categories, p
         val bank = statementMetadata.statement
         File("$outputPath/$year-$month-$user-decisions-$bank.csv").printWriter().use { out ->
             decisions.forEach {
-                out.print("${it.line.date},${it.line.merchant},${it.line.amount},${it.category?.title},${it.subCategory?.name}\n")
+                out.print("${it.line.date},${it.line.merchant},${it.line.amount},${it.category.title},${it.subCategory.name}\n")
             }
         }
     }

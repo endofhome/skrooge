@@ -76,7 +76,7 @@ class DecisionsHandlerTest {
         val expectedCategory = "Eats and drinks"
         val expectedSubCategories = categories.get(expectedCategory).subcategories
         val expectedDecision = originalDecision.copy(
-                category = originalDecision.category?.copy(expectedCategory, expectedSubCategories),
+                category = originalDecision.category.copy(expectedCategory, expectedSubCategories),
                 subCategory = SubCategory("Food")
         )
 
