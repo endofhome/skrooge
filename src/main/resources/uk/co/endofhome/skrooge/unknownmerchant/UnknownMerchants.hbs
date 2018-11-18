@@ -10,10 +10,10 @@
     <h3>{{currentMerchant.name}}</h3>
     <form action="/category-mapping" method="post">
         <select name="new-mapping">
-            {{#each currentMerchant.categories}}
-            <optgroup label="{{title}}">
-                {{#each subcategories}}
-                <option value="{{currentMerchant.name}},{{title}},{{name}}">{{name}}</option>
+            {{#each categories}}
+            <optgroup label="{{@key.title}}">
+                {{#each this}}
+                <option value="{{currentMerchant.name}},{{@key.title}},{{name}}">{{name}}</option>
                 {{/each}}
             </optgroup>
             {{/each}}

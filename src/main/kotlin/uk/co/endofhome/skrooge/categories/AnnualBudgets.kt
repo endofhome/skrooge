@@ -37,11 +37,11 @@ class AnnualBudgets(private val budgets: List<AnnualBudget>) {
         }
     }
 
-    fun valueFor(category: Category, subCategory: SubCategory, date: LocalDate): Double {
-        val budgetDataForCategory = budgetFor(date).budgetData.find {
-            it.first.first == subCategory && it.first.second.title == category.title
+    fun valueFor(subCategory: SubCategory, date: LocalDate): Double {
+        val budgetDataForSubCategory = budgetFor(date).budgetData.find { subcategoryBudget ->
+            subcategoryBudget.first == subCategory
         } ?: throw IllegalStateException("Subcategory ${subCategory.name} not available in budget for $date.")
-        return budgetDataForCategory.second
+        return budgetDataForSubCategory.second
     }
 
     fun budgetFor(date: LocalDate): AnnualBudget =
@@ -51,16 +51,14 @@ class AnnualBudgets(private val budgets: List<AnnualBudget>) {
         } ?: throw IllegalStateException("Budget unavailable for period starting $date")
 }
 
-data class AnnualBudget(val startDateInclusive: LocalDate, val budgetData: List<Pair<Pair<SubCategory, Category>, Double>>) {
+data class AnnualBudget(val startDateInclusive: LocalDate, val budgetData: List<Pair<SubCategory, Double>>) {
     companion object {
         fun from(startDateInclusive: LocalDate, json: String): AnnualBudget {
             val mapper = ObjectMapper().registerModule(KotlinModule())
             val annualBudgetJson: AnnualBudgetJson = mapper.readValue(json)
             val budgetData = annualBudgetJson.categories.flatMap { categoryJson ->
-                val thisCategoryJson = annualBudgetJson.categories.find(categoryJson.title)
-                val category = Category(thisCategoryJson.title, thisCategoryJson.subcategories.map { SubCategory(it.name) })
-                category.subcategories.map { subCategory ->
-                    subCategory to category to thisCategoryJson.subcategories.find(subCategory.name).monthly_budget
+                categoryJson.subcategories.map { subcategoryJson ->
+                    SubCategory(subcategoryJson.name, Category(categoryJson.title)) to subcategoryJson.monthly_budget
                 }
             }
             return AnnualBudget(startDateInclusive, budgetData)
@@ -76,9 +74,3 @@ data class AnnualBudgetJson(
 
 data class CategoryJson(val title: String, val subcategories: List<SubCategoryBudgetJson>)
 data class SubCategoryBudgetJson(val name: String, val monthly_budget: Double)
-
-fun List<CategoryJson>.find(category: String): CategoryJson =
-    this.find { it.title == category } ?: throw java.lang.IllegalStateException("Category $category not found in ${this.joinToString(",") { it.title }}")
-
-fun List<SubCategoryBudgetJson>.find(subcategory: String): SubCategoryBudgetJson =
-    this.find { it.name == subcategory } ?: throw java.lang.IllegalStateException("Subcategory $subcategory not found in ${this.joinToString(",") { it.name }}")

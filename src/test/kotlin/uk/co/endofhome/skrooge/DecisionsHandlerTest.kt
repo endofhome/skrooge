@@ -37,8 +37,7 @@ class DecisionsHandlerTest {
     private val originalDecision =
             Decision(
                 Line(LocalDate.of(2017, 10, 18), "Edgeworld Records", 14.99),
-                Category("Fun", categories.get("Fun").subcategories),
-                SubCategory("Tom fun budget")
+                SubCategory("Bob fun budget", Category("Fun"))
             )
 
     @Before
@@ -50,10 +49,10 @@ class DecisionsHandlerTest {
     fun `POST to statementDecisions endpoint with no amended decisions writes same decisions`() {
         val request = Request(Method.POST, statementDecisions)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-                .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget")
+                .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Bob fun budget")
                 .form(YEAR.key, "2017")
                 .form(MONTH.key, "October")
-                .form(USER.key, "Tom")
+                .form(USER.key, "Bob")
                 .form(STATEMENT.key, "SomeBank")
 
         val response = skrooge(request)
@@ -70,14 +69,11 @@ class DecisionsHandlerTest {
                 .form(decision, "18/10/2017,Edgeworld Records,14.99,Eats and drinks,Food")
                 .form(YEAR.key, "2017")
                 .form(MONTH.key, "October")
-                .form(USER.key, "Tom")
+                .form(USER.key, "Bob")
                 .form(STATEMENT.key, "SomeBank")
 
-        val expectedCategory = "Eats and drinks"
-        val expectedSubCategories = categories.get(expectedCategory).subcategories
         val expectedDecision = originalDecision.copy(
-                category = originalDecision.category.copy(expectedCategory, expectedSubCategories),
-                subCategory = SubCategory("Food")
+                subCategory = SubCategory("Food", Category("Eats and drinks"))
         )
 
         val response = skrooge(request)
@@ -91,17 +87,16 @@ class DecisionsHandlerTest {
         val additionalDecision =
             Decision(
                 Line(LocalDate.of(2017, 10, 3), "Pizza Union", 5.5),
-                Category("Eats and drinks", categories.get("Eats and drinks").subcategories),
-                SubCategory("Meals at work")
+                SubCategory("Meals at work", Category("Eats and drinks"))
             )
 
         val request = Request(Method.POST, statementDecisions)
             .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-            .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget")
+            .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Bob fun budget")
             .form(decision, "3/10/2017,Pizza Union,5.50,Eats and drinks,Meals at work")
             .form(YEAR.key, "2017")
             .form(MONTH.key, "October")
-            .form(USER.key, "Tom")
+            .form(USER.key, "Bob")
             .form(STATEMENT.key, "SomeBank")
 
         val response = skrooge(request)
@@ -116,7 +111,7 @@ class DecisionsHandlerTest {
     fun `POST to statementDecisions endpoint with missing fields returns HTTP Bad Request`() {
         val request = Request(Method.POST, statementDecisions)
             .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
-            .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Tom fun budget")
+            .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Bob fun budget")
 
         val response = skrooge(request)
         assertThat(response.status, equalTo(Status.BAD_REQUEST))

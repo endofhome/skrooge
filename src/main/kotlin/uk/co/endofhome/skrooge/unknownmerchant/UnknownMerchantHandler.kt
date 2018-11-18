@@ -13,10 +13,11 @@ import org.http4k.template.ViewModel
 import org.http4k.template.view
 import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantKey
 import uk.co.endofhome.skrooge.decisions.Category
+import uk.co.endofhome.skrooge.decisions.SubCategory
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
 import uk.co.endofhome.skrooge.statements.StatementMetadata
 
-class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val categories: List<Category>) {
+class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val categories: Map<Category, List<SubCategory>>) {
 
     companion object {
         const val currentMerchantKey = "currentMerchant"
@@ -31,13 +32,14 @@ class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val
         val statementPathLens = Query.required(statementFilePathKey)
 
         return try {
-            val currentMerchant = Merchant(currentMerchantLens(request), categories)
+            val currentMerchant = Merchant(currentMerchantLens(request))
             val remainingMerchants: Set<String> = remainingMerchantsLens(request)?.toSet() ?: emptySet()
             val (year, month, user, statementName) = statementMetadataLenses.map { it.extract(request) }
             val statementPath = statementPathLens(request)
             val unknownMerchants = UnknownMerchants(
                 currentMerchant,
                 remainingMerchants,
+                categories,
                 year,
                 month,
                 user,
@@ -54,10 +56,11 @@ class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val
 data class UnknownMerchants(
         val currentMerchant: Merchant,
         val remainingMerchants: Set<String>,
+        val categories: Map<Category, List<SubCategory>>,
         val year: String,
         val month: String,
         val user: String,
         val statementName: String,
         val statementFilePath: String
 ) : ViewModel
-data class Merchant(val name: String, val categories: List<Category>?)
+data class Merchant(val name: String)

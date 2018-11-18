@@ -31,11 +31,10 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
 
         return if (form.errors.isEmpty()) {
             val decisions: List<Decision> = decisionLens.extract(form).map {
-                val (presentationFormattedDate, merchant, amount, categoryName, subCategoryName) = it.split(",")
+                val (presentationFormattedDate, merchant, amount, _, subCategoryName) = it.split(",")
                 Decision(
                     Line(reformat(presentationFormattedDate), merchant, amount.toDouble()),
-                    categories.get(categoryName),
-                    SubCategory(subCategoryName)
+                    categories.get(subCategoryName)
                 )
             }
 

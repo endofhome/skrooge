@@ -24,7 +24,7 @@ class FileSystemDecisionReaderReaderWriter(private val categories: Categories, p
         val bank = statementMetadata.statement
         File("$outputPath/$year-$month-$user-decisions-$bank.csv").printWriter().use { out ->
             decisions.forEach {
-                out.print("${it.line.date},${it.line.merchant},${it.line.amount},${it.category.title},${it.subCategory.name}\n")
+                out.print("${it.line.date},${it.line.merchant},${it.line.amount},${it.subCategory.category.title},${it.subCategory.name}\n")
             }
         }
     }
@@ -64,13 +64,12 @@ class FileSystemDecisionReaderReaderWriter(private val categories: Categories, p
 
         return this.flatMap { file ->
             file.readLines().map { rawLine ->
-                val (date, merchant, amount, categoryName, subCategoryName) = rawLine.split(",")
+                val (date, merchant, amount, _, subCategoryName) = rawLine.split(",")
                 val (year, month, day) = date.split("-").map { it.toInt() }
                 val line = Line(LocalDate.of(year, month, day), merchant, amount.toDouble())
 
-                val category = categories.get(categoryName)
-                val subCategory = with(categories) { subcategoriesFor(category.title).find(subCategoryName) }
-                Decision(line, category, subCategory)
+                val subCategory = categories.get(subCategoryName)
+                Decision(line, subCategory)
             }
         }
     }
@@ -92,10 +91,10 @@ class StubbedDecisionReaderWriter : DecisionReaderWriter {
 }
 
 data class Line(val date: LocalDate, val merchant: String, val amount: Double)
-data class Category(val title: String, val subcategories: List<SubCategory>)
-data class SubCategory(val name: String)
+data class Category(val title: String)
+data class SubCategory(val name: String, val category: Category)
 
 sealed class DecisionState {
-    data class Decision(val line: Line, val category: Category, val subCategory: SubCategory): DecisionState()
+    data class Decision(val line: Line, val subCategory: SubCategory): DecisionState()
     data class DecisionRequired(val line: Line): DecisionState()
 }

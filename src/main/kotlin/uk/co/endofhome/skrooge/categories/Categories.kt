@@ -9,35 +9,32 @@ import java.io.File
 
 class Categories(private val schemaFilePath: String = "category-schema/category-schema.json", val categoryMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList()) {
 
-    fun all(): List<Category> {
+    fun all(): Map<Category, List<SubCategory>> = subCategories().groupBy { it.category }
+
+    fun subCategories(): List<SubCategory> {
         val schemaFile = File(schemaFilePath)
         val contents: String = schemaFile.readText()
         val mapper = ObjectMapper().registerModule(KotlinModule())
         val categoriesData: CategoriesData = mapper.readValue(contents)
-        return categoriesData.toList()
-    }
-
-    fun get(categoryName: String): Category =
-        all().find { it.title == categoryName }
-            ?: throw IllegalStateException("$categoryName not found in schema file.")
-
-    fun withSelection(subCategory: SubCategory?): CategoriesWithSelection {
-        val titles = all().map { it.title }
-        val subCategories: List<List<SubCategoryWithSelection>> = all().map { cat ->
-            cat.subcategories.map { subCat ->
-                SubCategoryWithSelection(subCat, selectedString(subCat, subCategory))
+        return categoriesData.toList().flatMap { categoryJson ->
+            categoryJson.subcategories.map {
+                SubCategory(it.name, Category(categoryJson.title))
             }
         }
-        val catsWithSelection = titles.zip(subCategories).map { CategoryWithSelection(it.first, it.second) }
+    }
+
+    fun get(subCategoryName: String): SubCategory =
+        subCategories().find { it.name == subCategoryName }
+            ?: throw IllegalStateException("$subCategoryName not found in schema file.")
+
+    fun withSelection(subCategory: SubCategory?): CategoriesWithSelection {
+        val categoryTitles = all().keys.map { it.title }
+        val subCategories: List<List<SubCategoryWithSelection>> = subCategories().map { subCat ->
+            SubCategoryWithSelection(subCat, selectedString(subCat, subCategory))
+        }.groupBy { it.subCategory.category }.values.toList()
+        val catsWithSelection = categoryTitles.zip(subCategories).map { CategoryWithSelection(it.first, it.second) }
         return CategoriesWithSelection(catsWithSelection)
     }
-
-    fun subcategoriesFor(category: String): List<SubCategory> {
-        return all().filter { it.title == category }.flatMap { it.subcategories }
-    }
-
-    fun List<SubCategory>.find(name: String): SubCategory =
-        this.find { it.name == name } ?: throw java.lang.IllegalStateException("Subcategory $name not found")
 
     private fun selectedString(subCategory: SubCategory, anotherSubCategory: SubCategory?): String {
         return when (subCategory == anotherSubCategory) {
@@ -46,7 +43,7 @@ class Categories(private val schemaFilePath: String = "category-schema/category-
         }
     }
 
-    data class CategoriesData(val categories: List<Category>) {
+    data class CategoriesData(val categories: List<CategoryJson>) {
         fun toList() = categories
     }
 }

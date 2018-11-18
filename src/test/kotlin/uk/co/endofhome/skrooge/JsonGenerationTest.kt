@@ -16,6 +16,7 @@ import uk.co.endofhome.skrooge.decisions.DecisionState.Decision
 import uk.co.endofhome.skrooge.decisions.FileSystemDecisionReaderReaderWriter
 import uk.co.endofhome.skrooge.decisions.Line
 import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
+import uk.co.endofhome.skrooge.decisions.SubCategory
 import uk.co.endofhome.skrooge.statements.StatementMetadata
 import java.nio.file.Paths
 import java.time.LocalDate
@@ -63,12 +64,9 @@ class JsonGenerationTest {
 
     @Test
     fun `POST to generate - json endpoint with one decision in one monthly decisions file returns correct JSON`() {
-        val categoryTitle = "In your home"
-        val subCategories = categories.subcategoriesFor(categoryTitle)
         val decision = Decision(
             line = Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 250.00),
-            category = Category(categoryTitle, subCategories),
-            subCategory = with(categories) { subCategories.find("Building insurance") }
+            subCategory = SubCategory("Building insurance", Category("In your home"))
         )
         val statementMetadata = StatementMetadata(Year.of(2017), OCTOBER, "Tom", "some-bank")
         decisionReaderWriter.write(statementMetadata, listOf(decision))
@@ -83,16 +81,13 @@ class JsonGenerationTest {
     @Test
     fun `POST to generate - json endpoint with two decisions of same category in one monthly decisions file returns correct JSON`() {
         val categoryTitle = "In your home"
-        val subCategories = categories.subcategoriesFor(categoryTitle)
         val decision1 = Decision(
             line = Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 250.00),
-            category = Category(categoryTitle, subCategories),
-            subCategory = with(categories) { subCategories.find("Building insurance") }
+            subCategory = SubCategory("Building insurance", Category(categoryTitle))
         )
         val decision2 = Decision(
             line = Line(LocalDate.of(2017, 10, 14), "OIS Removals", 500.00),
-            category = Category(categoryTitle, subCategories),
-            subCategory = with(categories) { subCategories.find("Building insurance") }
+            subCategory = SubCategory("Building insurance", Category(categoryTitle))
         )
         val statementMetadata = StatementMetadata(Year.of(2017), OCTOBER, "Tom", "some-bank")
         decisionReaderWriter.write(statementMetadata, listOf(decision1, decision2))
@@ -107,16 +102,13 @@ class JsonGenerationTest {
     @Test
     fun `POST to generate - json endpoint with two decisions of different subcategory in one monthly decisions file returns correct JSON`() {
         val categoryTitle = "In your home"
-        val subCategories = categories.subcategoriesFor(categoryTitle)
         val decision1 = Decision(
             line = Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 250.00),
-            category = Category(categoryTitle, subCategories),
-            subCategory = with(categories) { subCategories.find("Building insurance") }
+            subCategory = SubCategory("Building insurance", Category(categoryTitle))
         )
         val decision2 = Decision(
             line = Line(LocalDate.of(2017, 10, 10), "Some Bank", 300.00),
-            category = Category(categoryTitle, subCategories),
-            subCategory = with(categories) { subCategories.find("Mortgage") }
+            subCategory = SubCategory("Mortgage", Category(categoryTitle))
         )
         val statementMetadata = StatementMetadata(Year.of(2017), OCTOBER, "Tom", "some-bank")
         decisionReaderWriter.write(statementMetadata, listOf(decision1, decision2))
@@ -132,22 +124,17 @@ class JsonGenerationTest {
     fun `POST to generate - json endpoint with three decisions, two categories and two subcategories in one monthly decisions file returns correct JSON`() {
         val inYourHome = "In your home"
         val eatsAndDrinks = "Eats and drinks"
-        val subCategoriesInYourHome = categories.subcategoriesFor(inYourHome)
-        val subCategoriesEatsAndDrinks = categories.subcategoriesFor(eatsAndDrinks)
         val decision1 = Decision(
             line = Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 200.00),
-            category = Category(inYourHome, subCategoriesInYourHome),
-            subCategory = with(categories) { subCategoriesInYourHome.find("Building insurance") }
+            subCategory = SubCategory("Building insurance", Category(inYourHome))
         )
         val decision2 = Decision(
             line = Line(LocalDate.of(2017, 10, 10), "Some Bank", 100.00),
-            category = Category(inYourHome, subCategoriesInYourHome),
-            subCategory = with(categories) { subCategoriesInYourHome.find("Mortgage") }
+            subCategory = SubCategory("Mortgage", Category(inYourHome))
         )
         val decision3 = Decision(
             line = Line(LocalDate.of(2017, 10, 17), "Something in a totally different category", 400.00),
-            category = Category(eatsAndDrinks, subCategoriesEatsAndDrinks),
-            subCategory = with(categories) { subCategoriesEatsAndDrinks.find("Food") }
+            subCategory = SubCategory("Food", Category(eatsAndDrinks))
         )
         val statementMetadata = StatementMetadata(Year.of(2017), OCTOBER, "Tom", "some-bank")
         decisionReaderWriter.write(statementMetadata, listOf(decision1, decision2, decision3))
@@ -161,16 +148,14 @@ class JsonGenerationTest {
 
     @Test
     fun `POST to generate - json endpoint with decisions in different months returns correct JSON`() {
-        val subCategoriesInYourHome = categories.subcategoriesFor("In your home")
+        val inYourHome = "In your home"
         val decision1 = Decision(
             line = Line(LocalDate.of(2017, 1, 24), "B Dradley Painter and Decorator", 1.00),
-            category = Category("In your home", subCategoriesInYourHome),
-            subCategory = with(categories) { subCategoriesInYourHome.find("Building insurance") }
+            subCategory = SubCategory("Building insurance", Category(inYourHome))
         )
         val decision2 = Decision(
             line = Line(LocalDate.of(2017, 2, 10), "Some Bank", 2.00),
-            category = Category("In your home", subCategoriesInYourHome),
-            subCategory = with(categories) { subCategoriesInYourHome.find("Mortgage") }
+            subCategory = SubCategory("Mortgage", Category(inYourHome))
         )
         val septemberStatementData = StatementMetadata(Year.of(2017), JANUARY, "Tom", "some-bank")
         val octoberStatementData = StatementMetadata(Year.of(2017), FEBRUARY, "Tom", "some-bank")
@@ -186,11 +171,9 @@ class JsonGenerationTest {
 
     @Test
     fun `POST to generate - json endpoint for final month in the year shows correct budget total`() {
-        val subCategoriesInYourHome = categories.subcategoriesFor("In your home")
         val decision = Decision(
             line = Line(LocalDate.of(2017, 12, 24), "B Dradley Painter and Decorator", 1.00),
-            category = Category("In your home", subCategoriesInYourHome),
-            subCategory = with(categories) { subCategoriesInYourHome.find("Building insurance") }
+            subCategory = SubCategory("Building insurance", Category("In your home"))
         )
         val decemberStatementData = StatementMetadata(Year.of(2017), DECEMBER, "Tom", "some-bank")
         decisionReaderWriter.write(decemberStatementData, listOf(decision))
@@ -204,6 +187,7 @@ class JsonGenerationTest {
 
     @Test
     fun `POST to generate - json endpoint with decisions in different months and mismatched statements returns correct JSON`() {
+        val inYourHome = "In your home"
         val localDecisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, Paths.get("src/test/resources/decisions"))
         val midMonthBudgetDirectory = Paths.get("${testDir}budgets/mid-month/")
         val localSkrooge = Skrooge(
@@ -212,16 +196,13 @@ class JsonGenerationTest {
                 budgetDirectory = midMonthBudgetDirectory
         ).routes
 
-        val subCategoriesInYourHome = categories.subcategoriesFor("In your home")
         val decision1 = Decision(
             line = Line(LocalDate.of(2016, 12, 15), "B Dradley Painter and Decorator", 1.00),
-            category = Category("In your home", subCategoriesInYourHome),
-            subCategory = with(categories) { subCategoriesInYourHome.find("Building insurance") }
+            subCategory = SubCategory("Building insurance", Category(inYourHome))
         )
         val decision2 = Decision(
             line = Line(LocalDate.of(2017, 2, 14), "Some Bank", 2.00),
-            category = Category("In your home", subCategoriesInYourHome),
-            subCategory = with(categories) { subCategoriesInYourHome.find("Mortgage") }
+            subCategory = SubCategory("Mortgage", Category(inYourHome))
         )
         val januaryStatementData = StatementMetadata(Year.of(2017), JANUARY, "Tom", "SomeBank")
         val februaryStatementData = StatementMetadata(Year.of(2017), FEBRUARY, "Tom", "SomeBank")

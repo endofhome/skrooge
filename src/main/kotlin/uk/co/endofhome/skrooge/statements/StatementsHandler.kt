@@ -21,7 +21,6 @@ import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.unknownMerchant
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.CategoriesWithSelection
 import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantKey
-import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.decisions.DecisionState.Decision
 import uk.co.endofhome.skrooge.decisions.DecisionState.DecisionRequired
 import uk.co.endofhome.skrooge.decisions.Line
@@ -85,7 +84,6 @@ class StatementsHandler(private val renderer: TemplateRenderer, val categories: 
                 decisions.sortedBy { it.line.date }.map { decision ->
                     FormattedDecision(
                             LineFormatter.format(decision.line),
-                            decision.category,
                             decision.subCategory,
                             categories.withSelection(decision.subCategory)
                     )
@@ -161,7 +159,7 @@ object FileMetadata {
 
 data class FormattedBankStatement(val year: String, val month: String, val user: String, val statement: String, val filePath: String, val formattedDecisions: List<FormattedDecision>)
 data class FormattedLine(val date: String, val merchant: String, val amount: String)
-data class FormattedDecision(val line: FormattedLine, val category: Category?, val subCategory: SubCategory?, val categoriesWithSelection: CategoriesWithSelection)
+data class FormattedDecision(val line: FormattedLine, val subCategory: SubCategory?, val categoriesWithSelection: CategoriesWithSelection)
 data class CategoryMapping(val purchase: String, val mainCategory: String, val subCategory: String)
 
 data class PleaseReviewYourCategorisations(val bankStatement: FormattedBankStatement) : ViewModel

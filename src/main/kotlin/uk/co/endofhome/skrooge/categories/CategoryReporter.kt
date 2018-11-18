@@ -2,6 +2,7 @@ package uk.co.endofhome.skrooge.categories
 
 import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.decisions.DecisionState.Decision
+import uk.co.endofhome.skrooge.decisions.SubCategory
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
@@ -9,12 +10,12 @@ import java.time.Month.DECEMBER
 import java.time.Month.JANUARY
 import java.time.Period
 
-class CategoryReporter(val categories: List<Category>, private val annualBudgets: AnnualBudgets) {
+class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private val annualBudgets: AnnualBudgets) {
 
     fun categoryReportsFrom(decisions: List<Decision>, numberOfMonths: Int = 1): List<CategoryReport> {
         val catReportDataItems: List<CategoryReportDataItem> =
             decisions.map { decision ->
-                val budgetAmount = annualBudgets.valueFor(decision.category, decision.subCategory, decision.line.date)
+                val budgetAmount = annualBudgets.valueFor(decision.subCategory, decision.line.date)
                 CategoryReportDataItem(decision.subCategory.name, decision.line.amount, budgetAmount * numberOfMonths)
             }.groupBy { reportDataItem ->
                 reportDataItem.name
@@ -26,10 +27,14 @@ class CategoryReporter(val categories: List<Category>, private val annualBudgets
                 reportDataItem.copy(actual = BigDecimal.valueOf(reportDataItem.actual).setScale(2, RoundingMode.HALF_UP).toDouble())
             }
 
-        return categories.map { category ->
+        return categories.map { mapItem ->
             CategoryReport(
-                category.title,
-                catReportDataItems.filter { dataItem -> category.subcategories.map { it.name }.contains(dataItem.name) }
+                mapItem.key.title,
+                catReportDataItems.filter {
+                    dataItem -> mapItem.value.map {
+                        it.name
+                    }.contains(dataItem.name)
+                }
             )
         }.filter { it.data.isNotEmpty() }
     }
