@@ -29,7 +29,7 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '$kotlin_version'
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: "$kotlin_version"
     compile "org.http4k:http4k-core:$http4k_version"
     compile "org.http4k:http4k-server-jetty:$http4k_version"
     compile "org.http4k:http4k-client-apache:$http4k_version"
