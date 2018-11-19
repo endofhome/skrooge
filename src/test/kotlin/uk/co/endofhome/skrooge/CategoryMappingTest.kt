@@ -111,11 +111,7 @@ class CategoryMappingTest {
 
     @Test
     fun `can accept multiple remaining merchants`() {
-        val testFile = File(statementFilePath)
-        val printWriter = PrintWriter(testFile)
-        printWriter.use {
-            it.write("")
-        }
+        writeEmptyStatementToFileSystem()
 
         val request = Request(POST, categoryMapping)
             .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
@@ -140,11 +136,7 @@ class CategoryMappingTest {
 
     @Test
     fun `when all categories have been mapped a monthly report is available for review`() {
-        val testFile = File(statementFilePath)
-        val printWriter = PrintWriter(testFile)
-        printWriter.use {
-            it.write("")
-        }
+        writeEmptyStatementToFileSystem()
 
         val request = Request(POST, categoryMapping)
                 .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
@@ -163,5 +155,13 @@ class CategoryMappingTest {
 
         val followedResponse = with(RedirectHelper(skrooge)) { response.followRedirect(request) }
         approver.assertApproved(followedResponse.bodyString())
+    }
+
+    private fun writeEmptyStatementToFileSystem() {
+        val testFile = File(statementFilePath)
+        val printWriter = PrintWriter(testFile)
+        printWriter.use {
+            it.write("")
+        }
     }
 }
