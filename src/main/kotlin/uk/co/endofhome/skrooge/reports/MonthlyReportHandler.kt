@@ -42,13 +42,11 @@ class MonthlyReportHandler(private val decisionReaderWriter: DecisionReaderWrite
         val endDate = sortedDecisions.last().line.date
         val budgetStartDate = categoryReporter.currentBudgetStartDateFor(dateOfFirstTransaction)
         val historicalCategoryReports: List<List<CategoryReport>> =
-            when {
-                budgetStartDate != null -> {
-                    val startOfPreviousPeriod = dateOfFirstTransaction.previousBudgetDate(budgetStartDate.dayOfMonth).minusMonths(1)
-                    catReportsForPreviousMonths(startOfPreviousPeriod, budgetStartDate)
-                }
-                else -> emptyList()
+            if (budgetStartDate != null) {
+                val startOfPreviousPeriod = dateOfFirstTransaction.previousBudgetDate(budgetStartDate.dayOfMonth).minusMonths(1)
+                catReportsForPreviousMonths(startOfPreviousPeriod, budgetStartDate)
             }
+            else emptyList()
         val aggregatedOverview = categoryReporter.aggregatedOverviewFrom(overview, dateOfFirstTransaction, endDate, historicalCategoryReports)
         val report = MonthlyJsonReport(year, month.getDisplayName(TextStyle.FULL, Locale.UK), month.value, aggregatedOverview, overview, catReports)
         return Gson.asJsonObject(report).asPrettyJsonString()
@@ -71,15 +69,16 @@ class MonthlyReportHandler(private val decisionReaderWriter: DecisionReaderWrite
         return catReportsForPreviousMonths(startOfThisPeriod.minusMonths(1), budgetStartDate, catReports + listOf(catReportForLastMonth))
     }
 
-    private fun LocalDate.previousBudgetDate(budgetDayOfMonth: Int): LocalDate = when {
-        this.dayOfMonth >= budgetDayOfMonth -> LocalDate.of(year, month, budgetDayOfMonth)
-        else                                -> {
+    private fun LocalDate.previousBudgetDate(budgetDayOfMonth: Int): LocalDate =
+        if (this.dayOfMonth >= budgetDayOfMonth) {
+            LocalDate.of(year, month, budgetDayOfMonth)
+        }
+        else {
             when {
                 this.month == Month.JANUARY -> LocalDate.of(year.minus(1), Month.DECEMBER, budgetDayOfMonth)
                 else                        -> LocalDate.of(year, month.minus(1), budgetDayOfMonth)
             }
         }
-    }
 }
 
 data class MonthlyJsonReport(

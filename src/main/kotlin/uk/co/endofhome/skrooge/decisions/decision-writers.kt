@@ -31,13 +31,13 @@ class FileSystemDecisionReaderReaderWriter(private val categories: Categories, p
 
     override fun read(year: Int, month: Month): List<Decision> =
         outputPath.toFile().listFiles()
-                              .filterNot { it.name == ".gitkeep" }
-                              .filter {
-                                  val filenameSplit = it.name.split("-")
-                                  filenameSplit[2] != "Test"
-                              }
-                              .filter { it.name.startsWith("$year-${month.value}") }
-                              .toDecisions()
+            .filterNot { it.name == ".gitkeep" }
+            .filter {
+                val filenameSplit = it.name.split("-")
+                filenameSplit[2] != "Test"
+            }
+            .filter { it.name.startsWith("$year-${month.value}") }
+            .toDecisions()
 
     override fun readForYearStarting(startDate: LocalDate): List<Decision> {
         // so far this is weird because the day of the month is completely ignored.
