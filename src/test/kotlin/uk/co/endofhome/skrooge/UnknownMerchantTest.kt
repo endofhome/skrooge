@@ -1,4 +1,4 @@
-package uk.co.endofhome.skrooge.unknownmerchant
+package uk.co.endofhome.skrooge
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
@@ -8,7 +8,6 @@ import org.http4k.core.Request
 import org.http4k.core.Status
 import org.junit.Rule
 import org.junit.Test
-import uk.co.endofhome.skrooge.Skrooge
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.unknownMerchant
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantKey
