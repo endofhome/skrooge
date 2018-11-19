@@ -41,11 +41,6 @@ class JsonGenerationTest {
         budgetDirectory = Paths.get("${testDir}budgets/")
     ).routes
 
-    /* TODO:
-       App already works for multiple files, but some tests would be nice, to guard against regressions.
-       Also, possibly all subcategories should be available, but with 0 values for actual expenditure.
-    */
-    
     @Before
     fun setup() {
         val statementMetadata = StatementMetadata(Year.of(2017), OCTOBER, "Milford", "some-bank")
