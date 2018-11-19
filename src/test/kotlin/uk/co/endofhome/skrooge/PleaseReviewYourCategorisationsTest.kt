@@ -19,8 +19,8 @@ import java.nio.file.Paths
 
 class PleaseReviewYourCategorisationsTest {
 
-    @Rule
-    @JvmField val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
+    @Rule @JvmField
+    val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
 
     private val categoryMappings = mutableListOf("Pizza Union,Some category,Some subcategory")
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)

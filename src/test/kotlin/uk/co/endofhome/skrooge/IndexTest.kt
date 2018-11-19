@@ -14,8 +14,7 @@ import java.nio.file.Paths
 
 class IndexTest {
 
-    @Rule
-    @JvmField
+    @Rule @JvmField
     val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
 
     private val categoryMappings = mutableListOf<String>()

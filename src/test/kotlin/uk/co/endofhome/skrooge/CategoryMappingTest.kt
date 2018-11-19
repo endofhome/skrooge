@@ -33,8 +33,8 @@ import java.nio.file.Paths
 
 class CategoryMappingTest {
 
-    @Rule
-    @JvmField val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
+    @Rule @JvmField
+    val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
 
     private val categoryMappings = mutableListOf("Edgeworld Records,Fun,Tom fun budget")
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)

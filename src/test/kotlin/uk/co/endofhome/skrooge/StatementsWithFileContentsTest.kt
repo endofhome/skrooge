@@ -28,8 +28,8 @@ import java.nio.file.Paths
 
 class StatementsWithFileContentsTest {
 
-    @Rule
-    @JvmField val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
+    @Rule @JvmField
+    val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
 
     private val categoryMappings = mutableListOf<String>()
     private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
