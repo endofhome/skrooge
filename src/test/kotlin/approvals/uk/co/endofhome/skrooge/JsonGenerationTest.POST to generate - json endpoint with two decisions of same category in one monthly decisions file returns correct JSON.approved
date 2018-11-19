@@ -6,8 +6,8 @@
     "title": "Aggregated Overview",
     "data": {
       "name": "Overview",
-      "actual": 750.0,
-      "yearToDateActual": 750.0,
+      "actual": 700.0,
+      "yearToDateActual": 700.0,
       "budget": 599.0,
       "yearToDateBudget": 5990.0,
       "annualBudget": 7188.0
@@ -18,7 +18,7 @@
     "data": [
       {
         "name": "Building insurance",
-        "actual": 750.0,
+        "actual": 700.0,
         "budget": 2.0
       }
     ]
@@ -29,7 +29,7 @@
       "data": [
         {
           "name": "Building insurance",
-          "actual": 750.0,
+          "actual": 700.0,
           "budget": 2.0
         }
       ]
