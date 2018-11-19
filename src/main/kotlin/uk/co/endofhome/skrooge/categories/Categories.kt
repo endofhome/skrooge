@@ -23,9 +23,9 @@ class Categories(private val schemaFilePath: String = "category-schema/category-
         }
     }
 
-    fun get(subCategoryName: String): SubCategory =
-        subCategories().find { it.name == subCategoryName }
-            ?: throw IllegalStateException("$subCategoryName not found in schema file.")
+    fun get(categoryName: String, subCategoryName: String): SubCategory =
+        subCategories().find { it.category.title == categoryName && it.name == subCategoryName}
+            ?: throw IllegalStateException("Category: '$categoryName', subcategory: '$subCategoryName' not found in schema file.")
 
     fun withSelection(subCategory: SubCategory?): CategoriesWithSelection {
         val categoryTitles = all().keys.map { it.title }

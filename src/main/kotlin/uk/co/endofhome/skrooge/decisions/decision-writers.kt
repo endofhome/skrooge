@@ -64,11 +64,11 @@ class FileSystemDecisionReaderReaderWriter(private val categories: Categories, p
 
         return this.flatMap { file ->
             file.readLines().map { rawLine ->
-                val (date, merchant, amount, _, subCategoryName) = rawLine.split(",")
+                val (date, merchant, amount, categoryName, subCategoryName) = rawLine.split(",")
                 val (year, month, day) = date.split("-").map { it.toInt() }
                 val line = Line(LocalDate.of(year, month, day), merchant, amount.toDouble())
 
-                val subCategory = categories.get(subCategoryName)
+                val subCategory = categories.get(categoryName, subCategoryName)
                 Decision(line, subCategory)
             }
         }
