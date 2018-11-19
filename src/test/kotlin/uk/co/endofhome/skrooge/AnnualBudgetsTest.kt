@@ -11,11 +11,11 @@ import java.time.LocalDate
 import java.time.Month
 
 class AnnualBudgetsTest {
+    private val category = Category("Category")
+    private val subCategory = SubCategory("Subcategory", category)
 
     @Test
     fun `Retrieves budget for a given category, subcategory and date`() {
-        val category = Category("Category")
-        val subCategory = SubCategory("Subcategory", category)
         val wrongSubCategory = SubCategory("Wrong SubCategory", category)
         val budgets = listOf(
                 AnnualBudget(LocalDate.of(2017, Month.JANUARY, 1),
@@ -37,8 +37,6 @@ class AnnualBudgetsTest {
 
     @Test(expected = IllegalStateException::class)
     fun `Blows up if annual budget isn't available for the period`() {
-        val category = Category("Subcategory")
-        val subCategory = SubCategory("Category", category)
         val budgets = listOf(
                 AnnualBudget(LocalDate.of(2017, Month.JANUARY, 1),
                         listOf(subCategory to 1.99)),
