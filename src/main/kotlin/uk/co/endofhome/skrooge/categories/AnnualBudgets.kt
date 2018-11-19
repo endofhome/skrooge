@@ -5,9 +5,9 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.decisions.SubCategory
+import java.io.File
 import java.nio.file.Path
 import java.time.LocalDate
-import java.time.Month
 
 class AnnualBudgets(private val budgets: List<AnnualBudget>) {
 
@@ -17,24 +17,20 @@ class AnnualBudgets(private val budgets: List<AnnualBudget>) {
                 .listFiles()
                 .filter { it.name.endsWith(".json") }
                 .map { file ->
-                    val (year, month, day) = file.name.split('/')
-                        .last()
-                        .substringBefore('.')
-                        .split('-')
-                        .drop(1)
-                        .map { it.toInt() }
-                    AnnualBudget.from(
-                        LocalDate.of(
-                            year,
-                            Month.of(month),
-                            day
-                        ),
-                        file.readText()
-                    )
+                    val (year, month, day) = file.parseDateIntsFromFilename()
+                    AnnualBudget.from(LocalDate.of(year, month, day), file.readText())
                 }
 
             return AnnualBudgets(budgetsFromFiles)
         }
+
+        private fun File.parseDateIntsFromFilename(): List<Int> =
+            this.name.split('/')
+                .last()
+                .substringBefore('.')
+                .split('-')
+                .drop(1)
+                .map { element -> element.toInt() }
     }
 
     fun valueFor(subCategory: SubCategory, date: LocalDate): Double {
