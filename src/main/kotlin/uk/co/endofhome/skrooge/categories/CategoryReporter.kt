@@ -31,12 +31,14 @@ class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private
             CategoryReport(
                 mapItem.key.title,
                 catReportDataItems.filter {
-                    dataItem -> mapItem.value.map {
-                        it.name
+                    dataItem -> mapItem.value.map { subcategory ->
+                        subcategory.name
                     }.contains(dataItem.name)
                 }
             )
-        }.filter { it.data.isNotEmpty() }
+        }.filter { categoryReport ->
+            categoryReport.data.isNotEmpty()
+        }
     }
 
     fun overviewFrom(categoryReports: List<CategoryReport>): CategoryReport {
