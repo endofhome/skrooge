@@ -43,16 +43,14 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
         val remainingMerchants: Set<String> by lazy { remainingMerchantsLens.extract(form)?.toSet() ?: emptySet() }
         val statementForm: FormForNormalisedStatement by lazy { FormForNormalisedStatement.fromUrlEncoded(request) }
 
-        return when {
-            newMapping.isValid() -> {
-                write(newMapping)
-                when {
-                    remainingMerchants.isEmpty() -> redirectToStatementsWIthFilePath()
-                    else                         -> redirectToUnknownMerchant(statementForm, remainingMerchants)
-                }
+        return if (newMapping.isValid()) {
+            write(newMapping)
+            when {
+                remainingMerchants.isEmpty() -> redirectToStatementsWIthFilePath()
+                else                         -> redirectToUnknownMerchant(statementForm, remainingMerchants)
             }
-            else -> Response(BAD_REQUEST)
         }
+        else Response(BAD_REQUEST)
     }
     private fun List<String>.isValid() = this.size >= 3
 
