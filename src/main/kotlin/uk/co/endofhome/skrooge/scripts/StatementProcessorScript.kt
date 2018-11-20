@@ -46,4 +46,6 @@ fun approve(normalisedStatement: List<String>, statementFilename: String, userna
     }
 
     printWriter.close()
+
+    println("\nWritten out approved statement: $normalisedFilename")
 }
