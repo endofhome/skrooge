@@ -78,7 +78,7 @@
                         
                             <option value="17/09/2017,Pizza Union,5.50,Family,Nappies/baby extras">Nappies/baby extras</option>
                         
-                            <option value="17/09/2017,Pizza Union,5.50,Family,Baby activities">Baby activities</option>
+                            <option value="17/09/2017,Pizza Union,5.50,Family,Bert activities">Bert activities</option>
                         
                     </optgroup>
                 
@@ -102,7 +102,7 @@
                 
                     <optgroup label="Clothes">
                         
-                            <option value="17/09/2017,Pizza Union,5.50,Clothes,Baby clothes">Baby clothes</option>
+                            <option value="17/09/2017,Pizza Union,5.50,Clothes,Bert clothes">Bert clothes</option>
                         
                     </optgroup>
                 

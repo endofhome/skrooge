@@ -12,11 +12,11 @@ import java.time.Period
 
 class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private val annualBudgets: AnnualBudgets) {
 
-    fun categoryReportsFrom(decisions: List<Decision>, numberOfMonths: Int = 1): List<CategoryReport> {
+    fun categoryReportsFrom(decisions: List<Decision>): List<CategoryReport> {
         val catReportDataItems: List<CategoryReportDataItem> =
             decisions.map { decision ->
                 val budgetAmount = annualBudgets.valueFor(decision.subCategory, decision.line.date)
-                CategoryReportDataItem(decision.subCategory.name, decision.line.amount, budgetAmount * numberOfMonths)
+                CategoryReportDataItem(decision.subCategory.name, decision.line.amount, budgetAmount)
             }.groupBy { reportDataItem ->
                 reportDataItem.name
             }.map { mapEntry ->
@@ -30,20 +30,25 @@ class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private
         return categories.map { mapItem ->
             CategoryReport(
                 mapItem.key.title,
-                catReportDataItems.filter {
-                    dataItem -> mapItem.value.map { subcategory ->
-                        subcategory.name
-                    }.contains(dataItem.name)
+                mapItem.value.mapNotNull { subCategory ->
+                    if (catReportDataItems.isNotEmpty()) {
+                        val dataItemWithNilActual: CategoryReportDataItem by lazy {
+                            CategoryReportDataItem(subCategory.name, 0.0, annualBudgets.valueFor(subCategory, decisions.first().line.date))
+                        }
+                        catReportDataItems.find { catReportDataItem ->
+                            subCategory.name == catReportDataItem.name
+                        } ?: dataItemWithNilActual
+                    } else {
+                        null
+                    }
                 }
             )
-        }.filter { categoryReport ->
-            categoryReport.data.isNotEmpty()
         }
     }
 
     fun overviewFrom(categoryReports: List<CategoryReport>): CategoryReport {
         val overviewCategoryReport: List<CategoryReportDataItem> = categoryReports.map { categoryReport ->
-            categoryReport.data.reduce { acc, categoryReportDataItem ->
+            categoryReport.data.fold(CategoryReportDataItem(categoryReport.title, 0.0, 0.0)) { acc, categoryReportDataItem ->
                 CategoryReportDataItem(categoryReport.title, acc.actual + categoryReportDataItem.actual, acc.budget + categoryReportDataItem.budget)
             }
         }

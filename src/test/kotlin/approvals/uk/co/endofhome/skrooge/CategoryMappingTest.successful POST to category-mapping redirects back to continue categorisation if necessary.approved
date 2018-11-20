@@ -77,7 +77,7 @@
                 
                 <option value="Another vendor,Family,Nappies/baby extras">Nappies/baby extras</option>
                 
-                <option value="Another vendor,Family,Baby activities">Baby activities</option>
+                <option value="Another vendor,Family,Bert activities">Bert activities</option>
                 
             </optgroup>
             
@@ -101,7 +101,7 @@
             
             <optgroup label="Clothes">
                 
-                <option value="Another vendor,Clothes,Baby clothes">Baby clothes</option>
+                <option value="Another vendor,Clothes,Bert clothes">Bert clothes</option>
                 
             </optgroup>
             

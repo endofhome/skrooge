@@ -77,7 +77,7 @@
                 
                 <option value="Bob&#x27;s Laundrette,Family,Nappies/baby extras">Nappies/baby extras</option>
                 
-                <option value="Bob&#x27;s Laundrette,Family,Baby activities">Baby activities</option>
+                <option value="Bob&#x27;s Laundrette,Family,Bert activities">Bert activities</option>
                 
             </optgroup>
             
@@ -101,7 +101,7 @@
             
             <optgroup label="Clothes">
                 
-                <option value="Bob&#x27;s Laundrette,Clothes,Baby clothes">Baby clothes</option>
+                <option value="Bob&#x27;s Laundrette,Clothes,Bert clothes">Bert clothes</option>
                 
             </optgroup>
             

@@ -17,9 +17,64 @@
     "title": "Overview",
     "data": [
       {
-        "name": "Mortgage",
+        "name": "In your home",
         "actual": 2.0,
-        "budget": 1.0
+        "budget": 49.0
+      },
+      {
+        "name": "Insurance",
+        "actual": 0.0,
+        "budget": 33.0
+      },
+      {
+        "name": "Eats and drinks",
+        "actual": 0.0,
+        "budget": 42.0
+      },
+      {
+        "name": "Motoring and public transport",
+        "actual": 0.0,
+        "budget": 51.0
+      },
+      {
+        "name": "Savings and investments",
+        "actual": 0.0,
+        "budget": 19.0
+      },
+      {
+        "name": "Family",
+        "actual": 0.0,
+        "budget": 63.0
+      },
+      {
+        "name": "Fun",
+        "actual": 0.0,
+        "budget": 47.0
+      },
+      {
+        "name": "Health and beauty",
+        "actual": 0.0,
+        "budget": 78.0
+      },
+      {
+        "name": "Clothes",
+        "actual": 0.0,
+        "budget": 28.0
+      },
+      {
+        "name": "Big one offs",
+        "actual": 0.0,
+        "budget": 122.0
+      },
+      {
+        "name": "Odds and sods",
+        "actual": 0.0,
+        "budget": 33.0
+      },
+      {
+        "name": "Refurbishments",
+        "actual": 0.0,
+        "budget": 34.0
       }
     ]
   },
@@ -31,6 +86,231 @@
           "name": "Mortgage",
           "actual": 2.0,
           "budget": 1.0
+        },
+        {
+          "name": "Building insurance",
+          "actual": 0.0,
+          "budget": 2.0
+        },
+        {
+          "name": "Council tax",
+          "actual": 0.0,
+          "budget": 3.0
+        },
+        {
+          "name": "Water rates",
+          "actual": 0.0,
+          "budget": 4.0
+        },
+        {
+          "name": "Gas",
+          "actual": 0.0,
+          "budget": 4.0
+        },
+        {
+          "name": "Electricity",
+          "actual": 0.0,
+          "budget": 5.0
+        },
+        {
+          "name": "Household maintenance",
+          "actual": 0.0,
+          "budget": 6.0
+        },
+        {
+          "name": "Internet",
+          "actual": 0.0,
+          "budget": 7.0
+        },
+        {
+          "name": "TV Licence",
+          "actual": 0.0,
+          "budget": 8.0
+        },
+        {
+          "name": "Mobile phone",
+          "actual": 0.0,
+          "budget": 9.0
+        }
+      ]
+    },
+    {
+      "title": "Insurance",
+      "data": [
+        {
+          "name": "Travel insurance",
+          "actual": 0.0,
+          "budget": 10.0
+        },
+        {
+          "name": "Income protection",
+          "actual": 0.0,
+          "budget": 11.0
+        },
+        {
+          "name": "Life insurance",
+          "actual": 0.0,
+          "budget": 12.0
+        }
+      ]
+    },
+    {
+      "title": "Eats and drinks",
+      "data": [
+        {
+          "name": "Food",
+          "actual": 0.0,
+          "budget": 13.0
+        },
+        {
+          "name": "Eating out",
+          "actual": 0.0,
+          "budget": 14.0
+        },
+        {
+          "name": "Meals at work",
+          "actual": 0.0,
+          "budget": 15.0
+        }
+      ]
+    },
+    {
+      "title": "Motoring and public transport",
+      "data": [
+        {
+          "name": "Rail/bus/taxi",
+          "actual": 0.0,
+          "budget": 16.0
+        },
+        {
+          "name": "Car club subscription",
+          "actual": 0.0,
+          "budget": 17.0
+        },
+        {
+          "name": "Car club hires",
+          "actual": 0.0,
+          "budget": 18.0
+        }
+      ]
+    },
+    {
+      "title": "Savings and investments",
+      "data": [
+        {
+          "name": "Pension payments",
+          "actual": 0.0,
+          "budget": 19.0
+        }
+      ]
+    },
+    {
+      "title": "Family",
+      "data": [
+        {
+          "name": "Childcare",
+          "actual": 0.0,
+          "budget": 20.0
+        },
+        {
+          "name": "Nappies/baby extras",
+          "actual": 0.0,
+          "budget": 21.0
+        },
+        {
+          "name": "Bert activities",
+          "actual": 0.0,
+          "budget": 22.0
+        }
+      ]
+    },
+    {
+      "title": "Fun",
+      "data": [
+        {
+          "name": "Bob fun budget",
+          "actual": 0.0,
+          "budget": 23.0
+        },
+        {
+          "name": "Bill fun budget",
+          "actual": 0.0,
+          "budget": 24.0
+        }
+      ]
+    },
+    {
+      "title": "Health and beauty",
+      "data": [
+        {
+          "name": "Dentistry",
+          "actual": 0.0,
+          "budget": 25.0
+        },
+        {
+          "name": "Haircuts",
+          "actual": 0.0,
+          "budget": 26.0
+        },
+        {
+          "name": "Optical bills",
+          "actual": 0.0,
+          "budget": 27.0
+        }
+      ]
+    },
+    {
+      "title": "Clothes",
+      "data": [
+        {
+          "name": "Bert clothes",
+          "actual": 0.0,
+          "budget": 28.0
+        }
+      ]
+    },
+    {
+      "title": "Big one offs",
+      "data": [
+        {
+          "name": "Christmas",
+          "actual": 0.0,
+          "budget": 29.0
+        },
+        {
+          "name": "Summer holiday",
+          "actual": 0.0,
+          "budget": 30.0
+        },
+        {
+          "name": "Winter holiday",
+          "actual": 0.0,
+          "budget": 31.0
+        },
+        {
+          "name": "Birthdays",
+          "actual": 0.0,
+          "budget": 32.0
+        }
+      ]
+    },
+    {
+      "title": "Odds and sods",
+      "data": [
+        {
+          "name": "Charity donations",
+          "actual": 0.0,
+          "budget": 33.0
+        }
+      ]
+    },
+    {
+      "title": "Refurbishments",
+      "data": [
+        {
+          "name": "Refurbishments",
+          "actual": 0.0,
+          "budget": 34.0
         }
       ]
     }

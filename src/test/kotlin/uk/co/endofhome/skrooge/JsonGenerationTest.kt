@@ -180,14 +180,19 @@ class JsonGenerationTest {
             line = Line(LocalDate.of(2016, 12, 15), "B Dradley Painter and Decorator", 1.00),
             subCategory = SubCategory("Building insurance", Category(inYourHome))
         )
-        val mortgageDecision = Decision(
+        val foodDecision = Decision(
             line = Line(LocalDate.of(2017, 2, 14), "Some Bank", 2.00),
-            subCategory = SubCategory("Mortgage", Category(inYourHome))
+            subCategory = SubCategory("Food", Category("Eats and drinks"))
+        )
+
+        val mealsAtWorkDecision = Decision(
+            line = Line(LocalDate.of(2017, 2, 13), "Some Bank", 5.00),
+            subCategory = SubCategory("Meals at work", Category("Eats and drinks"))
         )
         val januaryStatementData = StatementMetadata(Year.of(2017), JANUARY, "Tom", "SomeBank")
         val februaryStatementData = StatementMetadata(Year.of(2017), FEBRUARY, "Tom", "SomeBank")
         localDecisionReaderWriter.write(januaryStatementData, listOf(buildingInsuranceDecision))
-        localDecisionReaderWriter.write(februaryStatementData, listOf(mortgageDecision))
+        localDecisionReaderWriter.write(februaryStatementData, listOf(foodDecision, mealsAtWorkDecision))
         val request = Request(GET, monthlyJsonReport).query("year", "2017").query("month", "2")
 
         val response = localSkrooge(request)

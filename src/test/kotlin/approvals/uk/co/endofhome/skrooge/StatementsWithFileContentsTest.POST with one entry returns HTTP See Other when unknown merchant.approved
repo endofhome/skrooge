@@ -77,7 +77,7 @@
                 
                 <option value="McDonalds,Family,Nappies/baby extras">Nappies/baby extras</option>
                 
-                <option value="McDonalds,Family,Baby activities">Baby activities</option>
+                <option value="McDonalds,Family,Bert activities">Bert activities</option>
                 
             </optgroup>
             
@@ -101,7 +101,7 @@
             
             <optgroup label="Clothes">
                 
-                <option value="McDonalds,Clothes,Baby clothes">Baby clothes</option>
+                <option value="McDonalds,Clothes,Bert clothes">Bert clothes</option>
                 
             </optgroup>
             
