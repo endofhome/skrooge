@@ -13,19 +13,7 @@ import java.time.Period
 class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private val annualBudgets: AnnualBudgets) {
 
     fun categoryReportsFrom(decisions: List<Decision>): List<CategoryReport> {
-        val catReportDataItems: List<CategoryReportDataItem> =
-            decisions.map { decision ->
-                val budgetAmount = annualBudgets.valueFor(decision.subCategory, decision.line.date)
-                CategoryReportDataItem(decision.subCategory.name, decision.line.amount, budgetAmount)
-            }.groupBy { reportDataItem ->
-                reportDataItem.name
-            }.map { mapEntry ->
-                mapEntry.value.reduce { acc, categoryReportDataItem ->
-                    CategoryReportDataItem(mapEntry.key, acc.actual + categoryReportDataItem.actual, categoryReportDataItem.budget)
-                }
-            }.map { reportDataItem ->
-                reportDataItem.copy(actual = BigDecimal.valueOf(reportDataItem.actual).setScale(2, RoundingMode.HALF_UP).toDouble())
-            }
+        val catReportDataItems = catReportDataItemsFrom(decisions)
 
         return categories.map { mapItem ->
             CategoryReport(
@@ -33,7 +21,11 @@ class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private
                 mapItem.value.mapNotNull { subCategory ->
                     if (catReportDataItems.isNotEmpty()) {
                         val dataItemWithNilActual: CategoryReportDataItem by lazy {
-                            CategoryReportDataItem(subCategory.name, 0.0, annualBudgets.valueFor(subCategory, decisions.first().line.date))
+                            CategoryReportDataItem(
+                                name = subCategory.name,
+                                actual = 0.0,
+                                budget = annualBudgets.valueFor(subCategory, decisions.first().line.date)
+                            )
                         }
                         catReportDataItems.find { catReportDataItem ->
                             subCategory.name == catReportDataItem.name
@@ -45,6 +37,20 @@ class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private
             )
         }
     }
+
+    private fun catReportDataItemsFrom(decisions: List<Decision>): List<CategoryReportDataItem> =
+        decisions.map { decision ->
+            val budgetAmount = annualBudgets.valueFor(decision.subCategory, decision.line.date)
+            CategoryReportDataItem(decision.subCategory.name, decision.line.amount, budgetAmount)
+        }.groupBy { reportDataItem ->
+            reportDataItem.name
+        }.map { mapEntry ->
+            mapEntry.value.reduce { acc, categoryReportDataItem ->
+                CategoryReportDataItem(mapEntry.key, acc.actual + categoryReportDataItem.actual, categoryReportDataItem.budget)
+            }
+        }.map { reportDataItem ->
+            reportDataItem.copy(actual = BigDecimal.valueOf(reportDataItem.actual).setScale(2, RoundingMode.HALF_UP).toDouble())
+        }
 
     fun overviewFrom(categoryReports: List<CategoryReport>): CategoryReport {
         val overviewCategoryReport: List<CategoryReportDataItem> = categoryReports.map { categoryReport ->
