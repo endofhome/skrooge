@@ -74,7 +74,7 @@ class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private
         val numberOfMonthsSoFar = totalMonths(firstBudgetStartDate, lastBudgetEndDate)
 
         val actualExpenditure = categoryReport.data.map { it.actual }.sum()
-        val yearToDateActual: Double = historicalCategoryReports.flatMap { it.flatMap { it.data } }.map { it.actual }.fold(0.0) { acc, actual -> acc + actual } + actualExpenditure
+        val yearToDateActual: Double = historicalCategoryReports.toYearToDateActual(actualExpenditure)
         val budgetedExpenditure = firstRelevantBudget.budgetData.map { it.second }.sum()
         val data = AggregatedOverviewData("Overview", actualExpenditure, yearToDateActual, budgetedExpenditure, budgetedExpenditure * numberOfMonthsSoFar, budgetedExpenditure * 12)
 
@@ -88,6 +88,18 @@ class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private
             null
         }
 
+    private fun List<List<CategoryReport>>.toYearToDateActual(actualExpenditure: Double): Double {
+        return flatMap { catReports ->
+            catReports.flatMap { catReport ->
+                catReport.data
+            }
+        }.map { dateItemJson ->
+            dateItemJson.actual
+        }.fold(0.0) { acc, actual ->
+            acc + actual
+        } + actualExpenditure
+    }
+
     private fun totalMonths(startDate: LocalDate, endDate: LocalDate): Int {
         val period = Period.between(startDate, endDate)
         return (period.years * 12) + period.months
@@ -99,7 +111,7 @@ private fun LocalDate.nextBudgetDate(budgetDayOfMonth: Int): LocalDate = when {
     else -> {
         when (this.month) {
             DECEMBER -> LocalDate.of(year.plus(1), JANUARY, budgetDayOfMonth)
-            else     -> LocalDate.of(year, month.plus(1), budgetDayOfMonth)
+            else -> LocalDate.of(year, month.plus(1), budgetDayOfMonth)
         }
 
     }
