@@ -12,50 +12,55 @@ import java.time.Period
 
 class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private val annualBudgets: AnnualBudgets) {
 
-    fun categoryReportsFrom(decisions: List<Decision>): List<CategoryReport> {
-        val catReportDataItems = catReportDataItemsFrom(decisions)
-
-        return categories.map { mapItem ->
+    fun categoryReportsFrom(decisions: List<Decision>): List<CategoryReport> =
+        categories.map { mapItem ->
             CategoryReport(
                 mapItem.key.title,
-                mapItem.value.mapNotNull { subCategory ->
-                    if (catReportDataItems.isNotEmpty()) {
-                        val dataItemWithNilActual: CategoryReportDataItem by lazy {
-                            CategoryReportDataItem(
-                                name = subCategory.name,
-                                actual = 0.0,
-                                budget = annualBudgets.valueFor(subCategory, decisions.first().line.date)
-                            )
-                        }
-                        catReportDataItems.find { catReportDataItem ->
-                            subCategory.name == catReportDataItem.name
-                        } ?: dataItemWithNilActual
-                    } else {
-                        null
-                    }
-                }
+                mapItem.buildJsonData(decisions)
             )
+        }
+
+    private fun Map.Entry<Category, List<SubCategory>>.buildJsonData(decisions: List<Decision>): List<DataItemJson> {
+        val dataItems = dataItemsFrom(decisions)
+
+        return value.mapNotNull { subCategory ->
+            if (dataItems.isNotEmpty()) {
+                val dataItemWithNilActual: DataItem by lazy {
+                    DataItem(
+                        subCategory = subCategory,
+                        actual = 0.0,
+                        budget = annualBudgets.valueFor(subCategory, decisions.first().line.date)
+                    )
+                }
+                dataItems.find { dataItem ->
+                    subCategory == dataItem.subCategory
+                } ?: dataItemWithNilActual
+            } else {
+                null
+            }
+        }.map { dataItem ->
+            dataItem.toJsonData()
         }
     }
 
-    private fun catReportDataItemsFrom(decisions: List<Decision>): List<CategoryReportDataItem> =
+    private fun dataItemsFrom(decisions: List<Decision>): List<DataItem> =
         decisions.map { decision ->
             val budgetAmount = annualBudgets.valueFor(decision.subCategory, decision.line.date)
-            CategoryReportDataItem(decision.subCategory.name, decision.line.amount, budgetAmount)
+            DataItem(decision.subCategory, decision.line.amount, budgetAmount)
         }.groupBy { reportDataItem ->
-            reportDataItem.name
+            reportDataItem.subCategory
         }.map { mapEntry ->
             mapEntry.value.reduce { acc, categoryReportDataItem ->
-                CategoryReportDataItem(mapEntry.key, acc.actual + categoryReportDataItem.actual, categoryReportDataItem.budget)
+                DataItem(mapEntry.key, acc.actual + categoryReportDataItem.actual, categoryReportDataItem.budget)
             }
         }.map { reportDataItem ->
             reportDataItem.copy(actual = BigDecimal.valueOf(reportDataItem.actual).setScale(2, RoundingMode.HALF_UP).toDouble())
         }
 
     fun overviewFrom(categoryReports: List<CategoryReport>): CategoryReport {
-        val overviewCategoryReport: List<CategoryReportDataItem> = categoryReports.map { categoryReport ->
-            categoryReport.data.fold(CategoryReportDataItem(categoryReport.title, 0.0, 0.0)) { acc, categoryReportDataItem ->
-                CategoryReportDataItem(categoryReport.title, acc.actual + categoryReportDataItem.actual, acc.budget + categoryReportDataItem.budget)
+        val overviewCategoryReport: List<DataItemJson> = categoryReports.map { categoryReport ->
+            categoryReport.data.fold(DataItemJson(categoryReport.title, 0.0, 0.0)) { acc, categoryReportDataItem ->
+                DataItemJson(categoryReport.title, acc.actual + categoryReportDataItem.actual, acc.budget + categoryReportDataItem.budget)
             }
         }
         return CategoryReport("Overview", overviewCategoryReport)
@@ -100,7 +105,10 @@ private fun LocalDate.nextBudgetDate(budgetDayOfMonth: Int): LocalDate = when {
     }
 }
 
-data class CategoryReport(val title: String, val data: List<CategoryReportDataItem>)
+data class CategoryReport(val title: String, val data: List<DataItemJson>)
 data class AggregateOverviewReport(val title: String, val data: AggregatedOverviewData)
-data class CategoryReportDataItem(val name: String, val actual: Double, val budget: Double)
+data class DataItem(val subCategory: SubCategory, val actual: Double, val budget: Double) {
+    fun toJsonData() = DataItemJson(subCategory.name, actual, budget)
+}
+data class DataItemJson(val name: String, val actual: Double, val budget: Double)
 data class AggregatedOverviewData(val name: String, val actual: Double, val yearToDateActual: Double, val budget: Double, val yearToDateBudget: Double, val annualBudget: Double)
