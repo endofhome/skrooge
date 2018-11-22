@@ -2,12 +2,16 @@ package uk.co.endofhome.skrooge.csvformatters
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import com.oneeyedmen.okeydoke.junit.ApprovalsRule
+import org.junit.Rule
 import org.junit.Test
-import java.io.File
-import java.io.File.separator
 import java.nio.file.Paths
 
 class BankTwoStatementCsvFormatterTest : CsvFormatterTest() {
+
+    @Rule @JvmField
+    val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
+
     private val bankName = System.getenv("BANK_TWO")
     private val merchantFour = System.getenv("MERCHANT_FOUR")
     private val merchantFive = System.getenv("MERCHANT_FIVE")
@@ -42,9 +46,7 @@ class BankTwoStatementCsvFormatterTest : CsvFormatterTest() {
     @Test
     fun `can format full statement`() {
         val formattedStatement = BankTwoStatementCsvFormatter(Paths.get("${bankName}_test_full.csv"))
-        val expectedFile = File(BankTwoStatementCsvFormatter.normalisedInputsPath().toString() + separator + "2017-05_Test_${bankName.capitalize()}.csv")
-        val expected = expectedFile.readLines()
 
-        assertThat(formattedStatement, equalTo(expected))
+        approver.assertApproved(formattedStatement.joinToString(System.lineSeparator()))
     }
 }

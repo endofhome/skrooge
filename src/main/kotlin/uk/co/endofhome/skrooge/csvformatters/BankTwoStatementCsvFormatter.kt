@@ -1,6 +1,9 @@
 package uk.co.endofhome.skrooge.csvformatters
 
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVRecord
 import java.io.File
+import java.io.FileReader
 import java.nio.file.Path
 import java.time.Month
 
@@ -8,39 +11,40 @@ object BankTwoStatementCsvFormatter: StatementCsvFormatter {
 
     override operator fun invoke(inputFileName: Path): List<String> {
         val file = File(baseInputPath().toString() + File.separator + inputFileName.toString())
+        val reader = FileReader(file)
+        val dateField = "Date"
+        val descriptionField = "Description"
+        val typeFIeld = "Type"
+        val moneyOutField = " Money Out"
+        val moneyInField = "Money In"
+        val header = arrayOf(dateField, descriptionField, typeFIeld, moneyInField, moneyOutField, " Balance")
+        val lines: List<CSVRecord> = CSVFormat.DEFAULT.withHeader(*header).withFirstRecordAsHeader().parse(reader).records.toList()
 
-        return file.readLines()
-                .drop(1)
-                .map {
-            val split = it.split(",")
-            val date = dateFrom(split[0])
-            val merchant = removeReferenceAndNormaliseCase(split[1])
-            val value = negativeIfCredit(split[2], split[3], split[4], split[1])
-
+        return lines.map {
+            val date = dateFrom(it.get(dateField))
+            val rawMerchant = it.get(descriptionField).trim()
+            val merchant = rawMerchant.replace(",", "").removeReferenceAndNormaliseCase().modifyIfSpecialMerchant()
+            val value = negativeIfCredit(it.get(typeFIeld), it.get(moneyInField), it.get(moneyOutField), rawMerchant)
             "$date,$merchant,$value"
         }
     }
 
-    private fun removeReferenceAndNormaliseCase(line: String): String {
-        return line
-                .take(18)
-                .split(" ")
-                .map {
-                    it.toLowerCase()
-                      .capitalize()
-                      .capitalizeMerchant()
-                }
-                .joinToString(" ")
-                .trim()
-    }
+    private fun String.removeReferenceAndNormaliseCase(): String =
+        take(18).split(" ")
+            .map {
+                it.toLowerCase()
+                  .capitalize()
+                  .capitalizeMerchant()
+            }
+            .joinToString(" ")
+            .trim()
 
-    private fun negativeIfCredit(transactionType: String, creditValue: String, debitValue: String, rawMerchant: String): String {
-        return when {
-            transactionType == "CREDIT" -> "-$creditValue"
+    private fun negativeIfCredit(transactionType: String, creditValue: String, debitValue: String, rawMerchant: String): String =
+        when {
+            transactionType == "CREDIT"                           -> "-$creditValue"
             transactionType == "OTHER" && rawMerchant == "CREDIT" -> "-$creditValue"
-            else -> debitValue
+            else                                                  -> debitValue
         }
-    }
 
     private fun dateFrom(bankDate: String): String {
         val dateElements = bankDate.split("-")
