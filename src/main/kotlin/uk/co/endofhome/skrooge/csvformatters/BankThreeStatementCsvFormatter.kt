@@ -13,7 +13,6 @@ object BankThreeStatementCsvFormatter: StatementCsvFormatter {
     private val header = arrayOf(" Transaction Date", postingDateField, billingAmountField, merchantField, " Merchant City ", " Merchant State ", " Merchant Zip ", " Reference Number ", " Debit/Credit Flag ", " SICMCC Code")
 
     override operator fun invoke(inputFileName: Path): List<String> {
-
         val file = File(baseInputPath().toString() + File.separator + inputFileName.toString())
         val reader = FileReader(file)
         val lines: List<CSVRecord> = CSVFormat.DEFAULT.withHeader(*header).withFirstRecordAsHeader().parse(reader).records.toList()

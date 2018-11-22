@@ -1,43 +1,51 @@
 package uk.co.endofhome.skrooge.csvformatters
 
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVRecord
 import java.io.File
+import java.io.FileReader
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.nio.file.Path
 
 object BankFiveStatementCsvFormatter : StatementCsvFormatter {
+    private const val transactionDateField = "Transaction Date"
+    private const val transactionDescriptionField = "Transaction Description"
+    private const val debitAmountField = "Debit Amount"
+    private const val creditAmountField = "Credit Amount"
+    private val header = arrayOf(
+        transactionDateField,
+        "Transaction Type",
+        "Sort Code",
+        "Account Number",
+        transactionDescriptionField,
+        debitAmountField,
+        creditAmountField,
+        "Balance"
+    )
 
     override operator fun invoke(inputFileName: Path): List<String> {
         val file = File(baseInputPath().toString() + File.separator + inputFileName.toString())
+        val reader = FileReader(file)
+        val lines: List<CSVRecord> = CSVFormat.DEFAULT.withHeader(*header).withFirstRecordAsHeader().parse(reader).records.toList()
 
-        return file.readLines()
-                .drop(1)
-                .map {
-            val split = it.split(",")
-            val date = split[0].split("/").reversed().joinToString("-")
-            val merchant = split[4].removeSurrounding("\"")
-                    .toLowerCase()
-                    .capitalizeMerchant()
-                    .modifyIfSpecialMerchant()
-            val value = calulateValue(split[5], split[6])
-
+        return lines.map {
+            val date = it.get(transactionDateField).split("/").reversed().joinToString("-")
+            val merchant = it.get(transactionDescriptionField).trim()
+                .removeSurrounding("\"")
+                .toLowerCase()
+                .capitalizeMerchant()
+                .modifyIfSpecialMerchant()
+            val value = calculateValue(it.get(debitAmountField), it.get(creditAmountField))
             "$date,$merchant,$value"
         }
     }
 
-    private fun calulateValue(creditValue: String, debitValue: String): String {
-        val doubleValue = (creditValue.zeroIfEmpty() - debitValue.zeroIfEmpty())
+    private fun calculateValue(debitValue: String, creditValue: String): String {
+        val doubleValue = (debitValue.toDoubleWithDefault(0.0) - creditValue.toDoubleWithDefault(0.0))
         return BigDecimal(doubleValue).setScale(2, RoundingMode.HALF_UP).toString()
     }
 
-    private fun String.zeroIfEmpty(): Double {
-        return this.let {
-            when {
-                it.isEmpty() -> 0.00
-                else -> it.toDouble()
-            }
-        }
-    }
-
-
+    private fun String.toDoubleWithDefault(default: Double): Double =
+        if (isEmpty()) default else this.toDouble()
 }
