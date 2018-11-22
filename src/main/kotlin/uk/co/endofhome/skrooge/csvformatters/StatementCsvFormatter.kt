@@ -18,8 +18,7 @@ interface StatementCsvFormatter {
             if (specialCharacters.contains(char)) {
                 specialCharacterDetected = true
                 char
-            }
-            else {
+            } else {
                 if (specialCharacterDetected) {
                     specialCharacterDetected = false
                     char.toUpperCase()
@@ -28,7 +27,7 @@ interface StatementCsvFormatter {
                 }
             }
         }.joinToString("")
-         .capitalizeUnlessWebAddress()
+            .capitalizeUnlessWebAddress()
     }
 
     fun String.capitalizeUnlessWebAddress(): String =
@@ -39,18 +38,20 @@ interface StatementCsvFormatter {
 
     fun specialMerchants(): Map<String, String> =
         mapOf(
-            "Tesco" to "Tesco",
             "B & Q" to "B&Q",
-            "Spotify" to "Spotify",
-            "Wickes" to "Wickes",
+            "Easycar" to "Easycar",
             "Eft Payment" to "EFT Payment",
             "Lloyds Tsb Credit" to "Lloyds TSB Credit",
-            "Sainsburys" to "Sainsburys"
+            "Sainsburys" to "Sainsburys",
+            "Spotify" to "Spotify",
+            "Tesco" to "Tesco",
+            "Wickes" to "Wickes",
+            "Zipcar" to "Zipcar"
         )
 
     fun String.modifyIfSpecialMerchant(): String =
         specialMerchants().let { merchants ->
-                merchants.keys.find { specialKey -> this.contains(specialKey) }
-                    ?.let { specialKey -> merchants[specialKey] } ?: this
-            }
+            merchants.keys.find { specialKey -> this.contains(specialKey) }
+                ?.let { specialKey -> merchants[specialKey] } ?: this
         }
+}
