@@ -8,6 +8,7 @@ addons:
 script:
 - "./gradlew assemble"
 - "./gradlew check --info"
+- "./build-and-test-frontend.sh"
 env:
   global:
   - secure: MJjA+snB2PpPxWY6p3rAXlcZuNijVvAZgy4k4GehYszPnEjzTXBzw9t9i48JA/xZlIkeAqkArsaLjHKkTiZ9NzztJO9ZqS/UExkxuziRuS9+HsCVAlZB+B27lZjVB5CNwnWCxEGlfUyFYA4mBeeTMSvFuu6Ql45aQ8lc1Vi/MrkmaAKTUAEOSeL4lRsz2XEZ4jG6tu+JCWLDAB9JZvOZ+X48uWPWYHtKPtOd84EMTuu6gl1OCXCe9aZIq/FBg+QdXjuDFKB8Fye1S4wcHZz2MtSi1v8Oz6qaxG0x0GJBUzJXz6ROmv9FlZYMLzEF/ZC4jP88MMwAsDxRU06vkPFVEp7L7O0t9bJFZiWAzhEZdpSSHq6e90TKBTuJ9kx0nWeSBv3NHfIke9+20/2qZ7/5+wc5x7++K86xyd4HAvGENi81yvF5jjINU9xHcL8sesJkCgluNavl3MzJJMY/IwLWdUHFPG+4EpA/faQ9SZqkwFDjPS5iFkFbEDpxvnebqYJXBy9Ixk0u09Bm8vNUXz8qR1PiKSWt3w78/+7ME3SZfsMaMzuHIWI2Z2ecw9PrMq9glGNvmwtUxVd5YXyQPMES9tCJTTYnDpl2neHY1nRf1JyxnXz5Mc7ZcBOGRZ/+u0EOUwgOeMqR4n6/cfr+EcCZW2aBb+zQUx+f/WHdBoXugc8=
