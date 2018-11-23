@@ -6,11 +6,11 @@
     "title": "Aggregated Overview",
     "data": {
       "name": "Overview",
-      "actual": 500.0,
-      "yearToDateActual": 500.0,
-      "budget": 599.0,
-      "yearToDateBudget": 5990.0,
-      "annualBudget": 7188.0
+      "actual": 500.00,
+      "yearToDateActual": 500.00,
+      "budget": 599.00,
+      "yearToDateBudget": 5990.00,
+      "annualBudget": 7188.00
     }
   },
   "overview": {
@@ -18,63 +18,63 @@
     "data": [
       {
         "name": "In your home",
-        "actual": 500.0,
-        "budget": 49.0
+        "actual": 500.00,
+        "budget": 49.00
       },
       {
         "name": "Insurance",
-        "actual": 0.0,
-        "budget": 33.0
+        "actual": 0.00,
+        "budget": 33.00
       },
       {
         "name": "Eats and drinks",
-        "actual": 0.0,
-        "budget": 42.0
+        "actual": 0.00,
+        "budget": 42.00
       },
       {
         "name": "Motoring and public transport",
-        "actual": 0.0,
-        "budget": 51.0
+        "actual": 0.00,
+        "budget": 51.00
       },
       {
         "name": "Savings and investments",
-        "actual": 0.0,
-        "budget": 19.0
+        "actual": 0.00,
+        "budget": 19.00
       },
       {
         "name": "Family",
-        "actual": 0.0,
-        "budget": 63.0
+        "actual": 0.00,
+        "budget": 63.00
       },
       {
         "name": "Fun",
-        "actual": 0.0,
-        "budget": 47.0
+        "actual": 0.00,
+        "budget": 47.00
       },
       {
         "name": "Health and beauty",
-        "actual": 0.0,
-        "budget": 78.0
+        "actual": 0.00,
+        "budget": 78.00
       },
       {
         "name": "Clothes",
-        "actual": 0.0,
-        "budget": 28.0
+        "actual": 0.00,
+        "budget": 28.00
       },
       {
         "name": "Big one offs",
-        "actual": 0.0,
-        "budget": 122.0
+        "actual": 0.00,
+        "budget": 122.00
       },
       {
         "name": "Odds and sods",
-        "actual": 0.0,
-        "budget": 33.0
+        "actual": 0.00,
+        "budget": 33.00
       },
       {
         "name": "Refurbishments",
-        "actual": 0.0,
-        "budget": 34.0
+        "actual": 0.00,
+        "budget": 34.00
       }
     ]
   },
@@ -84,53 +84,53 @@
       "data": [
         {
           "name": "Mortgage",
-          "actual": 300.0,
-          "budget": 1.0
+          "actual": 300.00,
+          "budget": 1.00
         },
         {
           "name": "Building insurance",
-          "actual": 200.0,
-          "budget": 2.0
+          "actual": 200.00,
+          "budget": 2.00
         },
         {
           "name": "Council tax",
-          "actual": 0.0,
-          "budget": 3.0
+          "actual": 0.00,
+          "budget": 3.00
         },
         {
           "name": "Water rates",
-          "actual": 0.0,
-          "budget": 4.0
+          "actual": 0.00,
+          "budget": 4.00
         },
         {
           "name": "Gas",
-          "actual": 0.0,
-          "budget": 4.0
+          "actual": 0.00,
+          "budget": 4.00
         },
         {
           "name": "Electricity",
-          "actual": 0.0,
-          "budget": 5.0
+          "actual": 0.00,
+          "budget": 5.00
         },
         {
           "name": "Household maintenance",
-          "actual": 0.0,
-          "budget": 6.0
+          "actual": 0.00,
+          "budget": 6.00
         },
         {
           "name": "Internet",
-          "actual": 0.0,
-          "budget": 7.0
+          "actual": 0.00,
+          "budget": 7.00
         },
         {
           "name": "TV Licence",
-          "actual": 0.0,
-          "budget": 8.0
+          "actual": 0.00,
+          "budget": 8.00
         },
         {
           "name": "Mobile phone",
-          "actual": 0.0,
-          "budget": 9.0
+          "actual": 0.00,
+          "budget": 9.00
         }
       ]
     },
@@ -139,18 +139,18 @@
       "data": [
         {
           "name": "Travel insurance",
-          "actual": 0.0,
-          "budget": 10.0
+          "actual": 0.00,
+          "budget": 10.00
         },
         {
           "name": "Income protection",
-          "actual": 0.0,
-          "budget": 11.0
+          "actual": 0.00,
+          "budget": 11.00
         },
         {
           "name": "Life insurance",
-          "actual": 0.0,
-          "budget": 12.0
+          "actual": 0.00,
+          "budget": 12.00
         }
       ]
     },
@@ -159,18 +159,18 @@
       "data": [
         {
           "name": "Food",
-          "actual": 0.0,
-          "budget": 13.0
+          "actual": 0.00,
+          "budget": 13.00
         },
         {
           "name": "Eating out",
-          "actual": 0.0,
-          "budget": 14.0
+          "actual": 0.00,
+          "budget": 14.00
         },
         {
           "name": "Meals at work",
-          "actual": 0.0,
-          "budget": 15.0
+          "actual": 0.00,
+          "budget": 15.00
         }
       ]
     },
@@ -179,18 +179,18 @@
       "data": [
         {
           "name": "Rail/bus/taxi",
-          "actual": 0.0,
-          "budget": 16.0
+          "actual": 0.00,
+          "budget": 16.00
         },
         {
           "name": "Car club subscription",
-          "actual": 0.0,
-          "budget": 17.0
+          "actual": 0.00,
+          "budget": 17.00
         },
         {
           "name": "Car club hires",
-          "actual": 0.0,
-          "budget": 18.0
+          "actual": 0.00,
+          "budget": 18.00
         }
       ]
     },
@@ -199,8 +199,8 @@
       "data": [
         {
           "name": "Pension payments",
-          "actual": 0.0,
-          "budget": 19.0
+          "actual": 0.00,
+          "budget": 19.00
         }
       ]
     },
@@ -209,18 +209,18 @@
       "data": [
         {
           "name": "Childcare",
-          "actual": 0.0,
-          "budget": 20.0
+          "actual": 0.00,
+          "budget": 20.00
         },
         {
           "name": "Nappies/baby extras",
-          "actual": 0.0,
-          "budget": 21.0
+          "actual": 0.00,
+          "budget": 21.00
         },
         {
           "name": "Bert activities",
-          "actual": 0.0,
-          "budget": 22.0
+          "actual": 0.00,
+          "budget": 22.00
         }
       ]
     },
@@ -229,13 +229,13 @@
       "data": [
         {
           "name": "Bob fun budget",
-          "actual": 0.0,
-          "budget": 23.0
+          "actual": 0.00,
+          "budget": 23.00
         },
         {
           "name": "Bill fun budget",
-          "actual": 0.0,
-          "budget": 24.0
+          "actual": 0.00,
+          "budget": 24.00
         }
       ]
     },
@@ -244,18 +244,18 @@
       "data": [
         {
           "name": "Dentistry",
-          "actual": 0.0,
-          "budget": 25.0
+          "actual": 0.00,
+          "budget": 25.00
         },
         {
           "name": "Haircuts",
-          "actual": 0.0,
-          "budget": 26.0
+          "actual": 0.00,
+          "budget": 26.00
         },
         {
           "name": "Optical bills",
-          "actual": 0.0,
-          "budget": 27.0
+          "actual": 0.00,
+          "budget": 27.00
         }
       ]
     },
@@ -264,8 +264,8 @@
       "data": [
         {
           "name": "Bert clothes",
-          "actual": 0.0,
-          "budget": 28.0
+          "actual": 0.00,
+          "budget": 28.00
         }
       ]
     },
@@ -274,23 +274,23 @@
       "data": [
         {
           "name": "Christmas",
-          "actual": 0.0,
-          "budget": 29.0
+          "actual": 0.00,
+          "budget": 29.00
         },
         {
           "name": "Summer holiday",
-          "actual": 0.0,
-          "budget": 30.0
+          "actual": 0.00,
+          "budget": 30.00
         },
         {
           "name": "Winter holiday",
-          "actual": 0.0,
-          "budget": 31.0
+          "actual": 0.00,
+          "budget": 31.00
         },
         {
           "name": "Birthdays",
-          "actual": 0.0,
-          "budget": 32.0
+          "actual": 0.00,
+          "budget": 32.00
         }
       ]
     },
@@ -299,8 +299,8 @@
       "data": [
         {
           "name": "Charity donations",
-          "actual": 0.0,
-          "budget": 33.0
+          "actual": 0.00,
+          "budget": 33.00
         }
       ]
     },
@@ -309,8 +309,8 @@
       "data": [
         {
           "name": "Refurbishments",
-          "actual": 0.0,
-          "budget": 34.0
+          "actual": 0.00,
+          "budget": 34.00
         }
       ]
     }

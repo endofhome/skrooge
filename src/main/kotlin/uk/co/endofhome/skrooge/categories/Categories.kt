@@ -43,7 +43,7 @@ class Categories(private val schemaFilePath: String = "category-schema/category-
         }
     }
 
-    data class CategoriesData(val categories: List<CategoryJson>) {
+    data class CategoriesData(val categories: List<SchemaCategoryJson>) {
         fun toList() = categories
     }
 }

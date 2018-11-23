@@ -28,7 +28,7 @@ class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private
                 val dataItemWithNilActual: DataItem by lazy {
                     DataItem(
                         subCategory = subCategory,
-                        actual = 0.0,
+                        actual = BigDecimal.ZERO,
                         budget = annualBudgets.valueFor(subCategory, decisions.first().line.date)
                     )
                 }
@@ -54,13 +54,17 @@ class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private
                 DataItem(mapEntry.key, acc.actual + categoryReportDataItem.actual, categoryReportDataItem.budget)
             }
         }.map { reportDataItem ->
-            reportDataItem.copy(actual = BigDecimal.valueOf(reportDataItem.actual).setScale(2, RoundingMode.HALF_UP).toDouble())
+            reportDataItem.copy(actual = reportDataItem.actual)
         }
 
     fun overviewFrom(categoryReports: List<CategoryReport>): CategoryReport {
         val overviewCategoryReport: List<DataItemJson> = categoryReports.map { categoryReport ->
-            categoryReport.data.fold(DataItemJson(categoryReport.title, 0.0, 0.0)) { acc, categoryReportDataItem ->
-                DataItemJson(categoryReport.title, acc.actual + categoryReportDataItem.actual, acc.budget + categoryReportDataItem.budget)
+            categoryReport.data.fold(DataItemJson(categoryReport.title, BigDecimal.ZERO, BigDecimal.ZERO)) { acc, categoryReportDataItem ->
+                DataItemJson(
+                    name = categoryReport.title,
+                    actual = (acc.actual + categoryReportDataItem.actual).setScale(2, RoundingMode.HALF_UP),
+                    budget = acc.budget + categoryReportDataItem.budget.setScale(2, RoundingMode.HALF_UP)
+                )
             }
         }
         return CategoryReport("Overview", overviewCategoryReport)
@@ -73,10 +77,10 @@ class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private
         val lastBudgetEndDate = lastTransactionDate.nextBudgetDate(budgetDayOfMonth)
         val numberOfMonthsSoFar = totalMonths(firstBudgetStartDate, lastBudgetEndDate)
 
-        val actualExpenditure = categoryReport.data.map { it.actual }.sum()
-        val yearToDateActual: Double = historicalCategoryReports.toYearToDateActual(actualExpenditure)
-        val budgetedExpenditure = firstRelevantBudget.budgetData.map { it.second }.sum()
-        val data = AggregatedOverviewData("Overview", actualExpenditure, yearToDateActual, budgetedExpenditure, budgetedExpenditure * numberOfMonthsSoFar, budgetedExpenditure * 12)
+        val actualExpenditure: BigDecimal = categoryReport.data.map { it.actual }.reduce { acc, bigDecimal ->  acc + bigDecimal }.setScale(2, RoundingMode.HALF_UP)
+        val yearToDateActual: BigDecimal = historicalCategoryReports.toYearToDateActual(actualExpenditure)
+        val budgetedExpenditure = firstRelevantBudget.budgetData.map { it.second }.reduce { acc, bigDecimal ->  acc + bigDecimal }.setScale(2, RoundingMode.HALF_UP)
+        val data = AggregatedOverviewData("Overview", actualExpenditure, yearToDateActual, budgetedExpenditure, budgetedExpenditure * BigDecimal(numberOfMonthsSoFar), budgetedExpenditure * BigDecimal(12))
 
         return AggregateOverviewReport("Aggregated Overview", data)
     }
@@ -88,17 +92,17 @@ class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private
             null
         }
 
-    private fun List<List<CategoryReport>>.toYearToDateActual(actualExpenditure: Double): Double {
-        return flatMap { catReports ->
+    private fun List<List<CategoryReport>>.toYearToDateActual(actualExpenditure: BigDecimal): BigDecimal =
+        flatMap { catReports ->
             catReports.flatMap { catReport ->
                 catReport.data
             }
         }.map { dateItemJson ->
             dateItemJson.actual
-        }.fold(0.0) { acc, actual ->
+        }.fold(BigDecimal.ZERO) { acc, actual ->
             acc + actual
         } + actualExpenditure
-    }
+            .setScale(2, RoundingMode.HALF_UP)
 
     private fun totalMonths(startDate: LocalDate, endDate: LocalDate): Int {
         val period = Period.between(startDate, endDate)
@@ -119,8 +123,8 @@ private fun LocalDate.nextBudgetDate(budgetDayOfMonth: Int): LocalDate = when {
 
 data class CategoryReport(val title: String, val data: List<DataItemJson>)
 data class AggregateOverviewReport(val title: String, val data: AggregatedOverviewData)
-data class DataItem(val subCategory: SubCategory, val actual: Double, val budget: Double) {
-    fun toJsonData() = DataItemJson(subCategory.name, actual, budget)
+data class DataItem(val subCategory: SubCategory, val actual: BigDecimal, val budget: BigDecimal) {
+    fun toJsonData() = DataItemJson(subCategory.name, actual.setScale(2, RoundingMode.HALF_UP), budget.setScale(2, RoundingMode.HALF_UP))
 }
-data class DataItemJson(val name: String, val actual: Double, val budget: Double)
-data class AggregatedOverviewData(val name: String, val actual: Double, val yearToDateActual: Double, val budget: Double, val yearToDateBudget: Double, val annualBudget: Double)
+data class DataItemJson(val name: String, val actual: BigDecimal, val budget: BigDecimal)
+data class AggregatedOverviewData(val name: String, val actual: BigDecimal, val yearToDateActual: BigDecimal, val budget: BigDecimal, val yearToDateBudget: BigDecimal, val annualBudget: BigDecimal)

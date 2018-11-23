@@ -6,6 +6,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.decisions.SubCategory
 import java.io.File
+import java.math.BigDecimal
 import java.nio.file.Path
 import java.time.LocalDate
 
@@ -33,7 +34,7 @@ class AnnualBudgets(private val budgets: List<AnnualBudget>) {
                 .map { element -> element.toInt() }
     }
 
-    fun valueFor(subCategory: SubCategory, date: LocalDate): Double {
+    fun valueFor(subCategory: SubCategory, date: LocalDate): BigDecimal {
         val budgetDataForSubCategory = budgetFor(date).budgetData.find { subcategoryBudget ->
             subcategoryBudget.first == subCategory
         } ?: throw IllegalStateException("Subcategory ${subCategory.name} not available in budget for $date.")
@@ -47,7 +48,7 @@ class AnnualBudgets(private val budgets: List<AnnualBudget>) {
         } ?: throw IllegalStateException("Budget unavailable for period starting $date")
 }
 
-data class AnnualBudget(val startDateInclusive: LocalDate, val budgetData: List<Pair<SubCategory, Double>>) {
+data class AnnualBudget(val startDateInclusive: LocalDate, val budgetData: List<Pair<SubCategory, BigDecimal>>) {
     companion object {
         fun from(startDateInclusive: LocalDate, json: String): AnnualBudget {
             val mapper = ObjectMapper().registerModule(KotlinModule())
@@ -69,4 +70,6 @@ data class AnnualBudgetJson(
 )
 
 data class CategoryJson(val title: String, val subcategories: List<SubCategoryBudgetJson>)
-data class SubCategoryBudgetJson(val name: String, val monthly_budget: Double)
+data class SchemaCategoryJson(val title: String, val subcategories: List<SchemaSubCategory>)
+data class SchemaSubCategory(val name: String)
+data class SubCategoryBudgetJson(val name: String, val monthly_budget: BigDecimal)

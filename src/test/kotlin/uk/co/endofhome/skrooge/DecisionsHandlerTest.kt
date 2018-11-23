@@ -24,6 +24,7 @@ import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.STATEMENT
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.USER
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.YEAR
+import java.math.BigDecimal
 import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.Month
@@ -36,7 +37,7 @@ class DecisionsHandlerTest {
 
     private val originalDecision =
             Decision(
-                Line(LocalDate.of(2017, 10, 18), "Edgeworld Records", 14.99),
+                Line(LocalDate.of(2017, 10, 18), "Edgeworld Records", BigDecimal("14.99")),
                 SubCategory("Bob fun budget", Category("Fun"))
             )
 
@@ -84,16 +85,21 @@ class DecisionsHandlerTest {
 
     @Test
     fun `POST to statementDecisions endpoint with multiple decisions writes same decisions`() {
+        val year = 2017
+        val month = 10
+        val day = 3
+        val merchant = "Pizza Union"
+        val amount = "5.50"
         val additionalDecision =
             Decision(
-                Line(LocalDate.of(2017, 10, 3), "Pizza Union", 5.5),
+                Line(LocalDate.of(year, month, day), merchant, BigDecimal(amount)),
                 SubCategory("Meals at work", Category("Eats and drinks"))
             )
 
         val request = Request(Method.POST, statementDecisions)
             .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
             .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Bob fun budget")
-            .form(decision, "3/10/2017,Pizza Union,5.50,Eats and drinks,Meals at work")
+            .form(decision, "$day/$month/$year,$merchant,$amount,Eats and drinks,Meals at work")
             .form(YEAR.key, "2017")
             .form(MONTH.key, "October")
             .form(USER.key, "Bob")

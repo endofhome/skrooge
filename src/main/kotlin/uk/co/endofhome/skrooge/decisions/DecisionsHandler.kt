@@ -11,6 +11,7 @@ import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.index
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.decisions.DecisionState.Decision
 import uk.co.endofhome.skrooge.statements.StatementMetadata
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.Month
 
@@ -33,7 +34,7 @@ class DecisionsHandler(private val decisionReaderWriter: DecisionReaderWriter, v
             val decisions: List<Decision> = decisionLens.extract(form).map {
                 val (presentationFormattedDate, merchant, amount, categoryName, subCategoryName) = it.split(",")
                 Decision(
-                    Line(reformat(presentationFormattedDate), merchant, amount.toDouble()),
+                    Line(reformat(presentationFormattedDate), merchant, BigDecimal(amount)),
                     categories.get(categoryName, subCategoryName)
                 )
             }

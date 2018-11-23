@@ -18,6 +18,7 @@ import uk.co.endofhome.skrooge.decisions.Line
 import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
 import uk.co.endofhome.skrooge.decisions.SubCategory
 import uk.co.endofhome.skrooge.statements.StatementMetadata
+import java.math.BigDecimal
 import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.Month.DECEMBER
@@ -43,7 +44,7 @@ class JsonGenerationTest {
 
     private val inYourHome = "In your home"
     private val aCommonDecision = Decision(
-        line = Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", 200.00),
+        line = Line(LocalDate.of(2017, 10, 24), "B Dradley Painter and Decorator", BigDecimal("200.00")),
         subCategory = SubCategory("Building insurance", Category(inYourHome))
     )
 
@@ -78,7 +79,7 @@ class JsonGenerationTest {
     @Test
     fun `POST to generate - json endpoint with two decisions of same category in one monthly decisions file returns correct JSON`() {
         val buildingInsuranceDecision = Decision(
-            line = Line(LocalDate.of(2017, 10, 14), "OIS Removals", 500.00),
+            line = Line(LocalDate.of(2017, 10, 14), "OIS Removals", BigDecimal("500.00")),
             subCategory = SubCategory("Building insurance", Category(inYourHome))
         )
         val statementMetadata = StatementMetadata(Year.of(2017), OCTOBER, "Tom", "some-bank")
@@ -94,7 +95,7 @@ class JsonGenerationTest {
     @Test
     fun `POST to generate - json endpoint with two decisions of different subcategory in one monthly decisions file returns correct JSON`() {
         val mortgageDecision = Decision(
-            line = Line(LocalDate.of(2017, 10, 10), "Some Bank", 300.00),
+            line = Line(LocalDate.of(2017, 10, 10), "Some Bank", BigDecimal("300.00")),
             subCategory = SubCategory("Mortgage", Category(inYourHome))
         )
         val statementMetadata = StatementMetadata(Year.of(2017), OCTOBER, "Tom", "some-bank")
@@ -111,11 +112,11 @@ class JsonGenerationTest {
     fun `POST to generate - json endpoint with three decisions, two categories and two subcategories in one monthly decisions file returns correct JSON`() {
         val eatsAndDrinks = "Eats and drinks"
         val mortgageDecision = Decision(
-            line = Line(LocalDate.of(2017, 10, 10), "Some Bank", 100.00),
+            line = Line(LocalDate.of(2017, 10, 10), "Some Bank", BigDecimal("100.00")),
             subCategory = SubCategory("Mortgage", Category(inYourHome))
         )
         val foodDecision = Decision(
-            line = Line(LocalDate.of(2017, 10, 17), "Something in a totally different category", 400.00),
+            line = Line(LocalDate.of(2017, 10, 17), "Something in a totally different category", BigDecimal("400.00")),
             subCategory = SubCategory("Food", Category(eatsAndDrinks))
         )
         val statementMetadata = StatementMetadata(Year.of(2017), OCTOBER, "Tom", "some-bank")
@@ -131,11 +132,11 @@ class JsonGenerationTest {
     @Test
     fun `POST to generate - json endpoint with decisions in different months returns correct JSON`() {
         val buildingInsuranceDecision = Decision(
-            line = Line(LocalDate.of(2017, 1, 24), "B Dradley Painter and Decorator", 1.00),
+            line = Line(LocalDate.of(2017, 1, 24), "B Dradley Painter and Decorator", BigDecimal("1.00")),
             subCategory = SubCategory("Building insurance", Category(inYourHome))
         )
         val mortgageDecision = Decision(
-            line = Line(LocalDate.of(2017, 2, 10), "Some Bank", 2.00),
+            line = Line(LocalDate.of(2017, 2, 10), "Some Bank", BigDecimal("2.00")),
             subCategory = SubCategory("Mortgage", Category(inYourHome))
         )
         val septemberStatementData = StatementMetadata(Year.of(2017), JANUARY, "Tom", "some-bank")
@@ -153,7 +154,7 @@ class JsonGenerationTest {
     @Test
     fun `POST to generate - json endpoint for final month in the year shows correct budget total`() {
         val decision = Decision(
-            line = Line(LocalDate.of(2017, 12, 24), "B Dradley Painter and Decorator", 1.00),
+            line = Line(LocalDate.of(2017, 12, 24), "B Dradley Painter and Decorator", BigDecimal("1.00")),
             subCategory = SubCategory("Building insurance", Category(inYourHome))
         )
         val decemberStatementData = StatementMetadata(Year.of(2017), DECEMBER, "Tom", "some-bank")
@@ -177,16 +178,16 @@ class JsonGenerationTest {
         ).routes
 
         val buildingInsuranceDecision = Decision(
-            line = Line(LocalDate.of(2016, 12, 15), "B Dradley Painter and Decorator", 1.00),
+            line = Line(LocalDate.of(2016, 12, 15), "B Dradley Painter and Decorator", BigDecimal("1.00")),
             subCategory = SubCategory("Building insurance", Category(inYourHome))
         )
         val foodDecision = Decision(
-            line = Line(LocalDate.of(2017, 2, 14), "Some Bank", 2.00),
+            line = Line(LocalDate.of(2017, 2, 14), "Some Bank", BigDecimal("2.00")),
             subCategory = SubCategory("Food", Category("Eats and drinks"))
         )
 
         val mealsAtWorkDecision = Decision(
-            line = Line(LocalDate.of(2017, 2, 13), "Some Bank", 5.00),
+            line = Line(LocalDate.of(2017, 2, 13), "Some Bank", BigDecimal("5.00")),
             subCategory = SubCategory("Meals at work", Category("Eats and drinks"))
         )
         val januaryStatementData = StatementMetadata(Year.of(2017), JANUARY, "Tom", "SomeBank")

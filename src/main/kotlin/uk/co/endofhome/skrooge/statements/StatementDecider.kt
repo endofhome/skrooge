@@ -6,6 +6,7 @@ import uk.co.endofhome.skrooge.decisions.DecisionState.Decision
 import uk.co.endofhome.skrooge.decisions.DecisionState.DecisionRequired
 import uk.co.endofhome.skrooge.decisions.Line
 import uk.co.endofhome.skrooge.decisions.SubCategory
+import java.math.BigDecimal
 import java.time.LocalDate
 
 class StatementDecider(categoryMappings: List<String>) {
@@ -22,7 +23,7 @@ class StatementDecider(categoryMappings: List<String>) {
         val line = Line(
             LocalDate.of(year, month, day),
             merchant,
-            amount.toDouble()
+            BigDecimal(amount)
         )
 
         val match = mappings.find { it.purchase.contains(line.merchant) }

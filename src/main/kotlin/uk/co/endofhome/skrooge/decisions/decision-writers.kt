@@ -4,6 +4,7 @@ import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.decisions.DecisionState.Decision
 import uk.co.endofhome.skrooge.statements.StatementMetadata
 import java.io.File
+import java.math.BigDecimal
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDate
@@ -66,7 +67,7 @@ class FileSystemDecisionReaderReaderWriter(private val categories: Categories, p
             file.readLines().map { rawLine ->
                 val (date, merchant, amount, categoryName, subCategoryName) = rawLine.split(",")
                 val (year, month, day) = date.split("-").map { it.toInt() }
-                val line = Line(LocalDate.of(year, month, day), merchant, amount.toDouble())
+                val line = Line(LocalDate.of(year, month, day), merchant, BigDecimal(amount))
 
                 val subCategory = categories.get(categoryName, subCategoryName)
                 Decision(line, subCategory)
@@ -90,7 +91,7 @@ class StubbedDecisionReaderWriter : DecisionReaderWriter {
             files.filter { it.line.date >= startDate && it.line.date < startDate.plusYears(1L) }
 }
 
-data class Line(val date: LocalDate, val merchant: String, val amount: Double)
+data class Line(val date: LocalDate, val merchant: String, val amount: BigDecimal)
 data class Category(val title: String)
 data class SubCategory(val name: String, val category: Category)
 

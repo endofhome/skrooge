@@ -32,7 +32,6 @@ import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.YEAR
 import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler.Companion.currentMerchantKey
 import java.io.File
-import java.math.BigDecimal
 import java.nio.file.Path
 import java.time.Month
 import java.time.Year
@@ -114,11 +113,8 @@ object LineFormatter {
     fun format(line: Line) = FormattedLine(
         line.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
         line.merchant,
-        line.amount.roundTo2DecimalPlaces()
+        line.amount.toPlainString()
     )
-
-    private fun Double.roundTo2DecimalPlaces() =
-        BigDecimal(this).setScale(2, BigDecimal.ROUND_HALF_UP).toString()
 }
 
 data class StatementMetadata(val year: Year, val month: Month, val user: String, val statement: String) {
