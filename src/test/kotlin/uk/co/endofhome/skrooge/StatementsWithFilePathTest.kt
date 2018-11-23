@@ -42,7 +42,7 @@ class StatementsWithFilePathTest {
     @Test
     fun `POST to statements endpoint with empty body returns HTTP Bad Request`() {
         val request = Request(Method.POST, statementsWithFilePath).body(Body.EMPTY)
-            .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+            .with(Header.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
 
         assertThat(skrooge(request).status, equalTo(Status.BAD_REQUEST))
     }
@@ -50,7 +50,7 @@ class StatementsWithFilePathTest {
     @Test
     fun `POST to statements with missing year in body returns HTTP Bad Request`() {
         val request = Request(Method.POST, statementsWithFilePath)
-                        .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+                        .with(Header.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                         .form(MONTH.key, "September")
                         .form(USER.key, "Tom")
                         .form(STATEMENT.key, "EmptyStatement")
@@ -61,7 +61,7 @@ class StatementsWithFilePathTest {
     @Test
     fun `POST to statements with missing month in form data returns HTTP Bad Request`() {
         val request = Request(Method.POST, statementsWithFilePath)
-                        .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+                        .with(Header.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                         .form(YEAR.key, "2017")
                         .form(USER.key, "Tom")
                         .form(STATEMENT.key, "EmptyStatement")
@@ -72,7 +72,7 @@ class StatementsWithFilePathTest {
     @Test
     fun `POST to statements with missing user in form data returns HTTP Bad Request`() {
         val request = Request(Method.POST, statementsWithFilePath)
-                        .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+                        .with(Header.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                         .form(YEAR.key, "2017")
                         .form(MONTH.key, "September")
                         .form(STATEMENT.key, "EmptyStatement")
@@ -83,7 +83,7 @@ class StatementsWithFilePathTest {
     @Test
     fun `POST to statements with missing statement name in form data returns HTTP Bad Request`() {
         val request = Request(Method.POST, statementsWithFilePath)
-                        .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+                        .with(Header.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                         .form(YEAR.key, "2017")
                         .form(MONTH.key, "September")
                         .form(USER.key, "Tom")
@@ -94,7 +94,7 @@ class StatementsWithFilePathTest {
     @Test
     fun `POST to statements with missing statement file path in form data returns HTTP Bad Request`() {
         val request = Request(Method.POST, statementsWithFilePath)
-                        .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+                        .with(Header.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                         .form(YEAR.key, "2017")
                         .form(MONTH.key, "September")
                         .form(USER.key, "Tom")
@@ -111,7 +111,7 @@ class StatementsWithFilePathTest {
             it.write("")
         }
         val request = Request(Method.POST, statementsWithFilePath)
-                .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+                .with(Header.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form(YEAR.key, "2017")
                 .form(MONTH.key, "September")
                 .form(USER.key, "Tom")

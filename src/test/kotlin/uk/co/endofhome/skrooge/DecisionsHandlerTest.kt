@@ -49,7 +49,7 @@ class DecisionsHandlerTest {
     @Test
     fun `POST to statementDecisions endpoint with no amended decisions writes same decisions`() {
         val request = Request(Method.POST, statementDecisions)
-                .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+                .with(Header.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Bob fun budget")
                 .form(YEAR.key, "2017")
                 .form(MONTH.key, "October")
@@ -66,7 +66,7 @@ class DecisionsHandlerTest {
     @Test
     fun `POST to statementDecisions endpoint with amended mappings writes amended mappings`() {
         val request = Request(Method.POST, statementDecisions)
-                .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+                .with(Header.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
                 .form(decision, "18/10/2017,Edgeworld Records,14.99,Eats and drinks,Food")
                 .form(YEAR.key, "2017")
                 .form(MONTH.key, "October")
@@ -97,7 +97,7 @@ class DecisionsHandlerTest {
             )
 
         val request = Request(Method.POST, statementDecisions)
-            .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+            .with(Header.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
             .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Bob fun budget")
             .form(decision, "$day/$month/$year,$merchant,$amount,Eats and drinks,Meals at work")
             .form(YEAR.key, "2017")
@@ -116,7 +116,7 @@ class DecisionsHandlerTest {
     @Test
     fun `POST to statementDecisions endpoint with missing fields returns HTTP Bad Request`() {
         val request = Request(Method.POST, statementDecisions)
-            .with(Header.Common.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
+            .with(Header.CONTENT_TYPE of ContentType.APPLICATION_FORM_URLENCODED)
             .form(decision, "18/10/2017,Edgeworld Records,14.99,Fun,Bob fun budget")
 
         val response = skrooge(request)

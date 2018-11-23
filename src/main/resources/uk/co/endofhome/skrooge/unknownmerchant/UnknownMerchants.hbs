@@ -13,7 +13,7 @@
             {{#each categories}}
             <optgroup label="{{@key.title}}">
                 {{#each this}}
-                <option value="{{currentMerchant.name}},{{@key.title}},{{name}}">{{name}}</option>
+                <option value="{{currentMerchant.name}},{{@../key.title}},{{name}}">{{name}}</option>
                 {{/each}}
             </optgroup>
             {{/each}}
