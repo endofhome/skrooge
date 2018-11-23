@@ -8,16 +8,16 @@ import java.nio.file.Path
 import java.time.Month
 
 object BankTwoStatementCsvFormatter: StatementCsvFormatter {
+    private const val dateField = "Date"
+    private const val descriptionField = "Description"
+    private const val typeFIeld = "Type"
+    private const val moneyOutField = " Money Out"
+    private const val moneyInField = "Money In"
+    private val header = arrayOf(dateField, descriptionField, typeFIeld, moneyInField, moneyOutField, " Balance")
 
     override operator fun invoke(inputFileName: Path): List<String> {
         val file = File(baseInputPath().toString() + File.separator + inputFileName.toString())
         val reader = FileReader(file)
-        val dateField = "Date"
-        val descriptionField = "Description"
-        val typeFIeld = "Type"
-        val moneyOutField = " Money Out"
-        val moneyInField = "Money In"
-        val header = arrayOf(dateField, descriptionField, typeFIeld, moneyInField, moneyOutField, " Balance")
         val lines: List<CSVRecord> = CSVFormat.DEFAULT.withHeader(*header).withFirstRecordAsHeader().parse(reader).records.toList()
 
         return lines.map {
@@ -30,7 +30,8 @@ object BankTwoStatementCsvFormatter: StatementCsvFormatter {
     }
 
     private fun String.removeReferenceAndNormaliseCase(): String =
-        take(18).split(" ")
+        take(18)
+            .split(" ")
             .map {
                 it.toLowerCase()
                   .capitalize()
