@@ -3,8 +3,8 @@ package uk.co.endofhome.skrooge.categories
 import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.decisions.DecisionState.Decision
 import uk.co.endofhome.skrooge.decisions.SubCategory
+import uk.co.endofhome.skrooge.format
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.Month.DECEMBER
 import java.time.Month.JANUARY
@@ -62,8 +62,8 @@ class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private
             categoryReport.data.fold(DataItemJson(categoryReport.title, BigDecimal.ZERO, BigDecimal.ZERO)) { acc, categoryReportDataItem ->
                 DataItemJson(
                     name = categoryReport.title,
-                    actual = (acc.actual + categoryReportDataItem.actual).setScale(2, RoundingMode.HALF_UP),
-                    budget = acc.budget + categoryReportDataItem.budget.setScale(2, RoundingMode.HALF_UP)
+                    actual = (acc.actual + categoryReportDataItem.actual).format(),
+                    budget = acc.budget + categoryReportDataItem.budget.format()
                 )
             }
         }
@@ -77,9 +77,9 @@ class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private
         val lastBudgetEndDate = lastTransactionDate.nextBudgetDate(budgetDayOfMonth)
         val numberOfMonthsSoFar = totalMonths(firstBudgetStartDate, lastBudgetEndDate)
 
-        val actualExpenditure: BigDecimal = categoryReport.data.map { it.actual }.reduce { acc, bigDecimal ->  acc + bigDecimal }.setScale(2, RoundingMode.HALF_UP)
+        val actualExpenditure: BigDecimal = categoryReport.data.map { it.actual }.reduce { acc, bigDecimal ->  acc + bigDecimal }.format()
         val yearToDateActual: BigDecimal = historicalCategoryReports.toYearToDateActual(actualExpenditure)
-        val budgetedExpenditure = firstRelevantBudget.budgetData.map { it.second }.reduce { acc, bigDecimal ->  acc + bigDecimal }.setScale(2, RoundingMode.HALF_UP)
+        val budgetedExpenditure = firstRelevantBudget.budgetData.map { it.second }.reduce { acc, bigDecimal ->  acc + bigDecimal }.format()
         val data = AggregatedOverviewData("Overview", actualExpenditure, yearToDateActual, budgetedExpenditure, budgetedExpenditure * BigDecimal(numberOfMonthsSoFar), budgetedExpenditure * BigDecimal(12))
 
         return AggregateOverviewReport("Aggregated Overview", data)
@@ -102,7 +102,7 @@ class CategoryReporter(val categories: Map<Category, List<SubCategory>>, private
         }.fold(BigDecimal.ZERO) { acc, actual ->
             acc + actual
         } + actualExpenditure
-            .setScale(2, RoundingMode.HALF_UP)
+            .format()
 
     private fun totalMonths(startDate: LocalDate, endDate: LocalDate): Int {
         val period = Period.between(startDate, endDate)
@@ -124,7 +124,7 @@ private fun LocalDate.nextBudgetDate(budgetDayOfMonth: Int): LocalDate = when {
 data class CategoryReport(val title: String, val data: List<DataItemJson>)
 data class AggregateOverviewReport(val title: String, val data: AggregatedOverviewData)
 data class DataItem(val subCategory: SubCategory, val actual: BigDecimal, val budget: BigDecimal) {
-    fun toJsonData() = DataItemJson(subCategory.name, actual.setScale(2, RoundingMode.HALF_UP), budget.setScale(2, RoundingMode.HALF_UP))
+    fun toJsonData() = DataItemJson(subCategory.name, actual.format(), budget.format())
 }
 data class DataItemJson(val name: String, val actual: BigDecimal, val budget: BigDecimal)
 data class AggregatedOverviewData(val name: String, val actual: BigDecimal, val yearToDateActual: BigDecimal, val budget: BigDecimal, val yearToDateBudget: BigDecimal, val annualBudget: BigDecimal)

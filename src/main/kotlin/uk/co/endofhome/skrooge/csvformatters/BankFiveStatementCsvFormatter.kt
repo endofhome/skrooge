@@ -2,11 +2,11 @@ package uk.co.endofhome.skrooge.csvformatters
 
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVRecord
+import uk.co.endofhome.skrooge.format
 import java.io.File
 import java.io.FileReader
 import java.math.BigDecimal
 import java.math.BigDecimal.ZERO
-import java.math.RoundingMode
 import java.nio.file.Path
 
 object BankFiveStatementCsvFormatter : StatementCsvFormatter {
@@ -43,8 +43,7 @@ object BankFiveStatementCsvFormatter : StatementCsvFormatter {
     }
 
     private fun calculateValue(debitValue: String, creditValue: String): String =
-        (debitValue.toBigDecimalWithDefault(ZERO) - creditValue.toBigDecimalWithDefault(ZERO))
-            .setScale(2, RoundingMode.HALF_UP).toString()
+        (debitValue.toBigDecimalWithDefault(ZERO) - creditValue.toBigDecimalWithDefault(ZERO)).format().toString()
 
     private fun String.toBigDecimalWithDefault(default: BigDecimal): BigDecimal =
         if (isEmpty()) default else BigDecimal(this)
