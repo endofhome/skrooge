@@ -5,6 +5,7 @@ import org.apache.commons.csv.CSVRecord
 import java.io.File
 import java.io.FileReader
 import java.math.BigDecimal
+import java.math.BigDecimal.ZERO
 import java.math.RoundingMode
 import java.nio.file.Path
 
@@ -41,11 +42,10 @@ object BankFiveStatementCsvFormatter : StatementCsvFormatter {
         }
     }
 
-    private fun calculateValue(debitValue: String, creditValue: String): String {
-        val doubleValue = (debitValue.toDoubleWithDefault(0.0) - creditValue.toDoubleWithDefault(0.0))
-        return BigDecimal(doubleValue).setScale(2, RoundingMode.HALF_UP).toString()
-    }
+    private fun calculateValue(debitValue: String, creditValue: String): String =
+        (debitValue.toBigDecimalWithDefault(ZERO) - creditValue.toBigDecimalWithDefault(ZERO))
+            .setScale(2, RoundingMode.HALF_UP).toString()
 
-    private fun String.toDoubleWithDefault(default: Double): Double =
-        if (isEmpty()) default else this.toDouble()
+    private fun String.toBigDecimalWithDefault(default: BigDecimal): BigDecimal =
+        if (isEmpty()) default else BigDecimal(this)
 }
