@@ -46,4 +46,4 @@ dependencies {
     testCompile "com.oneeyedmen:okeydoke:1.1.0"
 }
 
-mainClassName = 'uk.co.endofhome.skrooge.Skrooge.kt'
+mainClassName = 'uk.co.endofhome.skrooge.SkroogeKt'
