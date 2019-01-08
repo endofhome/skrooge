@@ -12,6 +12,17 @@ The back end provides an API serving a monthly report in JSON format. A basic fr
 
 I started writing this to keep track of my own affairs. I've learned about writing a larger Kotlin app from scratch, about the HTTP4K library, testing strategies and a little about HTTP. As is par for the course, I've also learned a few lessons about what *not* to do.
 
+### How do I run it?
+
+There are numerous environment variables required in order to run the application. I may at one time provide documentation about these but currently, if you really want to build and run this app, you're on your own. I don't expect anyone to actually want to do this so if you really, really do, please contact me and we can talk about it. That aside, the app can be run as follows:
+
+* Clone the repo
+* Build the code and run: 
+- *all* the tests: `./build-and-test.sh`
+- only the backend: `./gradlew clean test`
+- only the frontend: `./build-and-test-frontend.sh`
+* Run it `./gradlew run`
+
 ### Back-end logic flowchart
 
 ![backend-logic-flowchart](skrooge-logic-flowchart.jpg)
