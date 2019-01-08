@@ -3,6 +3,7 @@
 # Skrooge
 
 ### Work in progress
+I chip away at this in waves, whether it is refactoring (usually) or adding features (occasionally). 
 
 ### Premise
 A budgeting application to simplify and keep track of overcomplicated financial affairs. A user of this application might have several bank accounts and credit cards that they are regularly using. They want to budget expenditure over a year for several different categories of purchase, but find it hard to understand how they have spent their money.
