@@ -1,25 +1,25 @@
 package uk.co.endofhome.skrooge.scripts
 
-import uk.co.endofhome.skrooge.csvformatters.BankOneStatementCsvFormatter
+import uk.co.endofhome.skrooge.csvformatters.BankSixStatementCsvFormatter
 import java.io.File
 import java.nio.file.Paths
 import java.time.Month
 
 fun main(args: Array<String>) {
 
-    val bankStatementFormatter = BankOneStatementCsvFormatter
-    val bank = "bank"
-    val accountType = "accountType"
-    val monthName = "monthName"
-    val year = "year"
+    val bankStatementFormatter = BankSixStatementCsvFormatter
+    val bank = "lloyds"
+    val accountType = "credit"
+    val monthName = "november"
+    val year = "2018"
     val statementFileName = "${bank}_${accountType}_${monthName}_$year.csv"
 
-    val formattedStatement = bankStatementFormatter.invoke(Paths.get(statementFileName))
+    val formattedStatement = bankStatementFormatter(Paths.get(statementFileName))
     formattedStatement.forEach {
         println(it)
     }
 
-//    approve(formattedStatement, statementFileName, "Bill")
+    approve(formattedStatement, statementFileName, "Sarah")
 }
 
 fun normalisedFilenameFor(statementFilename: String, username: String): String {
