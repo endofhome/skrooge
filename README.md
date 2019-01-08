@@ -33,4 +33,4 @@ Each push to GitHub is built and tested on Travis CI. The application is not dep
 
 ### Back-end logic flowchart
 
-![backend-logic-flowchart](skrooge-logic-flowchart.jpg)
+![backend-logic-flowchart](docs/skrooge-logic-flowchart.jpg)
