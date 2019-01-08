@@ -28,6 +28,9 @@ There are numerous environment variables required in order to run the applicatio
 
 Some way in I introduced some *approval* tests using [Okey-Doke](https://github.com/dmcg/okey-doke), a Java library that provides a fast, simple way to approve a document. The documents that I have approved have been both HTML and JSON output that the backend provides. I found that even a JSON API was able to be tested this way, provided that there is not too much data provided to begin with. Once the initial approval has been made, approving small changes (or preventing them if they were unintended) is easy.
 
+### CI / Deployment
+Each push to GitHub is built and tested on Travis CI. The application is not deployed anywhere however, I run it locally. I test on Travis mainly to ensure that the application can be built elsewhere and isn't dependent on anything on my local machine.
+
 ### Back-end logic flowchart
 
 ![backend-logic-flowchart](skrooge-logic-flowchart.jpg)
