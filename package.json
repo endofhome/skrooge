@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/forty9er/skrooge.git"
+    "url": "git+https://github.com/endofhome/skrooge.git"
   },
   "author": "Tom Barnsbury",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/forty9er/skrooge/issues"
+    "url": "https://github.com/endofhome/skrooge/issues"
   },
-  "homepage": "https://github.com/forty9er/skrooge#readme",
+  "homepage": "https://github.com/endofhome/skrooge#readme",
   "devDependencies": {
     "jest": "^23.6.0",
     "webpack": "^4.17.2",
