@@ -36,6 +36,8 @@ object BankFiveStatementCsvFormatter : StatementCsvFormatter {
                 .removeSurrounding("\"")
                 .toLowerCase()
                 .capitalizeMerchant()
+                .removeNumericalOnlyWords()
+                .removeCdSuffix()
                 .modifyIfSpecialMerchant()
             val value = calculateValue(it.get(debitAmountField), it.get(creditAmountField))
             "$date,$merchant,$value"
@@ -47,4 +49,10 @@ object BankFiveStatementCsvFormatter : StatementCsvFormatter {
 
     private fun String.toBigDecimalWithDefault(default: BigDecimal): BigDecimal =
         if (isEmpty()) default else BigDecimal(this)
+
+    private fun String.removeNumericalOnlyWords() = this.split(" ").filter { it.containsLetters() }.joinToString(" ")
+
+    private fun String.containsLetters() = this.toCharArray().map { it.isLetter() }.any { it }
+
+    private fun String.removeCdSuffix() = this.split(" ").takeWhile { it.startsWith("Cd").not() }.joinToString(" ")
 }

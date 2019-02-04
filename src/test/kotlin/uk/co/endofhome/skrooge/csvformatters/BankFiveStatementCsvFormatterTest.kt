@@ -13,6 +13,7 @@ class BankFiveStatementCsvFormatterTest : CsvFormatterTest() {
     val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
 
     private val bankName = System.getenv("BANK_FIVE").toLowerCase()
+    private val merchantOne = System.getenv("MERCHANT_ONE")
     private val merchantTen = System.getenv("MERCHANT_TEN")
     private val merchantEleven = System.getenv("MERCHANT_ELEVEN")
     private val merchantTwelve = System.getenv("MERCHANT_TWELVE")
@@ -44,7 +45,21 @@ class BankFiveStatementCsvFormatterTest : CsvFormatterTest() {
     }
 
     @Test
-    fun `can format full statement`() {
+    fun `can format 2018 style three-line statement`() {
+        val formattedStatement = BankFiveStatementCsvFormatter(Paths.get("${bankName}_2019_test_three_lines.csv"))
+        val expectedFormat =
+            listOf(
+                "2017-05-22,$merchantTen,5.00",
+                "2017-05-22,$merchantEleven,-5.20",
+                "2017-05-15,$merchantTwelve,9.99",
+                "2017-05-16,$merchantOne,14.57",
+                "2017-05-17,$merchantOne,6.55"
+            )
+        assertThat(formattedStatement, equalTo(expectedFormat))
+    }
+
+    @Test
+    fun `can format full pre-2018 style statement`() {
         val formattedStatement = BankFiveStatementCsvFormatter(Paths.get("${bankName}_test_full.csv"))
 
         approver.assertApproved(formattedStatement.joinToString(System.lineSeparator()))
