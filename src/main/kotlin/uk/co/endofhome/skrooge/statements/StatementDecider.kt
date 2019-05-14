@@ -9,11 +9,7 @@ import uk.co.endofhome.skrooge.decisions.SubCategory
 import java.math.BigDecimal
 import java.time.LocalDate
 
-class StatementDecider(categoryMappings: List<String>) {
-    private val mappings = categoryMappings.map {
-        val (purchase, mainCategory, subCategory) = it.split(",")
-        CategoryMapping(purchase, mainCategory, subCategory)
-    }
+class StatementDecider(val categoryMappings: List<CategoryMapping>) {
 
     fun process(statementData: List<String>) = statementData.map { decide(it) }
 
@@ -26,7 +22,7 @@ class StatementDecider(categoryMappings: List<String>) {
             BigDecimal(amount)
         )
 
-        val match = mappings.find { line.merchant.contains(it.merchant) }
+        val match = categoryMappings.find { line.merchant.contains(it.merchant) }
         return when (match) {
             null -> DecisionRequired(line)
             else -> Decision(line, SubCategory(match.subCategory, Category(match.mainCategory)))

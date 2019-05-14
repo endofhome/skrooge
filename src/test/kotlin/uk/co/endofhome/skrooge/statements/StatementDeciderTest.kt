@@ -10,9 +10,7 @@ class StatementDeciderTest {
         val categoryMappings = listOf(
             CategoryMapping("Amzn Mktp Uk", "some category", "some subcategory"),
             CategoryMapping("Amazon", "some category", "some subcategory")
-        ).map {
-            "${it.merchant},${it.mainCategory},${it.subCategory}"
-        }
+        )
 
         val testStatement = listOf(
             "2019-1-1,Amzn Mktp Uk*Mt9Vu7P54m,1.99",
