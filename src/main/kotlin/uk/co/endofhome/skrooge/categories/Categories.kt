@@ -5,9 +5,15 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.decisions.SubCategory
+import uk.co.endofhome.skrooge.statements.CategoryMapping
 import java.io.File
 
-class Categories(private val schemaFilePath: String = "category-schema/category-schema.json", val categoryMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList()) {
+class Categories(private val schemaFilePath: String = "category-schema/category-schema.json", inputMappings: MutableList<String> = File("category-mappings/category-mappings.csv").readLines().toMutableList()) {
+
+    val categoryMappings: List<CategoryMapping> = inputMappings.map {
+        val (purchase, mainCategory, subCategory) = it.split(",")
+        CategoryMapping(purchase, mainCategory, subCategory)
+    }
 
     fun all(): Map<Category, List<SubCategory>> = subCategories().groupBy { it.category }
 

@@ -13,6 +13,7 @@ import org.http4k.lens.Validator
 import org.http4k.lens.webForm
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementsWithFilePath
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.unknownMerchant
+import uk.co.endofhome.skrooge.statements.CategoryMapping
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
 import uk.co.endofhome.skrooge.statements.FormForNormalisedStatement
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.MONTH
@@ -23,7 +24,9 @@ import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler.Companion.
 import java.time.format.TextStyle
 import java.util.Locale
 
-class CategoryMappingHandler(private val categoryMappings: MutableList<String>, private val mappingWriter: MappingWriter) {
+class CategoryMappingHandler(inputMappings: List<CategoryMapping>, private val mappingWriter: MappingWriter) {
+
+    private val categoryMappings = inputMappings.toMutableList()
 
     companion object {
         const val newMappingKey = "new-mapping"
@@ -39,25 +42,25 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
             remainingMerchantsLens
         ).toLens()
         val form = webForm.extract(request)
-        val newMapping: List<String> = newMappingLens.extract(form).split(',')
+        val newMapping: CategoryMapping =
+            try {
+                newMappingLens.extract(form).split(',').toCategoryMapping()
+            } catch (e: Exception) {
+                return Response(BAD_REQUEST)
+            }
         val remainingMerchants: Set<String> by lazy { remainingMerchantsLens.extract(form)?.toSet() ?: emptySet() }
         val statementForm: FormForNormalisedStatement by lazy { FormForNormalisedStatement.fromUrlEncoded(request) }
 
-        return if (newMapping.isValid()) {
-            write(newMapping)
-            when {
-                remainingMerchants.isEmpty() -> redirectToStatementsWIthFilePath()
-                else                         -> redirectToUnknownMerchant(statementForm, remainingMerchants)
-            }
+        write(newMapping)
+        return when {
+            remainingMerchants.isEmpty() -> redirectToStatementsWIthFilePath()
+            else                         -> redirectToUnknownMerchant(statementForm, remainingMerchants)
         }
-        else Response(BAD_REQUEST)
     }
-    private fun List<String>.isValid() = this.size >= 3
 
-    private fun write(mapping: List<String>) {
-        val newMappingString = mapping.joinToString(",")
-        mappingWriter.write(newMappingString)
-        categoryMappings.add(newMappingString)
+    private fun write(mapping: CategoryMapping) {
+        mappingWriter.write("${mapping.merchant},${mapping.mainCategory},${mapping.subCategory}")
+        categoryMappings.add(mapping)
     }
 
     private fun redirectToStatementsWIthFilePath(): Response {
@@ -77,5 +80,15 @@ class CategoryMappingHandler(private val categoryMappings: MutableList<String>, 
                 .query(statementFilePathKey, statementForm.file.path)
         val uri = nextRemainingMerchants.fold(baseUri) { acc, merchant -> acc.query(remainingMerchantKey, merchant) }
         return Response(Status.SEE_OTHER).header("Location", uri.toString())
+    }
+
+    private fun List<String>.toCategoryMapping(): CategoryMapping {
+        require(this.size == 3)
+
+        return CategoryMapping(
+            merchant = this[0],
+            mainCategory = this[1],
+            subCategory = this[2]
+        )
     }
 }
