@@ -26,7 +26,7 @@ class StatementDecider(categoryMappings: List<String>) {
             BigDecimal(amount)
         )
 
-        val match = mappings.find { it.purchase.contains(line.merchant) }
+        val match = mappings.find { it.merchant.contains(line.merchant) }
         return when (match) {
             null -> DecisionRequired(line)
             else -> Decision(line, SubCategory(match.subCategory, Category(match.mainCategory)))
