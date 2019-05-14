@@ -7,21 +7,21 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.with
-import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
 import org.http4k.template.view
+import uk.co.endofhome.skrooge.Skrooge.Companion.renderer
 import java.time.Month
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
 
-class BarChartHandler(private val renderer: TemplateRenderer) {
+object BarChartHandler {
     operator fun invoke(request: Request): Response {
         val year: String? = request.query("year")
         val month: String? = request.query("month")
         return when {
             year == null || month == null -> Response(BAD_REQUEST)
-            else                          -> (year to month).toYearMonth().toChartResponse(renderer)
+            else                          -> (year to month).toYearMonth().toChartResponse()
         }
     }
 
@@ -35,7 +35,7 @@ class BarChartHandler(private val renderer: TemplateRenderer) {
         }
     }
 
-    private fun YearMonth?.toChartResponse(renderer: TemplateRenderer): Response =
+    private fun YearMonth?.toChartResponse(): Response =
         when (this) {
             null -> Response(BAD_REQUEST)
             else -> {

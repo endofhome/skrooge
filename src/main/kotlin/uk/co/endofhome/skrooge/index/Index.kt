@@ -5,15 +5,15 @@ import org.http4k.core.ContentType
 import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.core.with
-import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
 import org.http4k.template.view
+import uk.co.endofhome.skrooge.Skrooge.Companion.renderer
 import java.time.LocalDate
 import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
 
-class IndexHandler(private val renderer: TemplateRenderer) {
+object IndexHandler {
     operator fun invoke(): Response {
         val years = listOf(DisplayYear.of("2017"), DisplayYear.of("2018"), DisplayYear.of("2019"))
         val months = Month.values().map { DisplayMonth.of(it) }

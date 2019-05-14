@@ -51,20 +51,23 @@ class Skrooge(private val categories: Categories = Categories(),
               budgetDirectory: Path = Paths.get("input/budgets/"),
               normalisedStatementsDirectory: Path = Paths.get("input/normalised/")) {
 
-    private val renderer = HandlebarsTemplates().HotReload("src/main/resources")
+    companion object {
+        val renderer = HandlebarsTemplates().HotReload("src/main/resources")
+    }
+
     private val categoryReporter = CategoryReporter(categories.all(), AnnualBudgets.from(budgetDirectory))
-    private val statementsHandler = StatementsHandler(renderer, categories, normalisedStatementsDirectory)
+    private val statementsHandler = StatementsHandler(categories, normalisedStatementsDirectory)
 
     val routes: RoutingHttpHandler
         get() = routes(
             publicResources bind static(ResourceLoader.Directory("public")),
 
-            index bind GET to { IndexHandler(renderer)() },
-            monthlyBarChartReport bind GET to { request -> BarChartHandler(renderer)(request) },
+            index bind GET to { IndexHandler() },
+            monthlyBarChartReport bind GET to { request -> BarChartHandler(request) },
 
             statementsWithFileContents bind POST to { request -> statementsHandler.withFileContents(request) },
             statementsWithFilePath bind POST to { request -> statementsHandler.withFilePath(request) },
-            unknownMerchant bind GET to { request -> UnknownMerchantHandler(renderer, categories.all())(request) },
+            unknownMerchant bind GET to { request -> UnknownMerchantHandler(categories.all())(request) },
             categoryMapping bind POST to { request -> CategoryMappingHandler(categories.categoryMappings, mappingWriter)(request) },
             statementDecisions bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories)(request) },
             monthlyJsonReport bind GET to { request -> MonthlyReportHandler(decisionReaderWriter, categoryReporter)(request) }

@@ -14,9 +14,9 @@ import org.http4k.lens.MultipartForm
 import org.http4k.lens.MultipartFormField
 import org.http4k.lens.Query
 import org.http4k.lens.WebForm
-import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
 import org.http4k.template.view
+import uk.co.endofhome.skrooge.Skrooge.Companion.renderer
 import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.unknownMerchant
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.CategoriesWithSelection
@@ -39,7 +39,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-class StatementsHandler(private val renderer: TemplateRenderer, val categories: Categories, private val normalisedStatements: Path) {
+class StatementsHandler(val categories: Categories, private val normalisedStatements: Path) {
 
     fun withFileContents(request: Request): Response {
         val form = try {

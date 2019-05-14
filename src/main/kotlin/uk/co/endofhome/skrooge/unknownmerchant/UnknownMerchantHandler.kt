@@ -8,16 +8,16 @@ import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.with
 import org.http4k.lens.Query
-import org.http4k.template.TemplateRenderer
 import org.http4k.template.ViewModel
 import org.http4k.template.view
+import uk.co.endofhome.skrooge.Skrooge.Companion.renderer
 import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantKey
 import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.decisions.SubCategory
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
 import uk.co.endofhome.skrooge.statements.StatementMetadata
 
-class UnknownMerchantHandler(private val renderer: TemplateRenderer, private val categories: Map<Category, List<SubCategory>>) {
+class UnknownMerchantHandler(private val categories: Map<Category, List<SubCategory>>) {
 
     companion object {
         const val currentMerchantKey = "currentMerchant"
