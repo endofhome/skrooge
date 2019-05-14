@@ -1,6 +1,7 @@
 package uk.co.endofhome.skrooge.statements
 
-import junit.framework.Assert.assertTrue
+import com.natpryce.hamkrest.assertion.assertThat
+import com.natpryce.hamkrest.isA
 import org.junit.Test
 import uk.co.endofhome.skrooge.decisions.DecisionState
 
@@ -19,6 +20,8 @@ class StatementDeciderTest {
         )
         val result = StatementDecider(categoryMappings).process(testStatement)
 
-        assertTrue(result.all { it is DecisionState.Decision })
+        result.forEach {
+            assertThat(it, isA<DecisionState.Decision>())
+        }
     }
 }
