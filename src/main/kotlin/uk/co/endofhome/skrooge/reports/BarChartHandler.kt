@@ -11,6 +11,7 @@ import org.http4k.template.ViewModel
 import org.http4k.template.view
 import uk.co.endofhome.skrooge.Skrooge.Companion.renderer
 import java.time.Month
+import java.time.Year
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
@@ -48,9 +49,9 @@ object BarChartHandler {
 }
 
 data class MonthlyBarChartReport(
-        val year: Int,
-        val month: String,
-        val monthNumber: Int,
-        val years: List<Int> = listOf(2017, 2018),
-        val months: List<Int> = (1..12).toList()
+    val year: Int,
+    val month: String,
+    val monthNumber: Int,
+    val years: List<Int> = generateSequence(2017) { yearValue -> (yearValue + 1).takeIf { it <= Year.now().value } }.toList(),
+    val months: List<Int> = (1..12).toList()
 ) : ViewModel
