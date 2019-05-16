@@ -30,8 +30,7 @@ import java.time.LocalDate
 import java.time.Month
 
 class DecisionsHandlerTest {
-    private val categoryMappings = mutableListOf<String>()
-    private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
+    private val categories = Categories("src/test/resources/test-schema.json")
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
     private val skrooge = Skrooge(categories, decisionReaderWriter = decisionReaderWriter, budgetDirectory = Paths.get("src/test/resources/budgets/")).routes
 

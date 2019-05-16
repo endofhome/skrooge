@@ -18,6 +18,7 @@ import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import uk.co.endofhome.skrooge.decisions.FileSystemDecisionReaderReaderWriter
 import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
+import uk.co.endofhome.skrooge.statements.CategoryMapping
 import java.io.File
 import java.nio.file.Paths
 
@@ -26,8 +27,7 @@ class StatementsWithFileContentsTest {
     @Rule @JvmField
     val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
 
-    private val categoryMappings = mutableListOf<String>()
-    private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
+    private val categories = Categories("src/test/resources/test-schema.json")
     private val mappingWriter = StubbedMappingWriter()
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
     private val testBudgetDirectory = Paths.get("src/test/resources/budgets/")
@@ -147,8 +147,8 @@ class StatementsWithFileContentsTest {
 
     @Test
     fun `POST with one entry produces output file with one entry when recognised merchant`() {
-        val categoryMappings = mutableListOf("Pizza Union,Eats and drinks,Meals at work")
-        val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
+        mappingWriter.write(CategoryMapping("Pizza Union","Eats and drinks","Meals at work"))
+        val categories = Categories("src/test/resources/test-schema.json")
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
         val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes
@@ -174,11 +174,11 @@ class StatementsWithFileContentsTest {
 
     @Test
     fun `POST with two entries produces output file with two entry when recognised merchants`() {
-        val categoryMappings = mutableListOf(
-            "Pizza Union,Eats and drinks,Meals at work",
-            "Pizza Hut,Eats and drinks,Meals at work"
-        )
-        val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
+        listOf(
+            CategoryMapping("Pizza Union","Eats and drinks","Meals at work"),
+            CategoryMapping("Pizza Hut","Eats and drinks","Meals at work")
+        ).forEach { mappingWriter.write(it) }
+        val categories = Categories("src/test/resources/test-schema.json")
         val outputPath = Paths.get("src/test/resources/decisions")
         val decisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories, outputPath)
         val localSkrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, testBudgetDirectory).routes

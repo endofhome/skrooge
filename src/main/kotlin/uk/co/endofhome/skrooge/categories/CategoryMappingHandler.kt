@@ -24,9 +24,7 @@ import uk.co.endofhome.skrooge.unknownmerchant.UnknownMerchantHandler.Companion.
 import java.time.format.TextStyle
 import java.util.Locale
 
-class CategoryMappingHandler(inputMappings: List<CategoryMapping>, private val mappingWriter: MappingWriter) {
-
-    private val categoryMappings = inputMappings.toMutableList()
+class CategoryMappingHandler(private val mappingWriter: MappingWriter) {
 
     companion object {
         const val newMappingKey = "new-mapping"
@@ -59,8 +57,7 @@ class CategoryMappingHandler(inputMappings: List<CategoryMapping>, private val m
     }
 
     private fun write(mapping: CategoryMapping) {
-        mappingWriter.write("${mapping.merchant},${mapping.mainCategory},${mapping.subCategory}")
-        categoryMappings.add(mapping)
+        mappingWriter.write(mapping)
     }
 
     private fun redirectToStatementsWIthFilePath(): Response {

@@ -8,8 +8,7 @@ import uk.co.endofhome.skrooge.decisions.Category
 import uk.co.endofhome.skrooge.decisions.SubCategory
 
 class CategoriesTest {
-    private val categoryMappings = emptyList<String>().toMutableList()
-    private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
+    private val categories = Categories("src/test/resources/test-schema.json")
 
     @Test
     fun `can get first category from category-schema file`() {

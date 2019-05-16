@@ -15,6 +15,7 @@ import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.statementsWithFileConten
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
 import uk.co.endofhome.skrooge.decisions.StubbedDecisionReaderWriter
+import uk.co.endofhome.skrooge.statements.CategoryMapping
 import java.nio.file.Paths
 
 class PleaseReviewYourCategorisationsTest {
@@ -22,8 +23,8 @@ class PleaseReviewYourCategorisationsTest {
     @Rule @JvmField
     val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
 
-    private val categoryMappings = mutableListOf("Pizza Union,Some category,Some subcategory")
-    private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
+    private val categoryMappings = mutableListOf(CategoryMapping("Pizza Union","Some category","Some subcategory"))
+    private val categories = Categories("src/test/resources/test-schema.json")
     private val mappingWriter = StubbedMappingWriter(categoryMappings)
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
     private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, Paths.get("src/test/resources/budgets/")).routes

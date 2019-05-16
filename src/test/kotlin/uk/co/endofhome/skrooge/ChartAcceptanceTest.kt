@@ -25,8 +25,7 @@ class ChartAcceptanceTest {
     @Rule @JvmField
     val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
 
-    private val categoryMappings = mutableListOf<String>()
-    private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
+    private val categories = Categories("src/test/resources/test-schema.json")
     private val mappingWriter = StubbedMappingWriter()
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
     private val skrooge = Skrooge(categories, mappingWriter, decisionReaderWriter, Paths.get("src/test/resources/budgets/")).routes

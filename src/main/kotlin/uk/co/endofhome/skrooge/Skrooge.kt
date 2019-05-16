@@ -46,7 +46,7 @@ fun main(args: Array<String>) {
 }
 
 class Skrooge(private val categories: Categories = Categories(),
-              private val mappingWriter: MappingWriter = FileSystemMappingWriter(),
+              mappingWriter: MappingWriter = FileSystemMappingWriter(),
               private val decisionReaderWriter: DecisionReaderWriter = FileSystemDecisionReaderReaderWriter(categories),
               budgetDirectory: Path = Paths.get("input/budgets/"),
               normalisedStatementsDirectory: Path = Paths.get("input/normalised/")) {
@@ -56,22 +56,25 @@ class Skrooge(private val categories: Categories = Categories(),
     }
 
     private val categoryReporter = CategoryReporter(categories.all(), AnnualBudgets.from(budgetDirectory))
-    private val statementsHandler = StatementsHandler(categories, normalisedStatementsDirectory)
+    private val statementsHandler = StatementsHandler(categories, normalisedStatementsDirectory, mappingWriter)
+    private val categoryMappingHandler = CategoryMappingHandler(mappingWriter)
 
     val routes: RoutingHttpHandler
-        get() = routes(
-            publicResources bind static(ResourceLoader.Directory("public")),
+        get() {
+            return routes(
+                publicResources bind static(ResourceLoader.Directory("public")),
 
-            index bind GET to { IndexHandler() },
-            monthlyBarChartReport bind GET to { request -> BarChartHandler(request) },
+                index bind GET to { IndexHandler() },
+                monthlyBarChartReport bind GET to { request -> BarChartHandler(request) },
 
-            statementsWithFileContents bind POST to { request -> statementsHandler.withFileContents(request) },
-            statementsWithFilePath bind POST to { request -> statementsHandler.withFilePath(request) },
-            unknownMerchant bind GET to { request -> UnknownMerchantHandler(categories.all())(request) },
-            categoryMapping bind POST to { request -> CategoryMappingHandler(categories.categoryMappings, mappingWriter)(request) },
-            statementDecisions bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories)(request) },
-            monthlyJsonReport bind GET to { request -> MonthlyReportHandler(decisionReaderWriter, categoryReporter)(request) }
-        )
+                statementsWithFileContents bind POST to { request -> statementsHandler.withFileContents(request) },
+                statementsWithFilePath bind POST to { request -> statementsHandler.withFilePath(request) },
+                unknownMerchant bind GET to { request -> UnknownMerchantHandler(categories.all())(request) },
+                categoryMapping bind POST to { request -> categoryMappingHandler(request) },
+                statementDecisions bind POST to { request -> DecisionsHandler(decisionReaderWriter, categories)(request) },
+                monthlyJsonReport bind GET to { request -> MonthlyReportHandler(decisionReaderWriter, categoryReporter)(request) }
+            )
+        }
 
     object RouteDefinitions {
         const val publicResources = "/public"

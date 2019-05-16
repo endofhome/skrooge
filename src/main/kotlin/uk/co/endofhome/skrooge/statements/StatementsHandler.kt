@@ -21,6 +21,7 @@ import uk.co.endofhome.skrooge.Skrooge.RouteDefinitions.unknownMerchant
 import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.CategoriesWithSelection
 import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantKey
+import uk.co.endofhome.skrooge.categories.MappingWriter
 import uk.co.endofhome.skrooge.decisions.DecisionState.Decision
 import uk.co.endofhome.skrooge.decisions.DecisionState.DecisionRequired
 import uk.co.endofhome.skrooge.decisions.Line
@@ -39,7 +40,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-class StatementsHandler(val categories: Categories, private val normalisedStatements: Path) {
+class StatementsHandler(val categories: Categories, private val normalisedStatements: Path, private val mappingWriter: MappingWriter) {
 
     fun withFileContents(request: Request): Response {
         val form = try {
@@ -62,7 +63,7 @@ class StatementsHandler(val categories: Categories, private val normalisedStatem
     }
 
     private fun routeForStatement(statementMetadata: StatementMetadata, statementFile: File): Response {
-        val decisionStates = StatementDecider(categories.categoryMappings).process(statementFile.readLines())
+        val decisionStates = StatementDecider(mappingWriter.read()).process(statementFile.readLines())
         val unknownMerchants: Set<String> = decisionStates.filterIsInstance<DecisionRequired>()
                                                      .map { it.line.merchant }
                                                      .toSet()

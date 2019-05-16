@@ -32,9 +32,8 @@ class JsonGenerationTest {
     @Rule @JvmField
     val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
 
-    private val categoryMappings = mutableListOf<String>()
     private val testDir = "src/test/resources/"
-    private val categories = Categories("${testDir}test-schema.json", categoryMappings)
+    private val categories = Categories("${testDir}test-schema.json")
     private val decisionReaderWriter = StubbedDecisionReaderWriter()
     private val skrooge = Skrooge(
         categories = categories,

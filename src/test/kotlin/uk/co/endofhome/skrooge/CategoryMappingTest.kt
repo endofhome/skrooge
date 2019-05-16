@@ -22,6 +22,7 @@ import uk.co.endofhome.skrooge.categories.Categories
 import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.newMappingKey
 import uk.co.endofhome.skrooge.categories.CategoryMappingHandler.Companion.remainingMerchantKey
 import uk.co.endofhome.skrooge.categories.StubbedMappingWriter
+import uk.co.endofhome.skrooge.statements.CategoryMapping
 import uk.co.endofhome.skrooge.statements.FileMetadata.statementFilePathKey
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.MONTH
 import uk.co.endofhome.skrooge.statements.StatementMetadata.Companion.FieldNames.STATEMENT
@@ -36,8 +37,7 @@ class CategoryMappingTest {
     @Rule @JvmField
     val approver: ApprovalsRule = ApprovalsRule.fileSystemRule("src/test/kotlin/approvals")
 
-    private val categoryMappings = mutableListOf("Edgeworld Records,Fun,Tom fun budget")
-    private val categories = Categories("src/test/resources/test-schema.json", categoryMappings)
+    private val categories = Categories("src/test/resources/test-schema.json")
     private val mappingWriter = StubbedMappingWriter()
     private val statementYear = "2017"
     private val statementMonth = "February"
@@ -87,7 +87,7 @@ class CategoryMappingTest {
                 .form(statementFilePathKey, statementFilePath)
 
         assertThat(skrooge(request).status, equalTo(TEMPORARY_REDIRECT))
-        assertThat(mappingWriter.read().last(), equalTo("Casbah Records,Fun,Tom fun budget"))
+        assertThat(mappingWriter.read().last(), equalTo(CategoryMapping("Casbah Records","Fun","Tom fun budget")))
     }
 
     @Test
@@ -104,7 +104,7 @@ class CategoryMappingTest {
 
         val followedResponse = with(RedirectHelper(skrooge)) { request.handleAndFollowRedirect() }
 
-        assertThat(mappingWriter.read().last(), equalTo("DIY Space for London,Fun,Tom fun budget"))
+        assertThat(mappingWriter.read().last(), equalTo(CategoryMapping("DIY Space for London","Fun","Tom fun budget")))
         assertThat(followedResponse.status, equalTo(OK))
         approver.assertApproved(followedResponse.bodyString())
     }
