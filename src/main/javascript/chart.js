@@ -82,6 +82,7 @@ monthlyReportData().then((result => {
         generateCategory("Month breakdown", result.overview.data, "#month-breakdown", xAxisValues.generic, 1000);
         generateCategory("In your home", dataForCategory("In your home", result.categories), "#in-your-home", xAxisValues.generic, 1000);
         generateCategory("Insurance", dataForCategory("Insurance", result.categories), "#insurance");
+        generateCategory("Eats and drinks", dataForCategory("Eats and drinks", result.categories), "#eats-and-drinks");
         generateCategory("Motoring and public transport", dataForCategory("Motoring and public transport", result.categories), "#motoring-and-public-transport");
         generateCategory("Savings and investments", dataForCategory("Savings and investments", result.categories), "#savings-and-investments");
         generateCategory("Family", dataForCategory("Family", result.categories), "#family");

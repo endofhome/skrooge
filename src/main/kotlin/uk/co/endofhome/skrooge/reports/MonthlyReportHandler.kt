@@ -18,9 +18,10 @@ import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
 
-class MonthlyReportHandler(private val decisionReaderWriter: DecisionReaderWriter,
-                           private val categoryReporter: CategoryReporter) {
-
+class MonthlyReportHandler(
+    private val decisionReaderWriter: DecisionReaderWriter,
+    private val categoryReporter: CategoryReporter
+) {
     operator fun invoke(request: Request): Response {
         val year = Query.int().required("year").extract(request)
         val month = Month.of(Query.int().required("month").extract(request))
